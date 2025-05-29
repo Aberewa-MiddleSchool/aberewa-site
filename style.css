@@ -1,0 +1,27 @@
+body {
+    font-family: Georgia, serif;
+    background-color: #fdf6f0;
+    color: #111;
+    margin: 0;
+    padding: 0;
+}
+header {
+    background-color: #000;
+    color: #fff;
+    padding: 1em;
+    text-align: center;
+}
+nav a {
+    margin: 0 1em;
+    color: gold;
+    text-decoration: none;
+}
+main {
+    padding: 2em;
+}
+footer {
+    background-color: #000;
+    color: red;
+    text-align: center;
+    padding: 1em;
+}
