@@ -11,12 +11,28 @@
             color: #222;
             margin: 0;
             padding: 0;
+            scroll-behavior: smooth;
         }
         header {
             background-color: #1e1e1e;
             color: white;
             text-align: center;
             padding: 20px;
+        }
+        nav {
+            background-color: #4B0082;
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        nav a:hover {
+            text-decoration: underline;
         }
         img.banner {
             width: 100%;
@@ -52,8 +68,14 @@
         <h1>Aberewa Middle School</h1>
     </header>
 
+    <nav>
+        <a href="#vision">Vision</a>
+        <a href="#curriculum">Curriculum</a>
+        <a href="#contact">Contact</a>
+    </nav>
+
     <main>
-        <section>
+        <section id="vision">
             <h2>Our Vision</h2>
             <p>Aberewa is for 7th and 8th graders with intellectual and mental exceptionalities. We reject one-size-fits-all education. Our model is rooted in Akan culture, restorative justice, and no high-stakes testing.</p>
             <ul>
@@ -65,7 +87,7 @@
             </ul>
         </section>
 
-        <section>
+        <section id="curriculum">
             <h2>Curriculum</h2>
             <h3>Academic Track</h3>
             <ul>
@@ -93,7 +115,7 @@
             </ul>
         </section>
 
-        <section>
+        <section id="contact">
             <h2>Contact Us</h2>
             <p><strong>Phone:</strong> (504) 475-8073<br>
                <strong>Email:</strong> <a href="mailto:founder@aberewamiddleschool.org">founder@aberewamiddleschool.org</a></p>
