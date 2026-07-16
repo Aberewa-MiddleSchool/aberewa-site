@@ -60,3 +60,14 @@ img.symbol, img.featured {
     max-width: 90%;
     border-radius: 8px;
 }
+
+.site-logo {
+    display: block;
+    width: 92px;
+    height: 92px;
+    object-fit: contain;
+    margin: 0 auto 0.75rem;
+    border-radius: 50%;
+    background: white;
+    padding: 5px;
+}
