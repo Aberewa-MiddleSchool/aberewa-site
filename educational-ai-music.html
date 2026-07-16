@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Educational AI music personas, books, music, and teacher-centered research from Aberewa Middle School founder Antoine Mason.">
+  <title>Educational AI Music Lab | Aberewa Middle School</title>
+  <style>
+    :root {
+      --ink: #10243c;
+      --ink-soft: #526170;
+      --paper: #f7f3ea;
+      --white: #fffdf8;
+      --blue: #173f73;
+      --gold: #d79c31;
+      --teal: #2f776f;
+      --purple: #4b2e83;
+      --line: rgba(16,36,60,.16);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+    }
+    a { color: inherit; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 18px 6vw;
+      color: white;
+      background: var(--purple);
+    }
+    .school {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: white;
+      text-decoration: none;
+    }
+    .school-mark {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgba(255,255,255,.45);
+      border-radius: 50%;
+      font-family: Georgia, serif;
+      font-weight: bold;
+    }
+    .school strong, .school small { display: block; }
+    .school strong { font-family: Georgia, serif; font-size: 18px; }
+    .school small { opacity: .72; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+    nav { display: flex; flex-wrap: wrap; gap: 22px; }
+    nav a {
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    nav a:hover, nav a:focus { color: #f2ca76; }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.08fr .92fr;
+      min-height: 690px;
+    }
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 7vw;
+    }
+    .eyebrow {
+      margin: 0 0 22px;
+      color: var(--teal);
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: .17em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; }
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      font-size: clamp(48px, 5.3vw, 78px);
+      font-weight: normal;
+      letter-spacing: -.04em;
+      line-height: 1;
+    }
+    .lede {
+      max-width: 660px;
+      margin: 30px 0;
+      color: var(--ink-soft);
+      font-size: 19px;
+      line-height: 1.75;
+    }
+    .button {
+      align-self: flex-start;
+      padding: 14px 23px;
+      border-radius: 999px;
+      color: white;
+      background: var(--ink);
+      font-size: 13px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .button:hover, .button:focus { background: var(--blue); }
+    .byline {
+      width: 100%;
+      max-width: 650px;
+      margin: 48px 0 0;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      color: var(--ink-soft);
+      font-size: 11px;
+    }
+    .signal {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 42px 4vw;
+      color: white;
+      background: var(--blue);
+      position: relative;
+    }
+    .signal:after {
+      content: "";
+      position: absolute;
+      width: 430px;
+      height: 430px;
+      top: 80px;
+      right: -190px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 50%;
+    }
+    .signal-label {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1;
+      opacity: .72;
+      font-size: 9px;
+      font-weight: bold;
+      letter-spacing: .17em;
+    }
+    .math {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      align-items: center;
+      gap: 10px;
+      margin: auto 0 42px;
+      position: relative;
+      z-index: 1;
+      font-family: Georgia, serif;
+      font-size: clamp(23px,2.2vw,35px);
+      text-align: center;
+    }
+    .answer {
+      display: grid;
+      place-items: center;
+      justify-self: center;
+      width: clamp(84px,9vw,120px);
+      height: clamp(84px,9vw,120px);
+      border-radius: 50%;
+      color: var(--ink);
+      background: var(--gold);
+      font-family: Arial, sans-serif;
+      font-size: clamp(30px,3vw,48px);
+      font-weight: bold;
+    }
+    .answer.light { background: var(--white); }
+    .wave {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      height: 140px;
+      position: relative;
+      z-index: 1;
+    }
+    .wave span {
+      display: block;
+      width: 8px;
+      border-radius: 8px;
+      background: linear-gradient(#f3d383,var(--gold));
+    }
+    .signal-note {
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,.28);
+      position: relative;
+      z-index: 1;
+      font-family: Georgia, serif;
+      text-align: right;
+    }
+    .section { padding: 100px 7vw; }
+    .section.white { background: var(--white); }
+    .section-head { max-width: 810px; }
+    h2 {
+      margin: 0;
+      font-size: clamp(40px,4.7vw,66px);
+      font-weight: normal;
+      letter-spacing: -.04em;
+      line-height: 1.08;
+    }
+    .section-head > p:last-child, .research-copy > p {
+      max-width: 730px;
+      margin: 24px 0 0;
+      color: var(--ink-soft);
+      font-size: 17px;
+      line-height: 1.75;
+    }
+    .persona-grid {
+      display: grid;
+      grid-template-columns: 1.3fr .7fr;
+      gap: 24px;
+      margin-top: 58px;
+    }
+    .card {
+      min-height: 420px;
+      padding: 42px;
+      border: 1px solid var(--line);
+    }
+    .card.primary {
+      color: white;
+      background: var(--ink);
+    }
+    .card.placeholder { background: var(--paper); }
+    .tag {
+      color: var(--gold);
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .card h3 {
+      margin: 82px 0 12px;
+      font-size: 38px;
+      font-weight: normal;
+      letter-spacing: -.03em;
+    }
+    .card p { max-width: 650px; }
+    .card.primary p { color: rgba(255,255,255,.74); }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 27px;
+    }
+    .chips span {
+      padding: 8px 11px;
+      border: 1px solid rgba(255,255,255,.26);
+      border-radius: 999px;
+      font-size: 11px;
+    }
+    .project-list {
+      margin-top: 52px;
+      border-top: 1px solid var(--line);
+    }
+    .project {
+      display: grid;
+      grid-template-columns: 92px minmax(0,1fr) 150px;
+      gap: 24px;
+      align-items: center;
+      padding: 28px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .type {
+      padding: 7px 9px;
+      border: 1px solid var(--teal);
+      border-radius: 999px;
+      color: var(--teal);
+      font-size: 9px;
+      font-weight: bold;
+      letter-spacing: .1em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+    .project h3 { margin: 0 0 5px; font-size: 24px; font-weight: normal; }
+    .project p { margin: 0; color: var(--ink-soft); font-size: 13px; }
+    .status {
+      color: var(--ink-soft);
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .research {
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 90px;
+    }
+    .timeline { border-top: 1px solid var(--line); }
+    .update {
+      padding: 25px 0 27px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    .update span {
+      color: var(--teal);
+      font-size: 9px;
+      font-weight: bold;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .update h3 { margin: 8px 0; font-size: 24px; font-weight: normal; }
+    .update p { margin: 0; color: var(--ink-soft); font-size: 13px; }
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+      padding: 46px 7vw;
+      color: white;
+      background: var(--purple);
+    }
+    footer p { margin: 0; color: rgba(255,255,255,.72); font-size: 12px; }
+    footer a { color: #f2ca76; font-weight: bold; }
+    @media (max-width: 900px) {
+      .hero, .persona-grid, .research { grid-template-columns: 1fr; }
+      .hero-copy { min-height: 650px; }
+      .signal { min-height: 570px; }
+    }
+    @media (max-width: 650px) {
+      .topbar { align-items: flex-start; flex-direction: column; padding: 18px 22px; }
+      .hero-copy, .section { padding: 76px 24px; }
+      .signal { padding: 34px 24px; }
+      .math { grid-template-columns: 1fr 1fr; gap: 24px 8px; }
+      .card { padding: 30px; }
+      .project { align-items: start; grid-template-columns: 78px 1fr; }
+      .status { grid-column: 2; }
+      footer { flex-direction: column; padding: 42px 24px; }
+    }
+  </style>
+</head>
+<body id="top">
+  <header class="topbar">
+    <a class="school" href="index.html">
+      <span class="school-mark">AMS</span>
+      <span><strong>Aberewa Middle School</strong><small>New Orleans, Louisiana</small></span>
+    </a>
+    <nav aria-label="Page navigation">
+      <a href="index.html">School Home</a>
+      <a href="#personas">Personas</a>
+      <a href="#projects">Books &amp; Music</a>
+      <a href="#research">Research</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Education · Music · Artificial Intelligence</p>
+        <h1>Teaching ideas students can hear, repeat, and remember.</h1>
+        <p class="lede">Educational AI music personas give teachers another way to reinforce learning—especially when repetition, rhythm, and accessible review matter.</p>
+        <a class="button" href="#personas">Explore the AI Music Lab</a>
+        <p class="byline">Created by Antoine Mason · Educator, researcher, author, and founder of Aberewa Middle School</p>
+      </div>
+      <div class="signal" aria-label="A visual composition combining mathematics and rhythm">
+        <div class="signal-label"><span>LEARNING SIGNAL / 01</span><span>ABRAFI</span></div>
+        <div class="math" aria-hidden="true"><span>8 × 7</span><span class="answer">56</span><span>÷ 8</span><span class="answer light">7</span></div>
+        <div class="wave" aria-hidden="true">
+          <span style="height:38%"></span><span style="height:64%"></span><span style="height:92%"></span><span style="height:52%"></span>
+          <span style="height:78%"></span><span style="height:100%"></span><span style="height:66%"></span><span style="height:46%"></span>
+          <span style="height:82%"></span><span style="height:60%"></span><span style="height:94%"></span><span style="height:42%"></span>
+        </div>
+        <div class="signal-note"><strong>Rhythm creates a return point.</strong><br>Repetition turns it into recall.</div>
+      </div>
+    </section>
+
+    <section class="section white" id="personas">
+      <div class="section-head">
+        <p class="eyebrow">Educational personas</p>
+        <h2>Distinct voices. A shared educational purpose.</h2>
+        <p>Each persona is designed as a teaching support—not a replacement for the teacher. The goal is to make repeated practice more memorable, culturally alive, and easier to revisit.</p>
+      </div>
+      <div class="persona-grid">
+        <article class="card primary">
+          <span class="tag">Flagship persona · 01</span>
+          <h3>Abrafi Mathematics</h3>
+          <p>An AI-generated music persona developed to support repetitive mathematics instruction in special education inclusion settings.</p>
+          <div class="chips"><span>Mathematics through rhythm</span><span>Teacher-guided use</span><span>Research-informed</span></div>
+        </article>
+        <article class="card placeholder">
+          <span class="tag">Persona in development · 02</span>
+          <h3>Next educational voice</h3>
+          <p>This space is reserved for the next AI music persona, subject area, audience, and first learning collection.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="projects">
+      <div class="section-head">
+        <p class="eyebrow">Books &amp; music</p>
+        <h2>Organized by project.</h2>
+        <p>A growing shelf for educational music, books, teacher materials, and the research behind them. Working titles will be replaced as releases are finalized.</p>
+      </div>
+      <div class="project-list">
+        <article class="project"><span class="type">Music</span><div><h3>Abrafi Mathematics Music Collection</h3><p>AI-assisted songs supporting repeated mathematics practice.</p></div><span class="status">In development</span></article>
+        <article class="project"><span class="type">Book</span><div><h3>Abrafi Mathematics Educator Companion</h3><p>A planned guide connecting musical concepts to classroom use and reflection.</p></div><span class="status">Planned release</span></article>
+        <article class="project"><span class="type">Research</span><div><h3>AI Music in Inclusion Mathematics</h3><p>A teacher-centered study of how an AI-generated persona may support repetitive instruction.</p></div><span class="status">In progress</span></article>
+        <article class="project"><span class="type">Future</span><div><h3>New Persona Debut</h3><p>Reserved for the first release from a future educational AI music persona.</p></div><span class="status">Future release</span></article>
+      </div>
+    </section>
+
+    <section class="section white research" id="research">
+      <div class="research-copy">
+        <p class="eyebrow">Research notebook</p>
+        <h2>Studying what this work can offer teachers.</h2>
+        <p>The current research direction centers teachers and examines the use of AI-generated music personas—especially Abrafi Mathematics—to support repetitive mathematics instruction in special education inclusion contexts.</p>
+      </div>
+      <div class="timeline">
+        <article class="update"><span>Current focus</span><h3>Teacher-centered project framing</h3><p>Defining the purpose, setting, research questions, and responsible classroom role of the music persona.</p></article>
+        <article class="update"><span>Future update</span><h3>Instrument development</h3><p>Reserved for updates on teacher questionnaires, feedback tools, and study design.</p></article>
+        <article class="update"><span>Future update</span><h3>Findings &amp; implications</h3><p>Reserved for findings, practical implications, publications, and presentations.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p><strong>Aberewa Middle School</strong><br>Educational AI music, books, and teacher-centered research.</p>
+    <p><a href="index.html">Return to the school homepage</a> · <a href="#top">Back to top</a></p>
+  </footer>
+</body>
+</html>
