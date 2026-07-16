@@ -22,8 +22,25 @@
     .unit-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem}
     .unit-flow article{padding:1.1rem;background:#f3edf8;border-radius:9px}
     .unit-flow span{display:block;color:var(--green);font-size:.72rem;font-weight:bold;text-transform:uppercase}
-    @media(max-width:850px){.integration-grid,.iep-grid{grid-template-columns:1fr 1fr}.bridge{grid-template-columns:1fr}.unit-flow{grid-template-columns:1fr 1fr}}
-    @media(max-width:560px){.integration-grid,.iep-grid,.unit-flow{grid-template-columns:1fr}}
+
+    .site-logo{width:280px;max-width:88vw;height:auto}
+    .evidence-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+    .evidence-card{overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:12px}
+    .evidence-card img{display:block;width:100%;height:260px;object-fit:cover;background:#eee}
+    .evidence-card.gold img{object-fit:contain;padding:16px}
+    .evidence-copy{padding:1.25rem}
+    .evidence-copy h4{font-family:Georgia,serif;font-size:1.35rem;font-weight:normal}
+    .evidence-copy p{color:var(--muted);font-size:.94rem}
+    .credit{display:block;margin-top:.8rem;font-size:.72rem;line-height:1.45;color:#626879}
+    .lesson-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .lesson-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:1.35rem}
+    .lesson-card.math-example{border-left:5px solid var(--green)}
+    .lesson-card.english-example{border-left:5px solid var(--gold)}
+    .lesson-card .label{font-size:.7rem;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;color:var(--green)}
+    .lesson-card ol{padding-left:1.2rem;color:var(--muted)}
+    .accuracy-box{padding:1.3rem;border:1px solid #d9c88f;background:#fff9df;border-radius:10px}
+    @media(max-width:850px){.integration-grid,.iep-grid,.evidence-gallery{grid-template-columns:1fr 1fr}.bridge{grid-template-columns:1fr}.unit-flow{grid-template-columns:1fr 1fr}}
+    @media(max-width:560px){.integration-grid,.iep-grid,.unit-flow,.evidence-gallery,.lesson-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -51,6 +68,37 @@
   </div>
 </section>
 
+<section id="documented-examples">
+  <p class="eyebrow">Documented people, objects, and designs</p>
+  <h3>See the cultural evidence behind the lessons</h3>
+  <p>These images are not generic “African” decoration. Each one has a documented connection to Akan material culture or to a specific Bono-region community. Captions separate what the source establishes from the new academic lesson Aberewa builds around it.</p>
+  <div class="evidence-gallery">
+    <article class="evidence-card gold">
+      <img src="images/akan-goldweight.jpg" alt="An eighteenth- or nineteenth-century metal gold weight made by Akan peoples">
+      <div class="evidence-copy">
+        <h4>Akan gold weight: mathematics through measurement</h4>
+        <p>Akan merchants and rulers used standardized brass weights to measure gold dust. In class, students investigate balance, equivalence, units, combinations, geometric form, and the role standard measurement plays in fair exchange.</p>
+        <span class="credit">Image: Metropolitan Museum of Art Open Access, CC0, via <a href="https://commons.wikimedia.org/wiki/File:Gold_Weight_MET_hz1994_312_13.jpg" target="_blank" rel="noopener">Wikimedia Commons</a>. Historical context: <a href="https://www.metmuseum.org/art/collection/search/746412" target="_blank" rel="noopener">The Met, Akan Gold Weights</a>.</span>
+      </div>
+    </article>
+    <article class="evidence-card">
+      <img src="images/adinkra-cloth.jpg" alt="Historic Adinkra mourning cloth with repeated stamped symbols arranged in a grid">
+      <div class="evidence-copy">
+        <h4>Adinkra cloth: mathematics and visual language</h4>
+        <p>The documented cloth uses stamped motifs organized across a surface. Mathematics students can map repetition, frequency, symmetry, translation, rotation, grids, and proportion. English students can study how a named symbol, its cultural context, and a proverb or idea work together as visual rhetoric.</p>
+        <span class="credit">Image: public-domain photograph of an Adinkra mourning cloth collected in Kumasi in 1817, via <a href="https://commons.wikimedia.org/wiki/File:Adinkra_cloth.JPG" target="_blank" rel="noopener">Wikimedia Commons</a>. Process information: <a href="https://www.britishmuseum.org/collection/object/E_Af1818-1114-23" target="_blank" rel="noopener">British Museum</a>.</span>
+      </div>
+    </article>
+    <article class="evidence-card">
+      <img src="images/bono-techiman-community.jpg" alt="Residents of Diasempa, a community in Techiman in Ghana's Bono East Region">
+      <div class="evidence-copy">
+        <h4>Techiman community: Bono place, voice, and evidence</h4>
+        <p>The source identifies the people pictured as residents of Diasempa, a suburb of Techiman in Bono East—not as representatives of every Bono person. English lessons can use responsibly obtained oral history and place-based description. Mathematics can study locally sourced population, agriculture, distance, or market data without inventing “traditional” numbers.</p>
+        <span class="credit">Photo: Milanba 90, CC BY-SA 4.0, via <a href="https://commons.wikimedia.org/wiki/File:Indigenous_people_-_Diasempa.jpg" target="_blank" rel="noopener">Wikimedia Commons</a>. Regional context: <a href="https://ghanaculture.gov.gh/bono-region/" target="_blank" rel="noopener">Ghana National Commission on Culture</a>.</span>
+      </div>
+    </article>
+  </div>
+</section>
 <section id="subjects">
   <p class="eyebrow">Two subjects · One cultural foundation</p>
   <h3>What Akan-rooted integration looks like</h3>
@@ -81,6 +129,19 @@
   <p class="note"><strong>Respectful use:</strong> Teachers identify sources, provide historical and cultural context, distinguish Akan traditions from other African cultures, and avoid presenting any symbol, story, or design as having one universal meaning.</p>
 </section>
 
+<section id="concrete-lessons">
+  <p class="eyebrow">Teacher-ready examples</p>
+  <h3>Six concrete connections—not general references</h3>
+  <div class="lesson-grid">
+    <article class="lesson-card math-example"><span class="label">Mathematics example 1</span><h4>Gold-weight balance investigation</h4><ol><li>Study a museum object record and identify material, date range, origin, dimensions, and use.</li><li>Use classroom replicas or virtual balance pieces with values clearly labeled as a simulation—not claimed historical masses.</li><li>Find equivalent combinations, compare ratios, and explain why standardized units support exchange.</li><li>Write a mathematical claim supported by a balance model, table, and equation.</li></ol></article>
+    <article class="lesson-card english-example"><span class="label">English example 1</span><h4>Adinkra as visual rhetoric</h4><ol><li>Select one symbol from a teacher-vetted museum or scholarly source.</li><li>Record its Akan name, documented meaning, source, and context rather than relying on commercial symbol charts.</li><li>Analyze how shape, repetition, placement, and associated language communicate an idea.</li><li>Produce an explanatory paragraph, AAC presentation, audio response, or visual essay with source credit.</li></ol></article>
+    <article class="lesson-card math-example"><span class="label">Mathematics example 2</span><h4>Transformation map of Adinkra cloth</h4><ol><li>Overlay a coordinate grid on a reproduced cloth detail.</li><li>Locate repeated motifs and describe translations, reflections, rotations, spacing, and frequency.</li><li>Calculate the fraction or percentage of sections containing a selected motif.</li><li>Create a new rule-based pattern and distinguish the student design from an authentic historical symbol.</li></ol></article>
+    <article class="lesson-card english-example"><span class="label">English example 2</span><h4>Akan proverb, claim, and context</h4><ol><li>Use a proverb from a scholarly or community-validated source such as documented work on Akan proverb rhetoric.</li><li>Identify speaker, audience, situation, figurative meaning, and possible interpretations.</li><li>Write a claim about the proverb’s purpose and support it with language from the source and contextual research.</li><li>Compare interpretation respectfully; do not treat a translated proverb as having only one fixed meaning.</li></ol></article>
+    <article class="lesson-card math-example"><span class="label">Mathematics example 3</span><h4>Bono/Brong trade and data inquiry</h4><ol><li>Locate Techiman and historical Bono centers such as Bono Manso or Begho using credible maps and historical sources.</li><li>Use current public data or teacher-created tables explicitly labeled hypothetical to study distance, unit price, quantity, percentage, and graphing.</li><li>Compare two routes or market choices and justify a decision mathematically.</li><li>Keep the historical facts separate from invented practice numbers.</li></ol></article>
+    <article class="lesson-card english-example"><span class="label">English example 3</span><h4>Bono oral history and Bono Twi</h4><ol><li>Study a Bono-region account of place, migration, leadership, trade, festival, or community memory alongside archaeological or documentary evidence.</li><li>Mark what is oral tradition, what is material evidence, what is interpretation, and what remains uncertain.</li><li>Use Bono Twi only with a fluent Bono speaker or validated Bono-language source; do not silently substitute Asante Twi.</li><li>Create a sourced oral-history profile, comparison essay, bilingual display, or recorded presentation.</li></ol></article>
+  </div>
+  <div class="accuracy-box" style="margin-top:1rem"><strong>Accuracy rule:</strong> “Akan” names a broad cultural and language family; Bono/Brong is a distinct Akan people and historical tradition. A lesson must name the specific community, object, dialect, place, or source whenever that information is known. Adinkra, Asante, Bono, Fante, and other Akan traditions should not be treated as interchangeable.</div>
+</section>
 <section id="bridges">
   <p class="eyebrow">Interdisciplinary bridges</p>
   <h3>How mathematics and English strengthen each other</h3>
@@ -124,6 +185,15 @@
   </div>
 </section>
 
+<section id="sources">
+  <p class="eyebrow">Research and image sources</p>
+  <h3>Sources teachers can verify</h3>
+  <div class="assessment-list">
+    <article class="card"><h4>Material culture and mathematics</h4><ul><li><a href="https://www.metmuseum.org/art/collection/search/746412" target="_blank" rel="noopener">Metropolitan Museum of Art: Akan Gold Weights</a></li><li><a href="https://www.metmuseum.org/art/collection/search/317689" target="_blank" rel="noopener">The Met: Akan Gold Weight object record</a></li><li><a href="https://americanhistory.si.edu/collections/object/nmah_910833" target="_blank" rel="noopener">Smithsonian: Akan Gold Weight</a></li></ul></article>
+    <article class="card"><h4>Adinkra and language</h4><ul><li><a href="https://www.britishmuseum.org/collection/object/E_Af1818-1114-23" target="_blank" rel="noopener">British Museum: Adinkra cloth and printing process</a></li><li><a href="https://www.si.edu/object/siris_sil_831403" target="_blank" rel="noopener">Smithsonian Libraries: Akan Proverbs</a></li><li><a href="https://www.si.edu/object/siris_sil_384140" target="_blank" rel="noopener">Smithsonian Libraries: Proverb in Akan Rhetoric</a></li></ul></article>
+    <article class="card"><h4>Bono/Brong regional context</h4><ul><li><a href="https://ghanaculture.gov.gh/bono-region/" target="_blank" rel="noopener">Ghana National Commission on Culture: Bono Region</a></li><li><a href="https://commons.wikimedia.org/wiki/Category:Techiman,_Ghana" target="_blank" rel="noopener">Wikimedia Commons: documented Techiman images</a></li></ul><p>For classroom use, teachers should add current Ghanaian and Bono-authored scholarship, local expertise, and validated Bono Twi resources whenever available.</p></article>
+  </div>
+</section>
 <section>
   <h3>Planning and accountability</h3>
   <p>Teachers document the academic target, cultural source and context, IEP connection, planned accommodations, communication options, assessment evidence, and next instructional step. Families and related-service professionals contribute when their knowledge is relevant to access and progress.</p>
