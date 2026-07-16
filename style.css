@@ -28,12 +28,14 @@ footer {
 
 .site-logo {
     display: block;
-    width: 78px;
+    width: 190px;
+    max-width: 72vw;
     height: auto;
-    max-height: 54px;
     object-fit: contain;
-    margin: 0 auto 0.6rem;
-    border-radius: 8px;
-    background: white;
-    padding: 2px;
+    margin: 0 auto 0.85rem;
+    padding: 7px;
+    border-radius: 14px;
+    background: #f1dfb8;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow: 0 7px 20px rgba(26, 13, 47, 0.24);
 }
