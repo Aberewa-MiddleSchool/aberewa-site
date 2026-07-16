@@ -1,31 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Curriculum</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description" content="The complete grades 7 and 8 curriculum framework for Aberewa Middle School.">
+  <title>Curriculum | Aberewa Middle School</title>
+  <link rel="stylesheet" href="curriculum-pages.css">
+  <style>
+    .subject-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-top:2rem}
+    .subject-card{display:flex;flex-direction:column;min-height:250px;padding:1.6rem;border:1px solid var(--line);border-radius:10px;background:white;text-decoration:none}
+    .subject-card:hover,.subject-card:focus{border-color:var(--purple);box-shadow:0 8px 24px rgba(75,46,131,.12)}
+    .subject-card span{color:var(--green);font-size:.72rem;font-weight:bold;letter-spacing:.12em;text-transform:uppercase}
+    .subject-card h3{margin:1.4rem 0 .6rem;font-size:1.8rem}
+    .subject-card p{color:var(--muted)}
+    .subject-card strong{margin-top:auto}
+    .future-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+    @media(max-width:650px){.subject-grid,.future-grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Aberewa Middle School</h1>
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="vision.html">Our Vision</a>
-            <a href="curriculum.html">Curriculum</a>
-            <a href="contact.html">Contact</a>
-        </nav>
-    </header>
-    <main>
-        <h2>Curriculum</h2>
-        <ul>
-            <li><strong>Academic Track:</strong> ELA, Math, History, Geoscience, Interstellar Science</li>
-            <li><strong>Life Skills Track:</strong> Cooking, Hygiene, Tech, Mobility, Personal Finance</li>
-            <li><strong>All Students:</strong> Afro-manga Art, Akan Language, Storytelling</li>
-        </ul>
-    </main>
-    <footer>
-        <p>&copy; 2025 Aberewa Middle School</p>
-    </footer>
+<header><h1>Aberewa Middle School</h1><nav><a href="index.html">Home</a><a href="vision.html">Vision</a><a href="curriculum.html">Curriculum</a><a href="educational-ai-music.html">AI Music Lab</a><a href="contact.html">Contact</a></nav></header>
+<main>
+<section class="hero">
+  <p class="eyebrow">Grades 7–8 · Complete framework</p>
+  <h2>Curriculum built for dignity, access, culture, and growth.</h2>
+  <p>Aberewa Middle School rejects one-size-fits-all education. Students receive rigorous, accessible learning grounded in Akan wisdom, the African diaspora, New Orleans, restorative practice, creativity, and meaningful preparation for life.</p>
+  <div class="quicknav"><a href="#academic">Academic Track</a><a href="#approach">Our approach</a><a href="#future">Additional tracks</a></div>
+</section>
+<div class="content">
+<section id="approach">
+  <h3>Our instructional commitments</h3>
+  <div class="principles">
+    <article class="card"><h4>Individualized access</h4><p>Teachers use IEP goals, accommodations, assistive technology, explicit instruction, and responsive pacing.</p></article>
+    <article class="card"><h4>Purposeful repetition</h4><p>Students revisit important knowledge through discussion, music, visuals, hands-on work, practice, and real applications.</p></article>
+    <article class="card"><h4>Multiple demonstrations</h4><p>Students may explain learning through writing, speech, performance, models, art, technology, and community projects.</p></article>
+    <article class="card"><h4>Akan-rooted community</h4><p>Learning emphasizes wisdom, responsibility, relationships, memory, and the contributions of African and diasporic peoples.</p></article>
+    <article class="card"><h4>Restorative practice</h4><p>Dialogue, reflection, repair, belonging, and growth guide classroom culture and conflict response.</p></article>
+    <article class="card"><h4>No high-stakes testing</h4><p>Progress is demonstrated through portfolios, projects, conferences, performances, and standards-aligned teacher evidence.</p></article>
+  </div>
+</section>
+<section id="academic">
+  <p class="eyebrow">Academic Track</p>
+  <h3>Complete subject curricula</h3>
+  <p>Select a subject to view its grade 7 and grade 8 scope and sequence, learning goals, units, projects, assessments, and inclusive supports.</p>
+  <div class="subject-grid">
+    <a class="subject-card" href="ela-curriculum.html"><span>Language &amp; literacy</span><h3>English Language Arts</h3><p>Literacy, voice, argument, media awareness, and storytelling through Black, African, Akan, New Orleans, and global texts.</p><strong>View curriculum →</strong></a>
+    <a class="subject-card" href="mathematics-curriculum.html"><span>Reasoning &amp; application</span><h3>Mathematics</h3><p>Conceptual understanding, fluency, representation, problem solving, financial reasoning, data, and mathematics through music.</p><strong>View curriculum →</strong></a>
+    <a class="subject-card" href="history-curriculum.html"><span>Evidence &amp; memory</span><h3>History</h3><p>African and Akan worlds, the African diaspora, New Orleans, United States history, civic agency, and historical thinking.</p><strong>View curriculum →</strong></a>
+    <a class="subject-card" href="geoscience-curriculum.html"><span>Earth &amp; resilience</span><h3>Geoscience</h3><p>Earth systems, weather, water, hazards, climate evidence, the Mississippi Delta, and Gulf Coast resilience.</p><strong>View curriculum →</strong></a>
+    <a class="subject-card" href="interstellar-science-curriculum.html"><span>Space &amp; possibility</span><h3>Interstellar Science</h3><p>Astronomy, astrobiology, engineering, scientific evidence, mission design, ethics, and humanity’s place in the universe.</p><strong>View curriculum →</strong></a>
+  </div>
+</section>
+<section id="future">
+  <p class="eyebrow">Additional curriculum tracks</p>
+  <h3>Connected learning beyond the Academic Track</h3>
+  <div class="future-grid">
+    <article class="card"><h4>Life Skills Track</h4><p>Cooking and hygiene, technology and mobility, and personal finance curriculum pages are reserved for the next phase.</p></article>
+    <article class="card"><h4>All-Student Enrichment</h4><p>Afro-manga art, Akan language, and storytelling curriculum pages are reserved for the next phase.</p></article>
+  </div>
+</section>
+</div>
+</main>
+<footer><span>© 2026 Aberewa Middle School</span><span><a href="mailto:antoinelamond@gmail.com">antoinelamond@gmail.com</a></span></footer>
 </body>
 </html>
