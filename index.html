@@ -15,13 +15,13 @@
             color: #222;
         }
         header {
-            background-color: #4B2E83;
+            background-color: #111111;
             color: white;
             padding: 1rem 2rem;
             text-align: center;
         }
         nav {
-            background: #622569;
+            background: #2b2414;
             padding: 0.5rem 2rem;
             text-align: center;
         }
@@ -41,20 +41,56 @@
             height: auto;
             margin: 0 auto 1rem;
             padding: 7px;
-            background: #f1dfb8;
+            background: #f3e3ae;
             border: 1px solid rgba(255, 255, 255, 0.45);
             border-radius: 14px;
-            box-shadow: 0 8px 22px rgba(26, 13, 47, 0.24);
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
         }
         h2 {
-            color: #4B2E83;
+            color: #111111;
+        }
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1.25rem;
+            max-width: 1180px;
+            margin: 1.5rem auto 0;
+        }
+        .concept-card {
+            margin: 0;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid #d9c47c;
+            border-radius: 14px;
+            box-shadow: 0 9px 24px rgba(0,0,0,.12);
+        }
+        .concept-card img {
+            display: block;
+            width: 100%;
+            aspect-ratio: 3 / 2;
+            object-fit: cover;
+        }
+        .concept-card figcaption {
+            padding: .8rem 1rem 1rem;
+            color: #4d4430;
+            font-size: .92rem;
+        }
+        .concept-disclosure {
+            max-width: 850px;
+            margin: 1.25rem auto 0;
+            color: #5d5136;
+            font-size: .9rem;
+            text-align: center;
+        }
+        @media (max-width: 700px) {
+            .concept-grid { grid-template-columns: 1fr; }
         }
         .dawn-feature {
             margin: 2rem 0;
             padding: 2.25rem 1.25rem;
             text-align: center;
-            background: linear-gradient(145deg, #f5f0fa, #fff8e8);
-            border: 1px solid #ded3ea;
+            background: linear-gradient(145deg, #fff9e8, #ead38b);
+            border: 1px solid #d9c47c;
             border-radius: 16px;
         }
         .dawn-feature p {
@@ -118,13 +154,28 @@
   </video>
 </section>
 
-<section id="gallery" style="background-color: #fafafa; padding: 2em;">
-  <h2 style="text-align: center;">Our Students in Action</h2>
-  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1em; max-width: 1000px; margin: 0 auto;">
-<img src="images/6238012.jpeg" alt="Happy Black Students Standing in Classroom" style="height: 300px; object-fit: cover; border-radius: 10px;">
-<img src="images/5905557.jpeg" alt="Black Woman with Pupils in Classroom" style="height: 300px; object-fit: cover; border-radius: 10px;">
-
+<section id="gallery" style="background-color:#fff9e8;padding:2.5rem 1.25rem;border-top:4px solid #d4af37;">
+  <h2 style="text-align:center;">Our Vision in Action</h2>
+  <p style="max-width:800px;margin:.5rem auto 0;text-align:center;font-size:1.05rem;">Concepts for a future Aberewa learning environment: culturally grounded, academically purposeful, sensory-considerate, and designed for neurodivergent students.</p>
+  <div class="concept-grid">
+    <figure class="concept-card">
+      <img src="images/concept-math-classroom.jpg" alt="AI concept visualization of fictional Aberewa students collaborating on a hands-on mathematics activity in black-and-gold uniforms">
+      <figcaption>Mathematics through collaboration, patterns, manipulatives, and multiple ways to participate.</figcaption>
+    </figure>
+    <figure class="concept-card">
+      <img src="images/concept-ela-classroom.jpg" alt="AI concept visualization of fictional Aberewa students participating in an accessible English Language Arts workshop">
+      <figcaption>English Language Arts through reading, storytelling, visual sequencing, writing, and assistive technology.</figcaption>
+    </figure>
+    <figure class="concept-card">
+      <img src="images/concept-science-classroom.jpg" alt="AI concept visualization of fictional Aberewa students exploring geoscience and interstellar science">
+      <figcaption>Geoscience and interstellar science through models, observation, technology, and hands-on investigation.</figcaption>
+    </figure>
+    <figure class="concept-card">
+      <img src="images/concept-uniform-logo-backs.jpg" alt="AI concept visualization showing the official Aberewa logo on the backs of three black-and-gold uniform tops">
+      <figcaption>Uniform concept: black-and-gold polos and structured jackets, with the official Aberewa logo displayed on every uniform back.</figcaption>
+    </figure>
   </div>
+  <p class="concept-disclosure"><strong>Concept visualization notice:</strong> These images were created with AI to illustrate the school’s future vision. Every person shown is fictional and is not a currently enrolled student.</p>
 </section>
 
 </section>
@@ -140,10 +191,10 @@
                 <li><a href="geoscience-curriculum.html">Geoscience</a></li>
                 <li><a href="interstellar-science-curriculum.html">Interstellar Science</a></li>
                 <li style="list-style: none; margin-top: 1.25em;">
-    <a href="curriculum.html" style="display: inline-block; padding: 0.8em 1.3em; background-color: #4B2E83; color: white; border-radius: 999px; text-decoration: none; font-weight: bold;">
+    <a href="curriculum.html" style="display: inline-block; padding: 0.8em 1.3em; background-color: #111111; color: white; border-radius: 999px; text-decoration: none; font-weight: bold;">
       Open the Complete Academic Curriculum
     </a>
-    <a href="akan-iep-integration.html" style="display: inline-block; margin-left: 0.5em; margin-top: 0.8em; padding: 0.8em 1.3em; border: 2px solid #4B2E83; color: #4B2E83; border-radius: 999px; text-decoration: none; font-weight: bold;">
+    <a href="akan-iep-integration.html" style="display: inline-block; margin-left: 0.5em; margin-top: 0.8em; padding: 0.8em 1.3em; border: 2px solid #111111; color: #111111; border-radius: 999px; text-decoration: none; font-weight: bold;">
       See How Akan Roots &amp; IEP Support Shape Learning
     </a>
   </li>
@@ -163,11 +214,11 @@
         </section>
 
 
-        <section id="support" style="margin:2rem 0;padding:2rem 1.25rem;background:#f5f0fa;border:1px solid #ded3ea;border-radius:14px;text-align:center;">
+        <section id="support" style="margin:2rem 0;padding:2rem 1.25rem;background:#fff7dc;border:1px solid #d9c47c;border-radius:14px;text-align:center;">
             <h2>Help Build Aberewa Middle School</h2>
             <p style="max-width:760px;margin:0 auto 1.25rem;font-size:1.08rem;">Support the early planning and development of an Akan-rooted educational program for neurodivergent students. Learn how current funds are handled and explore our long-term vision for educators, staff, learning resources, and an accessible campus.</p>
             <a href="support.html" style="display:inline-block;padding:.9rem 1.45rem;background:#087f5b;color:white;border-radius:999px;text-decoration:none;font-weight:bold;">Support Our School</a>
-            <a href="grants-partnerships.html" style="display:inline-block;margin-left:.6rem;margin-top:.75rem;padding:.8rem 1.3rem;border:2px solid #4B2E83;color:#4B2E83;border-radius:999px;text-decoration:none;font-weight:bold;">Grants &amp; Partnerships</a>
+            <a href="grants-partnerships.html" style="display:inline-block;margin-left:.6rem;margin-top:.75rem;padding:.8rem 1.3rem;border:2px solid #111111;color:#111111;border-radius:999px;text-decoration:none;font-weight:bold;">Grants &amp; Partnerships</a>
             <p style="max-width:700px;margin:1rem auto 0;font-size:.9rem;color:#555;">Aberewa Middle School does not currently have federal 501(c)(3) recognition. Current payments are not represented as tax-deductible donations.</p>
         </section>
 
@@ -175,15 +226,15 @@
             <h2>Contact</h2>
             <p>Email: <a href="mailto:antoinelamond@gmail.com">antoinelamond@gmail.com</a></p>
 
-<section id="ai-music-lab" style="padding: 2.5em 1em; background-color: #f5f0fa; text-align: center; border-top: 4px solid #4B2E83;">
-  <h2 style="font-size: 1.9em; color: #4B2E83; margin-bottom: 0.5em;">Explore Our Educational AI Music Lab</h2>
+<section id="ai-music-lab" style="padding: 2.5em 1em; background-color: #fff7dc; text-align: center; border-top: 4px solid #111111;">
+  <h2 style="font-size: 1.9em; color: #111111; margin-bottom: 0.5em;">Explore Our Educational AI Music Lab</h2>
   <p style="font-size: 1.05em; max-width: 680px; margin: 0 auto 1.4em; line-height: 1.7;">
     Meet Abrafi Mathematics and explore educational AI music, books, future releases, and teacher-centered research designed to support memorable, repetitive learning.
   </p>
-  <a href="educational-ai-music.html" style="display: inline-block; padding: 0.85em 1.5em; background-color: #4B2E83; color: #fff; text-decoration: none; font-weight: bold; border-radius: 999px;">
+  <a href="educational-ai-music.html" style="display: inline-block; padding: 0.85em 1.5em; background-color: #111111; color: #fff; text-decoration: none; font-weight: bold; border-radius: 999px;">
     Visit the Educational AI Music Lab
   </a>
-  <a href="https://a.co/d/0hUmUDlN" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-left: 0.6em; margin-top: 0.8em; padding: 0.85em 1.5em; border: 2px solid #4B2E83; color: #4B2E83; text-decoration: none; font-weight: bold; border-radius: 999px;">
+  <a href="https://a.co/d/0hUmUDlN" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-left: 0.6em; margin-top: 0.8em; padding: 0.85em 1.5em; border: 2px solid #111111; color: #111111; text-decoration: none; font-weight: bold; border-radius: 999px;">
     View Our Featured Amazon Resource
   </a>
 </section>
