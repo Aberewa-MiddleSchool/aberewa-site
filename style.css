@@ -1,6 +1,6 @@
 body {
     font-family: Georgia, serif;
-    background-color: #fdf6f0;
+    background-color: #fbf7eb;
     color: #111;
     margin: 0;
     padding: 0;
@@ -13,7 +13,7 @@ header {
 }
 nav a {
     margin: 0 1em;
-    color: gold;
+    color: #d4af37;
     text-decoration: none;
 }
 main {
@@ -21,7 +21,7 @@ main {
 }
 footer {
     background-color: #000;
-    color: red;
+    color: #d4af37;
     text-align: center;
     padding: 1em;
 }
@@ -35,7 +35,7 @@ footer {
     margin: 0 auto 0.85rem;
     padding: 7px;
     border-radius: 14px;
-    background: #f1dfb8;
+    background: #f3e3ae;
     border: 1px solid rgba(255, 255, 255, 0.45);
-    box-shadow: 0 7px 20px rgba(26, 13, 47, 0.24);
+    box-shadow: 0 7px 20px rgba(0, 0, 0, 0.24);
 }
