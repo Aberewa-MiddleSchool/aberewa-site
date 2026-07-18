@@ -74,3 +74,14 @@ img.symbol, img.featured {
     border: 1px solid rgba(255, 255, 255, 0.45);
     box-shadow: 0 7px 20px rgba(0, 0, 0, 0.24);
 }
+
+/* Shared sitewide visitor counter */
+footer::after {
+    content: url("https://hits.sh/aberewamiddleschool.org.svg?view=total&style=flat-square&label=Site%20Visits&color=d4af37&labelColor=111111");
+    display: block;
+    flex-basis: 100%;
+    width: 100%;
+    margin-top: 0.85rem;
+    line-height: 0;
+    text-align: center;
+}
