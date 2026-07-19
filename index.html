@@ -107,6 +107,55 @@
             border-radius: 18px;
             box-shadow: 0 14px 34px rgba(36, 20, 65, 0.25);
         }
+        .student-readiness {
+            margin: 2rem 0;
+            padding: 2.4rem 1.4rem;
+            background: #fff9e8;
+            border: 1px solid #d9c47c;
+            border-top: 5px solid #d4af37;
+            border-radius: 16px;
+        }
+        .student-readiness > p {
+            max-width: 920px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .readiness-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1.25rem;
+            max-width: 1100px;
+            margin: 1.5rem auto;
+        }
+        .readiness-card {
+            padding: 1.35rem;
+            background: #fff;
+            border: 1px solid #d9c47c;
+            border-radius: 14px;
+            box-shadow: 0 8px 22px rgba(0,0,0,.08);
+        }
+        .readiness-card h3 { margin-top: 0; color: #111; }
+        .readiness-card li { margin-bottom: .75rem; }
+        .readiness-note {
+            max-width: 920px;
+            margin: 1.25rem auto 0;
+            padding: 1rem 1.15rem;
+            color: #fff;
+            background: #2b2414;
+            border-left: 5px solid #d4af37;
+            border-radius: 10px;
+        }
+        .readiness-review {
+            max-width: 920px;
+            margin: 1.25rem auto 0;
+            padding: 1.15rem;
+            background: #f4e4ac;
+            border-radius: 10px;
+        }
+        .readiness-review h3 { margin-top: 0; }
+        @media (max-width: 800px) {
+            .readiness-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -119,6 +168,7 @@
 
     <nav>
         <a href="#vision">Vision</a>
+        <a href="#student-support">Student Support</a>
         <a href="curriculum.html">Complete Curriculum</a>
         <a href="educational-ai-music.html">AI Music Lab</a>
         <a href="support.html">Support Our School</a>
@@ -156,6 +206,55 @@
     This is not a foreign operation or a vague promise—it is a grassroots, community-rooted school designed for 
     <strong>Black youth with intellectual and mental exceptionalities</strong>. We honor our ancestors, draw wisdom from Akan culture, and ground our education in radical care and restorative justice.
   </p>
+</section>
+
+
+<section id="student-support" class="student-readiness" aria-labelledby="student-support-title">
+  <h2 id="student-support-title" style="text-align:center;">Student Support &amp; Enrollment Readiness</h2>
+  <p style="text-align:center;font-size:1.08rem;">Aberewa Middle School is being developed as an inclusive learning community for neurodivergent students and students with disabilities. Our enrollment model will expand in phases so that every student we accept can receive appropriate instruction, accessibility, supervision, and support.</p>
+  <p style="text-align:center;"><strong>A diagnosis, disability, IEP, communication method, or mobility device will not determine eligibility by itself.</strong> Each student will receive an individualized review based on strengths, educational goals, accessibility requirements, family input, and the school&rsquo;s current ability to implement necessary supports safely and consistently.</p>
+
+  <div class="readiness-grid">
+    <article class="readiness-card">
+      <h3>Year One Support Capacity</h3>
+      <p>During Year One, we plan to serve students whose programs can be delivered through small classes, structured routines, accessible curriculum, assistive technology, individualized accommodations, and available staffing.</p>
+      <ul>
+        <li><strong>Autistic students:</strong> Predictable schedules, visual instruction, sensory supports, interest-based learning, and regulation opportunities.</li>
+        <li><strong>Students with ADHD or executive-functioning differences:</strong> Movement opportunities, organizational coaching, flexible pacing, and frequent feedback.</li>
+        <li><strong>Students with dyslexia, dysgraphia, or dyscalculia:</strong> Explicit multisensory instruction, accessible texts, speech-to-text, audiobooks, and manipulatives.</li>
+        <li><strong>Students with speech or language disabilities:</strong> Visual communication, extended processing time, assistive communication, and specialist collaboration when available.</li>
+        <li><strong>Nonspeaking or minimally speaking students:</strong> Support for established AAC, picture-based communication, gestures, typing, or other reliable communication methods.</li>
+        <li><strong>Students with sensory-processing, anxiety, or emotional-regulation needs:</strong> Calm spaces, planned breaks, supportive transitions, and individualized regulation strategies.</li>
+        <li><strong>Students with mild to moderate intellectual or developmental disabilities:</strong> Individualized goals, functional learning, repetition, visuals, and connections between academics and daily life.</li>
+        <li><strong>Students with physical disabilities:</strong> Enrollment when the Year One facility and staff can safely meet the student&rsquo;s mobility, positioning, accessibility, transportation, and personal-care requirements.</li>
+        <li><strong>Blind or low-vision students:</strong> Enrollment when access can be provided through available digital materials, screen readers, magnification, audio resources, and tactile tools.</li>
+        <li><strong>Deaf or hard-of-hearing students:</strong> Enrollment when effective communication can be provided through available captioning, visual instruction, hearing technology, communication planning, or qualified services.</li>
+      </ul>
+    </article>
+
+    <article class="readiness-card">
+      <h3>Planned Capacity Expansion</h3>
+      <p>Some students require specialized personnel, equipment, facilities, or clinical services that may not be fully available at opening. These needs are part of our long-term inclusion plan.</p>
+      <p>We intend to expand capacity for students who require:</p>
+      <ul>
+        <li>Full-time Braille instruction and orientation-and-mobility services</li>
+        <li>Full-time sign-language interpretation or a specialized signing environment</li>
+        <li>Accessible transportation, mechanical lifts, extensive positioning assistance, or intensive personal-care support</li>
+        <li>Continuous nursing or medically complex care</li>
+        <li>Dedicated one-to-one or two-to-one staffing throughout most of the school day</li>
+        <li>Specialized deaf-blind or multiple-disability programming</li>
+        <li>Intensive feeding, toileting, or healthcare protocols</li>
+        <li>A secure therapeutic environment for frequent elopement</li>
+        <li>Clinical and crisis-level behavioral services for persistent aggression, serious self-injury, or conduct presenting an immediate safety risk</li>
+      </ul>
+      <div class="readiness-note"><strong>This is not a permanent exclusion list.</strong> It identifies the services, staffing, training, and facilities the school must develop before responsibly promising these levels of support.</div>
+    </article>
+  </div>
+
+  <div class="readiness-review">
+    <h3>Individualized Readiness Review</h3>
+    <p>Before enrollment, the school will work with each family to understand the student&rsquo;s strengths, learning methods, IEP or support documents, communication and assistive-technology requirements, mobility and medical needs, sensory supports, successful de-escalation strategies, and required services. Our goal is to make thoughtful, individualized decisions rather than decisions based solely on disability labels.</p>
+  </div>
 </section>
 
 
