@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive family support, staffing, and curriculum planning tools for Aberewa Middle School.">
+  <title>Interactive Planning Tools | Aberewa Middle School</title>
+  <style>
+    :root { --black:#111; --brown:#2b2414; --gold:#d4af37; --light-gold:#f4e4ac; --cream:#fff9e8; --ink:#242018; --green:#176b50; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin:0; color:var(--ink); background:#fffdf7; font-family:Georgia,serif; line-height:1.6; }
+    header { padding:1rem 1.25rem 1.35rem; color:#fff; text-align:center; background:linear-gradient(145deg,var(--black),var(--brown)); border-bottom:4px solid var(--gold); }
+    .site-logo { display:block; width:190px; max-width:68vw; height:auto; margin:0 auto .75rem; padding:7px; background:#f3e3ae; border-radius:14px; box-shadow:0 8px 22px rgba(0,0,0,.25); }
+    header h1 { margin:.25rem 0; }
+    header p { margin:.3rem 0 0; color:#f8e7a1; }
+    nav { display:flex; justify-content:center; flex-wrap:wrap; gap:.35rem 1.1rem; padding:.8rem 1rem; background:var(--brown); }
+    nav a { color:#fff; font-weight:bold; text-decoration:none; }
+    nav a:hover, nav a:focus { color:#f2ca76; text-decoration:underline; }
+    main { width:min(1180px,calc(100% - 2rem)); margin:0 auto; padding:2rem 0 3rem; }
+    .intro { max-width:900px; margin:0 auto 2rem; text-align:center; }
+    .privacy-note { padding:1rem 1.2rem; color:#fff; background:var(--green); border-radius:12px; }
+    .tool { margin:2rem 0; padding:clamp(1.15rem,3vw,2rem); background:#fff; border:1px solid #d9c47c; border-top:5px solid var(--gold); border-radius:16px; box-shadow:0 9px 24px rgba(0,0,0,.09); }
+    .tool h2 { margin-top:0; color:var(--black); }
+    .tool-number { display:inline-grid; place-items:center; width:2rem; height:2rem; margin-right:.45rem; color:var(--black); background:var(--gold); border-radius:50%; font-size:1rem; }
+    fieldset { margin:1.25rem 0; padding:1.15rem; background:var(--cream); border:1px solid #d9c47c; border-radius:12px; }
+    legend { padding:0 .45rem; font-weight:bold; }
+    .choice-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.75rem; }
+    .choice { display:flex; gap:.65rem; align-items:flex-start; padding:.8rem; background:#fff; border:1px solid #e4d6a5; border-radius:9px; cursor:pointer; }
+    .choice input { width:1.15rem; height:1.15rem; margin-top:.25rem; accent-color:var(--black); }
+    button, .button-link { display:inline-block; padding:.8rem 1.2rem; color:#fff; background:var(--black); border:2px solid var(--black); border-radius:999px; font:700 1rem Georgia,serif; text-decoration:none; cursor:pointer; }
+    button:hover, button:focus, .button-link:hover, .button-link:focus { color:var(--black); background:var(--gold); }
+    button.secondary { color:var(--black); background:#fff; }
+    .results { margin-top:1.25rem; padding:1.2rem; background:#f7edc8; border-left:5px solid var(--gold); border-radius:10px; }
+    .results:empty { display:none; }
+    .results h3 { margin:.2rem 0 .4rem; }
+    .results ul { margin-top:.35rem; }
+    .calculator-grid { display:grid; grid-template-columns:minmax(240px,.8fr) minmax(0,1.6fr); gap:1.25rem; align-items:start; }
+    .input-panel { padding:1.2rem; background:var(--cream); border-radius:12px; }
+    label strong { display:block; margin-bottom:.35rem; }
+    input[type="number"], select, input[type="search"] { width:100%; padding:.75rem; color:var(--ink); background:#fff; border:2px solid #8b7a45; border-radius:8px; font:1rem Georgia,serif; }
+    .metric-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; }
+    .metric { padding:1rem; text-align:center; background:var(--black); color:#fff; border:1px solid var(--gold); border-radius:12px; }
+    .metric output { display:block; color:#f2ca76; font:bold clamp(1.6rem,4vw,2.35rem) Georgia,serif; }
+    .year-two { margin-top:1rem; padding:1rem; background:var(--light-gold); border-radius:10px; }
+    .filters { display:grid; grid-template-columns:1fr 1fr 1.4fr; gap:.8rem; margin:1.1rem 0; padding:1rem; background:var(--cream); border-radius:12px; }
+    .curriculum-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; }
+    .curriculum-card { display:flex; flex-direction:column; padding:1.05rem; background:#fff; border:1px solid #d9c47c; border-radius:12px; }
+    .curriculum-card h3 { margin:.1rem 0 .35rem; }
+    .tag { display:inline-block; width:max-content; margin:0 0 .55rem; padding:.2rem .55rem; color:#fff; background:var(--brown); border-radius:999px; font-size:.8rem; }
+    .curriculum-card a { margin-top:auto; color:#5b4300; font-weight:bold; }
+    .empty-state { grid-column:1/-1; padding:1.2rem; text-align:center; background:var(--cream); border-radius:10px; }
+    footer { padding:1.25rem; color:#f8e7a1; text-align:center; background:var(--black); border-top:3px solid var(--gold); }
+    @media (max-width:800px) { .choice-grid,.calculator-grid,.filters,.curriculum-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="image.png" alt="Aberewa Middle School logo" class="site-logo">
+    <h1>Interactive Planning Tools</h1>
+    <p>Explore student supports, staffing commitments, and Akan-rooted curriculum</p>
+  </header>
+  <nav aria-label="Primary navigation">
+    <a href="index.html">Home</a>
+    <a href="#family-guide">Family Support Guide</a>
+    <a href="#staffing-calculator">Staffing Calculator</a>
+    <a href="#curriculum-explorer">Curriculum Explorer</a>
+    <a href="curriculum.html">Complete Curriculum</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+
+  <main>
+    <section class="intro">
+      <h2>Explore the Aberewa Model</h2>
+      <p>These tools make our developing educational model easier to understand. They are planning and information resources, not enrollment decisions or promises of services.</p>
+      <p class="privacy-note"><strong>Your privacy:</strong> Everything selected or calculated on this page stays in your browser. This page does not ask for names, diagnoses, IEP documents, contact information, or medical records, and it does not save or transmit your selections.</p>
+    </section>
+
+    <section class="tool" id="family-guide" aria-labelledby="family-guide-title">
+      <h2 id="family-guide-title"><span class="tool-number">1</span>Family Support Guide</h2>
+      <p>Select broad areas of support to learn what Aberewa plans to offer in Year One and what is included in future capacity-building. Do not enter private student information.</p>
+      <form id="support-form">
+        <fieldset>
+          <legend>Which general support areas would you like to explore?</legend>
+          <div class="choice-grid">
+            <label class="choice"><input type="checkbox" name="support" value="learning"><span><strong>Reading, writing, mathematics, or executive functioning</strong><br>Dyslexia, dysgraphia, dyscalculia, ADHD, processing, or organization supports</span></label>
+            <label class="choice"><input type="checkbox" name="support" value="autism"><span><strong>Autism, sensory access, or regulation</strong><br>Predictability, sensory planning, transitions, communication, or regulation supports</span></label>
+            <label class="choice"><input type="checkbox" name="support" value="communication"><span><strong>Speech, language, or AAC communication</strong><br>Visual communication, processing time, AAC, typing, gestures, or picture-based systems</span></label>
+            <label class="choice"><input type="checkbox" name="support" value="vision"><span><strong>Blindness or low vision</strong><br>Screen readers, magnification, audio, tactile materials, Braille, or orientation and mobility</span></label>
+            <label class="choice"><input type="checkbox" name="support" value="hearing"><span><strong>Deafness or hearing access</strong><br>Captioning, visual instruction, hearing technology, ASL, or interpretation</span></label>
+            <label class="choice"><input type="checkbox" name="support" value="mobility"><span><strong>Mobility, positioning, or personal care</strong><br>Accessible routes, transportation, positioning, lifts, toileting, or personal assistance</span></label>
+            <label class="choice"><input type="checkbox" name="support" value="medical"><span><strong>Medical or nursing support</strong><br>Medication, monitoring, feeding protocols, or continuous nursing needs</span></label>
+            <label class="choice"><input type="checkbox" name="support" value="safety"><span><strong>Intensive behavioral or safety support</strong><br>Frequent elopement, persistent aggression, serious self-injury, or crisis-level services</span></label>
+          </div>
+        </fieldset>
+        <button type="submit">Show Planning Information</button>
+        <button type="reset" class="secondary">Clear Selections</button>
+      </form>
+      <div id="support-results" class="results" aria-live="polite"></div>
+    </section>
+
+    <section class="tool" id="staffing-calculator" aria-labelledby="staffing-title">
+      <h2 id="staffing-title"><span class="tool-number">2</span>Seven-for-Seven Staffing Calculator</h2>
+      <p>Explore the minimum direct classroom staffing required for one educator and one paraprofessional for each instructional group of up to seven students.</p>
+      <div class="calculator-grid">
+        <div class="input-panel">
+          <label for="enrollment"><strong>Projected seventh-grade enrollment</strong></label>
+          <input id="enrollment" type="number" min="1" max="5000" step="1" value="700" inputmode="numeric">
+          <p><small>Groups are rounded up so every enrolled student has a place. These figures do not include administrators, substitutes, specialists, nurses, counselors, related-service providers, or operations staff.</small></p>
+        </div>
+        <div>
+          <div class="metric-grid" aria-live="polite">
+            <div class="metric"><span>Instructional groups</span><output id="groups">100</output></div>
+            <div class="metric"><span>Educators</span><output id="educators">100</output></div>
+            <div class="metric"><span>Paraprofessionals</span><output id="paras">100</output></div>
+            <div class="metric"><span>Direct classroom staff</span><output id="direct-staff">200</output></div>
+          </div>
+          <div class="year-two" id="year-two" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tool" id="curriculum-explorer" aria-labelledby="curriculum-title">
+      <h2 id="curriculum-title"><span class="tool-number">3</span>Interactive Curriculum Explorer</h2>
+      <p>Filter Aberewa&rsquo;s developing curriculum by learning track or search for a subject, Akan connection, project, or accessibility support.</p>
+      <div class="filters">
+        <label for="track-filter"><strong>Learning track</strong><select id="track-filter"><option value="all">All tracks</option><option value="Academic">Academic Track</option><option value="Life Skills">Life Skills Track</option><option value="All Students">All Students</option></select></label>
+        <label for="subject-filter"><strong>Subject</strong><select id="subject-filter"><option value="all">All subjects</option></select></label>
+        <label for="curriculum-search"><strong>Search topics or supports</strong><input id="curriculum-search" type="search" placeholder="Try Adinkra, AAC, patterns, finance..."></label>
+      </div>
+      <p id="result-count" aria-live="polite"></p>
+      <div id="curriculum-results" class="curriculum-grid"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Aberewa Middle School</p>
+    <div class="site-visitor-counter"><img src="https://hits.sh/aberewamiddleschool.org.svg?view=total&amp;style=flat-square&amp;label=Site%20Visits&amp;color=d4af37&amp;labelColor=111111" alt="Aberewa Middle School site visit counter" style="height:20px;width:auto;max-width:100%;"></div>
+  </footer>
+
+  <script>
+    const supportDetails = {
+      learning: { status:'Year One planned support', text:'Small instructional groups, explicit multisensory teaching, accessible materials, flexible pacing, organization coaching, manipulatives, assistive technology, and multiple ways to demonstrate learning.' },
+      autism: { status:'Year One planned support', text:'Predictable routines, visual instruction, sensory-considerate spaces, planned breaks, transition preparation, interest-based learning, and individualized regulation strategies.' },
+      communication: { status:'Individualized Year One review', text:'Speech and language supports, visual communication, processing time, and established AAC or alternative communication may be supported when the required system, training, and staffing can be provided consistently.' },
+      vision: { status:'Individualized review and capacity planning', text:'Screen readers, magnification, audio, and tactile tools may be available in Year One. Full-time Braille instruction and orientation-and-mobility services are part of planned capacity expansion.' },
+      hearing: { status:'Individualized review and capacity planning', text:'Captioning, visual instruction, communication planning, and hearing technology may be available in Year One. Full-time interpretation or a specialized signing environment requires confirmed qualified personnel.' },
+      mobility: { status:'Facility and staffing review required', text:'Support depends on accessible routes, transportation, positioning, personal-care requirements, equipment, and whether trained staff can meet those needs safely and consistently.' },
+      medical: { status:'Planned capacity expansion', text:'Continuous nursing, medically complex care, intensive feeding protocols, and ongoing medical monitoring require specialized personnel and systems that may not be available at opening.' },
+      safety: { status:'Planned therapeutic and safety capacity', text:'Frequent elopement, persistent aggression, serious self-injury, or crisis-level needs may require specialized clinical staffing, secure environments, and intensive support beyond the opening-year model.' }
+    };
+
+    const supportForm = document.getElementById('support-form');
+    const supportResults = document.getElementById('support-results');
+    supportForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const selected = [...supportForm.querySelectorAll('input[name="support"]:checked')].map(input => input.value);
+      if (!selected.length) {
+        supportResults.innerHTML = '<h3>Select at least one support area</h3><p>The guide will then show general planning information. No selection is an admission decision.</p>';
+        return;
+      }
+      supportResults.innerHTML = '<h3>Your selected planning information</h3>' + selected.map(key => `<section><h4>${supportDetails[key].status}</h4><p>${supportDetails[key].text}</p></section>`).join('') + '<p><strong>Important:</strong> This guide does not determine admission or guarantee a service. Each student requires an individualized readiness review with the family and appropriate professionals.</p>';
+    });
+    supportForm.addEventListener('reset', () => { setTimeout(() => { supportResults.innerHTML = ''; }, 0); });
+
+    const enrollmentInput = document.getElementById('enrollment');
+    function updateStaffing() {
+      const students = Math.max(1, Math.min(5000, Number(enrollmentInput.value) || 1));
+      const groups = Math.ceil(students / 7);
+      document.getElementById('groups').value = groups.toLocaleString();
+      document.getElementById('educators').value = groups.toLocaleString();
+      document.getElementById('paras').value = groups.toLocaleString();
+      document.getElementById('direct-staff').value = (groups * 2).toLocaleString();
+      document.getElementById('year-two').innerHTML = `<strong>Year Two illustration:</strong> If all ${students.toLocaleString()} students advance to eighth grade and another seventh-grade cohort of the same size enters, projected enrollment would be ${Number(students * 2).toLocaleString()}, requiring approximately ${Number(groups * 2).toLocaleString()} instructional groups and ${Number(groups * 4).toLocaleString()} direct classroom staff.`;
+    }
+    enrollmentInput.addEventListener('input', updateStaffing);
+    updateStaffing();
+
+    const curriculum = [
+      { subject:'English Language Arts', track:'Academic', link:'ela-curriculum.html', akan:'Akan oral tradition, proverbs, Ananse storytelling, and comparative literature', supports:'Audiobooks, text-to-speech, visual sequencing, AAC responses, sentence frames, and flexible writing formats' },
+      { subject:'Mathematics', track:'Academic', link:'mathematics-curriculum.html', akan:'Adinkra symmetry, Akan goldweights, market mathematics, pattern, proportion, and measurement', supports:'Manipulatives, visual models, calculators, worked examples, movement, and multiple response formats' },
+      { subject:'History', track:'Academic', link:'history-curriculum.html', akan:'Akan and Bono history, oral sources, migration, community memory, and historical interpretation', supports:'Timelines, maps, chunked texts, audio sources, role-based discussion, and visual vocabulary' },
+      { subject:'Geoscience', track:'Academic', link:'geoscience-curriculum.html', akan:'Land, resources, settlement, environmental knowledge, and Ghana-Louisiana comparisons', supports:'Models, tactile materials, captioned media, guided observation, and hands-on investigation' },
+      { subject:'Interstellar Science', track:'Academic', link:'interstellar-science-curriculum.html', akan:'Sky knowledge, observation, imagination, navigation, and culturally grounded scientific inquiry', supports:'Scale models, simulations, visual schedules, repeated vocabulary, and project choices' },
+      { subject:'Cooking & Hygiene', track:'Life Skills', link:'cooking-hygiene-curriculum.html', akan:'Foodways, community care, recipes, measurement, sequencing, and respectful cultural study', supports:'Picture recipes, task analysis, adaptive tools, sensory alternatives, and supervised practice' },
+      { subject:'Technology & Mobility', track:'Life Skills', link:'technology-mobility-curriculum.html', akan:'Technology as community problem-solving, communication, access, and responsible innovation', supports:'Assistive technology, keyboard alternatives, screen readers, visual routes, and repeated practice' },
+      { subject:'Personal Finance', track:'Life Skills', link:'personal-finance-curriculum.html', akan:'Market systems, exchange, Akan goldweights, budgeting, enterprise, and community responsibility', supports:'Realistic simulations, calculators, visual budgets, simplified forms, and guided decision-making' },
+      { subject:'Afro-manga Art', track:'All Students', link:'afro-manga-art-curriculum.html', akan:'Adinkra visual language, African-centered character design, symbolism, and sequential art', supports:'Templates, adaptive art tools, visual steps, digital creation, and nonverbal storytelling' },
+      { subject:'Akan Language', track:'All Students', link:'akan-language-curriculum.html', akan:'Greetings, vocabulary, pronunciation, cultural context, proverbs, and everyday communication', supports:'Audio repetition, picture vocabulary, gesture, AAC-compatible choices, and low-pressure practice' },
+      { subject:'Storytelling', track:'All Students', link:'storytelling-curriculum.html', akan:'Oral tradition, Ananse stories, proverbs, family narratives, performance, and ethical interpretation', supports:'Storyboards, speech-to-text, AAC, drama, audio recording, visual prompts, and collaborative composition' }
+    ];
+    const trackFilter = document.getElementById('track-filter');
+    const subjectFilter = document.getElementById('subject-filter');
+    const curriculumSearch = document.getElementById('curriculum-search');
+    const curriculumResults = document.getElementById('curriculum-results');
+    subjectFilter.innerHTML += curriculum.map(item => `<option value="${item.subject}">${item.subject}</option>`).join('');
+    function renderCurriculum() {
+      const track = trackFilter.value;
+      const subject = subjectFilter.value;
+      const query = curriculumSearch.value.trim().toLowerCase();
+      const matches = curriculum.filter(item => (track === 'all' || item.track === track) && (subject === 'all' || item.subject === subject) && (!query || `${item.subject} ${item.track} ${item.akan} ${item.supports}`.toLowerCase().includes(query)));
+      document.getElementById('result-count').textContent = `${matches.length} curriculum area${matches.length === 1 ? '' : 's'} shown`;
+      curriculumResults.innerHTML = matches.length ? matches.map(item => `<article class="curriculum-card"><span class="tag">${item.track}</span><h3>${item.subject}</h3><p><strong>Akan-rooted connection:</strong> ${item.akan}</p><p><strong>Access and IEP supports:</strong> ${item.supports}</p><a href="${item.link}">Open the ${item.subject} curriculum</a></article>`).join('') : '<p class="empty-state">No curriculum areas match those filters. Try another subject or a broader search.</p>';
+    }
+    [trackFilter,subjectFilter,curriculumSearch].forEach(control => control.addEventListener('input',renderCurriculum));
+    renderCurriculum();
+  </script>
+</body>
+</html>
