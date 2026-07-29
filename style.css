@@ -40,17 +40,6 @@ footer {
     box-shadow: 0 7px 20px rgba(0, 0, 0, 0.24);
 }
 
-/* Shared sitewide visitor counter */
-footer:not(:has(.site-visitor-counter))::after {
-    content: url("https://hits.sh/aberewamiddleschool.org.svg?view=total&style=flat-square&label=Site%20Visits&color=d4af37&labelColor=111111");
-    display: block;
-    flex-basis: 100%;
-    width: 100%;
-    margin-top: 0.85rem;
-    line-height: 0;
-    text-align: center;
-}
-
 /* Sitewide accessibility and trust improvements */
 img{max-width:100%;height:auto}
 .skip-link{position:absolute;left:-9999px;top:auto;z-index:9999;padding:.75rem 1rem;background:#fff;color:#111;border:3px solid #d4af37;font-weight:700}
