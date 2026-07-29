@@ -1,0 +1,59 @@
+name: Apply sitewide repairs
+
+on:
+  push:
+    branches:
+      - site-audit-fixes-2026-07
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repair branch
+        uses: actions/checkout@v4
+        with:
+          ref: site-audit-fixes-2026-07
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Apply repository-wide repairs
+        run: python scripts/repair_site.py
+
+      - name: Verify outdated public elements are gone
+        shell: bash
+        run: |
+          if grep -R --include='*.html' -n 'antoinelamond@gmail.com' .; then
+            echo 'Old email address remains in HTML.' >&2
+            exit 1
+          fi
+          if grep -R --include='*.html' -n 'hits.sh' .; then
+            echo 'Public hit counter remains in HTML.' >&2
+            exit 1
+          fi
+          test -f accessibility.html
+          test -f privacy.html
+          test -f faq.html
+          test -f sitemap.xml
+          test -f robots.txt
+
+      - name: Commit repaired site
+        shell: bash
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo 'No additional repairs needed.'
+            exit 0
+          fi
+          git config user.name 'Aberewa Site Repair'
+          git config user.email 'founder@aberewamiddleschool.org'
+          git add -A
+          git commit -m 'Apply sitewide accessibility and trust repairs [skip ci]'
+          git push origin site-audit-fixes-2026-07
