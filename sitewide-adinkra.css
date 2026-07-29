@@ -1,0 +1,66 @@
+/*
+ * Aberewa Middle School sitewide gold Adinkra background.
+ * Loaded after page-specific styles so every connected page shares one visual foundation.
+ */
+
+html {
+  background-color: #d4af37;
+}
+
+body {
+  min-height: 100vh;
+  background-color: #d4af37 !important;
+  background-image:
+    linear-gradient(rgba(247, 232, 177, 0.78), rgba(205, 160, 43, 0.74)),
+    url("images/adinkra-cloth.jpg") !important;
+  background-repeat: repeat, repeat !important;
+  background-position: center top, center top !important;
+  background-size: auto, 390px auto !important;
+  background-attachment: fixed, fixed !important;
+}
+
+/* A translucent reading veil keeps long curriculum and policy pages calm and accessible. */
+body > main {
+  position: relative;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 253, 247, 0.80),
+    rgba(255, 249, 232, 0.86)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 0 34px rgba(74, 49, 10, 0.10);
+}
+
+/* Preserve crisp reading surfaces while allowing the gold pattern to breathe around them. */
+.section,
+.card,
+.tool,
+.subject-card,
+.gallery figure,
+.notice,
+.task,
+.note {
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+}
+
+header,
+nav,
+footer {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 760px) {
+  body {
+    background-attachment: scroll, scroll !important;
+    background-size: auto, 285px auto !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    background-attachment: scroll, scroll !important;
+  }
+}
