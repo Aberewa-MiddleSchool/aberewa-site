@@ -29,7 +29,10 @@ jobs:
       - name: Apply repository-wide repairs
         run: python scripts/repair_site.py
 
-      - name: Verify outdated public elements are gone
+      - name: Connect sitewide gold Adinkra theme
+        run: python scripts/apply_adinkra_theme.py
+
+      - name: Verify public site requirements
         shell: bash
         run: |
           if grep -R --include='*.html' -n 'antoinelamond@gmail.com' .; then
@@ -40,6 +43,13 @@ jobs:
             echo 'Public hit counter remains in HTML.' >&2
             exit 1
           fi
+          while IFS= read -r page; do
+            if ! grep -q 'sitewide-adinkra.css' "$page"; then
+              echo "Gold Adinkra theme is not connected to $page" >&2
+              exit 1
+            fi
+          done < <(find . -maxdepth 1 -name '*.html' -print | sort)
+          test -f sitewide-adinkra.css
           test -f accessibility.html
           test -f privacy.html
           test -f faq.html
@@ -56,5 +66,5 @@ jobs:
           git config user.name 'Aberewa Site Repair'
           git config user.email 'founder@aberewamiddleschool.org'
           git add -A
-          git commit -m 'Apply sitewide accessibility and trust repairs [skip ci]'
+          git commit -m 'Apply sitewide repairs and gold Adinkra theme [skip ci]'
           git push origin "HEAD:${GITHUB_REF_NAME}"
