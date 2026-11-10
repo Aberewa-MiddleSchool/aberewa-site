@@ -3,7 +3,7 @@
 // Remain disabled until Firestore rules and teacher access are verified.
 export const configured = false;
 export const firebaseConfig = {
-  apiKey: "AIzaSyCK96qlscLKN TbBGZ3cTjf9EdGZU9oFrNU".replace(" ",""),
+  apiKey: "AIzaSyCK96qlscLKNTbBGZ3cTjf9EdGZU9oFrNU",
   authDomain: "aberewa-mathematics-classroom.firebaseapp.com",
   projectId: "aberewa-mathematics-classroom",
   storageBucket: "aberewa-mathematics-classroom.firebasestorage.app",
