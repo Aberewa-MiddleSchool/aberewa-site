@@ -14,8 +14,7 @@ if(configured){
       appRoot.querySelector("form").onsubmit=async e=>{e.preventDefault();try{await auth.signInWithEmailAndPassword(a,document.getElementById("teacher-email").value,document.getElementById("teacher-password").value)}catch(e){document.getElementById("teacher-error").textContent="Sign-in unsuccessful. Check your account."}};
       return;
     }
-    const claims=await user.getIdTokenResult();
-    if(claims.claims.teacher!==true){
+    if(user.uid!=="rq8Z1su8FNe1O1ETJgB4jjI0Sxx2"){
       appRoot.innerHTML='<p>This account is not authorized to view students’ grades.</p><button id="signout">Sign out</button>';
       document.getElementById("signout").onclick=()=>auth.signOut(a);return;
     }
