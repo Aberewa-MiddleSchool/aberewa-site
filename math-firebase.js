@@ -45,11 +45,10 @@ if (!configured) {
       if(!current) return {ok:false,message:"Sign in to save your result to the teacher gradebook. You can still download your result."};
       try {
         await store.addDoc(store.collection(db,"scores",current.uid,"attempts"),{
-          day:record.day,week:record.week,score:record.score,correct:record.correct,
-          total:record.total,attempts:record.attempts,missed:record.missed,
+          day:record.day,week:record.week,answers:record.answers.map(Number),
           recordedAt:store.serverTimestamp()
         });
-        return {ok:true,message:"Score saved to your private student record."};
+        return {ok:true,message:"Answers saved to your private student record. Your teacher will calculate the recorded formative score."};
       } catch(e) {
         return {ok:false,message:"Score was not uploaded. Please download a CSV record and tell your teacher."};
       }
