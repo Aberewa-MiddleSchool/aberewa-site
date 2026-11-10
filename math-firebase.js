@@ -32,6 +32,12 @@ if (!configured) {
   auth.onAuthStateChanged(a, async user=>{
     current=user;
     if(!user){renderSignedOut();return}
+    const token = await user.getIdTokenResult();
+    if (token.claims.student !== true || token.claims.teacher === true) {
+      panel.innerHTML = '<p>This account is not approved for student mathematics submissions. Contact the school administrator.</p><button type="button" id="math-logout">Sign out</button>';
+      panel.querySelector("#math-logout").onclick=()=>auth.signOut(a);
+      return;
+    }
     let displayName="Student";
     try {
       const p=await store.getDoc(store.doc(db,"profiles",user.uid));
@@ -43,6 +49,9 @@ if (!configured) {
   window.AbMathAuth = {
     async saveScore(record) {
       if(!current) return {ok:false,message:"Sign in to save your result to the teacher gradebook. You can still download your result."};
+      const token=await current.getIdTokenResult();
+      if(token.claims.student !== true || token.claims.teacher === true)
+        return {ok:false,message:"This account is not approved for student score submissions."};
       try {
         await store.addDoc(store.collection(db,"scores",current.uid,"attempts"),{
           day:record.day,week:record.week,score:record.score,correct:record.correct,
