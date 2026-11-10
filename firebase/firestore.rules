@@ -12,26 +12,22 @@ service cloud.firestore {
       allow list: if isTeacher();
       allow write: if false;
     }
+    // Students submit immutable response choices, never client-computed grades.
+    // The teacher view calculates formative scores from its answer key.
     match /scores/{uid}/attempts/{attemptId} {
       allow get, list: if own(uid) || isTeacher();
       allow create: if own(uid) &&
         exists(/databases/$(database)/documents/profiles/$(uid)) &&
         get(/databases/$(database)/documents/profiles/$(uid)).data.role == 'student' &&
-        request.resource.data.keys().hasOnly(['day','week','score','correct','total','attempts','missed','recordedAt']) &&
+        request.resource.data.keys().hasAll(['day', 'week', 'answers', 'recordedAt']) &&
+        request.resource.data.keys().hasOnly(['day', 'week', 'answers', 'recordedAt']) &&
         request.resource.data.day is int &&
-        request.resource.data.day >= 1 && request.resource.data.day <= 10 &&
+        request.resource.data.day >= 1 &&
+        request.resource.data.day <= 10 &&
         request.resource.data.week is int &&
-        request.resource.data.week >= 1 && request.resource.data.week <= 2 &&
-        request.resource.data.score is int &&
-        request.resource.data.score >= 0 && request.resource.data.score <= 100 &&
-        request.resource.data.correct is int &&
-        request.resource.data.total is int &&
-        request.resource.data.total >= 1 && request.resource.data.total <= 10 &&
-        request.resource.data.correct >= 0 &&
-        request.resource.data.correct <= request.resource.data.total &&
-        request.resource.data.attempts is int &&
-        request.resource.data.attempts >= 1 &&
-        request.resource.data.missed is list &&
+        request.resource.data.week == (request.resource.data.day <= 5 ? 1 : 2) &&
+        request.resource.data.answers is list &&
+        request.resource.data.answers.size() == (request.resource.data.day == 5 || request.resource.data.day == 10 ? 5 : 3) &&
         request.resource.data.recordedAt == request.time;
       allow update, delete: if false;
     }
