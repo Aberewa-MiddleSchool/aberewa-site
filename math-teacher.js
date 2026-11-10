@@ -23,6 +23,10 @@ if(configured){
     async function load(){
       try{
         // Fetch student profiles first; each student’s grades live under the same UID.
+        const keys={
+          1:[0,1,1],2:[0,1,1],3:[0,1,1],4:[1,1,1],5:[1,1,0,1,1],
+          6:[0,1,1],7:[0,1,1],8:[2,0,0],9:[0,0,1],10:[1,0,0,0,1]
+        };
         const profiles=await store.getDocs(store.collection(db,"profiles"));
         const rows=[];
         for(const p of profiles.docs){
@@ -30,10 +34,14 @@ if(configured){
           if(info.role==="teacher")continue;
           const attempts=await store.getDocs(store.collection(db,"scores",p.id,"attempts"));
           for(const doc of attempts.docs){
-            const d=doc.data();
+            const d=doc.data(), key=keys[d.day], answers=d.answers;
+            if(!key || !Array.isArray(answers) || answers.length!==key.length)continue;
+            const correct=answers.reduce((n,a,i)=>n+(a===key[i]?1:0),0);
+            const missed=answers.map((a,i)=>a===key[i]?null:i+1).filter(Boolean);
             rows.push({name:info.displayName||"Student",studentId:info.studentCode||p.id.slice(0,8),
-              day:d.day,week:d.week,score:d.score,correct:d.correct,total:d.total,
-              attempts:d.attempts,missed:(d.missed||[]).join("; "),date:d.recordedAt?.toDate?.().toISOString()||""});
+              day:d.day,week:d.week,score:Math.round(100*correct/key.length),
+              correct,total:key.length,attempts:"—",
+              missed:missed.join("; "),date:d.recordedAt?.toDate?.().toISOString()||""});
           }
         }
         rows.sort((a,b)=>a.name.localeCompare(b.name)||a.day-b.day||a.date.localeCompare(b.date));
