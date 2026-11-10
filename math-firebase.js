@@ -18,20 +18,34 @@ if (!configured) {
   const panel = section;
   let current = null;
   const escapeHTML = s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  // School-admin provisioned account aliases. No student email mailbox is needed.
+  // Reserve usernames centrally: firstname.lastinitial, then firstname.lastinitial2, etc.
+  // A login name is not a unique identity; Firebase UID links the private profile and scores.
+  function schoolLoginEmail(value) {
+    const username=String(value).trim().toLowerCase();
+    if (!/^[a-z][a-z0-9-]*\.[a-z][0-9]*$/.test(username)) throw new Error("Invalid school username");
+    return username+"@students.aberewamiddleschool.org";
+  }
   function renderSignedOut() {
-    panel.innerHTML = '<h3>Student sign-in</h3><p>Use your school-provided account. Never share your password with your teacher.</p><form id="math-login"><label for="math-email">School account email</label> <input required type="email" autocomplete="username" id="math-email"><label for="math-password">Password</label> <input required type="password" autocomplete="current-password" id="math-password"><button>Sign in</button></form><p id="math-auth-message" role="status"></p>';
+    panel.innerHTML = '<h3>Student sign-in</h3><p>Use the username and unique password issued by Aberewa Middle School. There is no student self-registration or password reset here.</p><form id="math-login"><label for="math-email">First name and last initial (example: maya.j)</label> <input required type="text" inputmode="text" autocapitalize="none" spellcheck="false" autocomplete="username" maxlength="48" pattern="[A-Za-z][A-Za-z0-9-]*\\.[A-Za-z][0-9]*" id="math-email"><label for="math-password">Password</label> <input required type="password" autocomplete="current-password" id="math-password"><button>Sign in</button></form><p id="math-auth-message" role="status"></p>';
     panel.querySelector("form").onsubmit = async e => {
       e.preventDefault();
-      const email = panel.querySelector("#math-email").value;
+      const username = panel.querySelector("#math-email").value;
       const password = panel.querySelector("#math-password").value;
       panel.querySelector("#math-auth-message").textContent = "Signing in…";
-      try { await auth.signInWithEmailAndPassword(a,email,password); }
+      try { await auth.signInWithEmailAndPassword(a,schoolLoginEmail(username),password); }
       catch(err) { panel.querySelector("#math-auth-message").textContent = "Sign-in failed. Ask your teacher to check your account details."; }
     };
   }
   auth.onAuthStateChanged(a, async user=>{
     current=user;
     if(!user){renderSignedOut();return}
+    const token = await user.getIdTokenResult();
+    if (token.claims.student !== true || token.claims.teacher === true) {
+      panel.innerHTML = '<p>This account is not approved for student mathematics submissions. Contact the school administrator.</p><button type="button" id="math-logout">Sign out</button>';
+      panel.querySelector("#math-logout").onclick=()=>auth.signOut(a);
+      return;
+    }
     let displayName="Student";
     try {
       const p=await store.getDoc(store.doc(db,"profiles",user.uid));
@@ -43,6 +57,9 @@ if (!configured) {
   window.AbMathAuth = {
     async saveScore(record) {
       if(!current) return {ok:false,message:"Sign in to save your result to the teacher gradebook. You can still download your result."};
+      const token=await current.getIdTokenResult();
+      if(token.claims.student !== true || token.claims.teacher === true)
+        return {ok:false,message:"This account is not approved for student score submissions."};
       try {
         await store.addDoc(store.collection(db,"scores",current.uid,"attempts"),{
           day:record.day,week:record.week,score:record.score,correct:record.correct,
