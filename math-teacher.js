@@ -1,6 +1,6 @@
-import { configured, firebaseConfig } from "./math-firebase-config.js";
+import { firebaseConfig } from "./math-firebase-config.js";
 const appRoot=document.getElementById("teacher-app");
-if(configured){
+{ // Teacher-only authentication verification; student classroom remains disabled.
   const [{initializeApp},auth,store]=await Promise.all([
     import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"),
     import("https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"),
