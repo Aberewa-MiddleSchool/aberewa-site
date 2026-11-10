@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isTeacher() {
+      return signedIn() &&
+        request.auth.token.teacher == true;
+    }
+    function own(uid) { return signedIn() && request.auth.uid == uid; }
+    // Authorized teacher role must be assigned in Firebase Admin SDK
+    // using verified custom claims, never from a public browser form.
+    match /profiles/{uid} {
+      allow get: if own(uid) || isTeacher();
+      allow list: if isTeacher();
+      allow write: if false;
+    }
+    match /scores/{uid}/attempts/{attemptId} {
+      allow get, list: if own(uid) || isTeacher();
+      allow create: if own(uid) &&
+        request.resource.data.keys().hasOnly(['day','week','score','correct','total','attempts','missed','recordedAt']) &&
+        request.resource.data.day is int &&
+        request.resource.data.day >= 1 && request.resource.data.day <= 10 &&
+        request.resource.data.week is int &&
+        request.resource.data.week >= 1 && request.resource.data.week <= 2 &&
+        request.resource.data.score is int &&
+        request.resource.data.score >= 0 && request.resource.data.score <= 100 &&
+        request.resource.data.correct is int &&
+        request.resource.data.total is int &&
+        request.resource.data.total >= 1 && request.resource.data.total <= 10 &&
+        request.resource.data.correct >= 0 &&
+        request.resource.data.correct <= request.resource.data.total &&
+        request.resource.data.attempts is int &&
+        request.resource.data.attempts >= 1 &&
+        request.resource.data.missed is list &&
+        request.resource.data.recordedAt == request.time;
+      allow update, delete: if false;
+    }
+  }
+}
