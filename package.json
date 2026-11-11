@@ -1,0 +1,26 @@
+{
+  "name": "aberewa-site",
+  "version": "1.0.0",
+  "description": "",
+  "main": "math-firebase-config.js",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project demo-aberewa \"node --test tests/*.test.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aberewa-MiddleSchool/aberewa-site.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Aberewa-MiddleSchool/aberewa-site/issues"
+  },
+  "homepage": "https://github.com/Aberewa-MiddleSchool/aberewa-site#readme",
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.2.0",
+    "firebase-tools": "^15.35.0"
+  }
+}
