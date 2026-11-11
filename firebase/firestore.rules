@@ -30,6 +30,37 @@ service cloud.firestore {
       return (a[0]==k[0]?1:0)+(a[1]==k[1]?1:0)+(a[2]==k[2]?1:0)+
         (a.size()==5 ? (a[3]==k[3]?1:0)+(a[4]==k[4]?1:0) : 0);
     }
+    function validLesson(d) {
+      return d.keys().hasAll(['title','standard','body','questions','answerKey','published','locked','schemaVersion','createdAt']) &&
+        d.keys().hasOnly(['title','standard','body','questions','answerKey','published','locked','schemaVersion','createdAt']) &&
+        d.title is string && d.title.size()>0 && d.title.size()<=160 && d.standard is string && d.standard.size()<=300 &&
+        d.body is string && d.body.size()<=30000 && d.published is bool && d.locked is bool &&
+        (!d.published || d.locked) && d.schemaVersion == 1 && d.questions is list && d.answerKey is list &&
+        d.questions.size()>=1 && d.questions.size()<=20 && d.answerKey.size()==d.questions.size() &&
+        d.answerKey.hasOnly([0,1,2,3]);
+    }
+    match /mathLessons/{lessonId} {
+      allow read: if resource.data.published == true || isTeacher();
+      allow create: if isTeacher() && validLesson(request.resource.data) && request.resource.data.createdAt == request.time;
+      allow update: if isTeacher() && validLesson(request.resource.data) &&
+        request.resource.data.createdAt == resource.data.createdAt &&
+        (!resource.data.locked || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['published']));
+      allow delete: if false;
+    }
+    function validLessonAttempt(d) {
+      let l=get(/databases/$(database)/documents/mathLessons/$(d.lessonId)).data;
+      let a=d.answers;
+      let k=l.answerKey;
+      let q=l.questions;
+      let n=a.size();
+      return d.keys().hasAll(['lessonId','answers','correct','total','recordedAt']) &&
+        d.keys().hasOnly(['lessonId','answers','correct','total','recordedAt']) &&
+        d.lessonId is string && l.published == true && l.locked == true &&
+        a is list && n>=1 && n<=20 && n==k.size() && n==q.size() &&
+        d.total is int && d.total==n && d.correct is int &&
+        a.hasOnly([0,1,2,3]) &&
+        d.correct==((n>0 && a[0]==k[0] ? 1 : 0) + (n>1 && a[1]==k[1] ? 1 : 0) + (n>2 && a[2]==k[2] ? 1 : 0) + (n>3 && a[3]==k[3] ? 1 : 0) + (n>4 && a[4]==k[4] ? 1 : 0) + (n>5 && a[5]==k[5] ? 1 : 0) + (n>6 && a[6]==k[6] ? 1 : 0) + (n>7 && a[7]==k[7] ? 1 : 0) + (n>8 && a[8]==k[8] ? 1 : 0) + (n>9 && a[9]==k[9] ? 1 : 0) + (n>10 && a[10]==k[10] ? 1 : 0) + (n>11 && a[11]==k[11] ? 1 : 0) + (n>12 && a[12]==k[12] ? 1 : 0) + (n>13 && a[13]==k[13] ? 1 : 0) + (n>14 && a[14]==k[14] ? 1 : 0) + (n>15 && a[15]==k[15] ? 1 : 0) + (n>16 && a[16]==k[16] ? 1 : 0) + (n>17 && a[17]==k[17] ? 1 : 0) + (n>18 && a[18]==k[18] ? 1 : 0) + (n>19 && a[19]==k[19] ? 1 : 0)) && d.recordedAt==request.time;
+    }
     match /scores/{uid}/attempts/{attemptId} {
       allow get, list: if own(uid) || isTeacher();
       allow create: if own(uid) && !isTeacher() &&
@@ -46,6 +77,10 @@ service cloud.firestore {
         request.resource.data.total == request.resource.data.answers.size() &&
         request.resource.data.correct == correct(request.resource.data.answers,key(request.resource.data.day)) &&
         request.resource.data.recordedAt == request.time;
+      allow create: if own(uid) && !isTeacher() && request.resource.data.keys().hasAny(['lessonId']) &&
+        get(/databases/$(database)/documents/profiles/$(uid)).data.active == true &&
+        get(/databases/$(database)/documents/profiles/$(uid)).data.role == 'student' &&
+        validLessonAttempt(request.resource.data);
       allow update, delete: if false;
     }
     match /{path=**}/attempts/{attemptId} { allow read: if isTeacher(); }

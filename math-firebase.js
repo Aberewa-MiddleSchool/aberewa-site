@@ -1,16 +1,17 @@
 import { configured, firebaseConfig } from './math-firebase-config.js';
 import { TEACHER_UID, grade, escapeHTML as esc } from './math-common.js';
+import {gradeLesson} from './math-lessons-common.js';
 const panel=document.getElementById('account-panel'), button=document.getElementById('grade');
 let current=null, profile=null, stopProfile=()=>{}, busy=false;
 button.disabled=true;
 window.AbMathAuth={async saveScore(){return {ok:false,message:'Sign in and wait for teacher approval before submitting.'};}};
 if(!configured){panel.textContent='Student accounts are awaiting final security verification.';}
 else { try {
-  const [{initializeApp},auth,store]=await Promise.all([
+  const [{initializeApp,getApps},auth,store]=await Promise.all([
     import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js'),
     import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js'),
     import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js')]);
-  const app=initializeApp(firebaseConfig), a=auth.getAuth(app), db=store.getFirestore(app);
+  const app=getApps()[0]||initializeApp(firebaseConfig), a=auth.getAuth(app), db=store.getFirestore(app);
   await auth.setPersistence(a,auth.browserSessionPersistence);
   function draw(){
     button.disabled=busy || !current || profile?.active!==true || current.uid===TEACHER_UID;
@@ -33,8 +34,8 @@ else { try {
   auth.onAuthStateChanged(a,user=>{stopProfile();current=user;profile=null;window.dispatchEvent(new CustomEvent("aberewa-account",{detail:user?.uid}));draw();if(user && user.uid!==TEACHER_UID)stopProfile=store.onSnapshot(store.doc(db,'profiles',user.uid),snap=>{profile=snap.exists()?snap.data():null;draw();},()=>{button.disabled=true;panel.textContent='Unable to verify your account permissions. Reload or tell your teacher.';});});
   window.AbMathAuth={async saveScore(record){
     if(!current || !profile?.active || current.uid===TEACHER_UID)return {ok:false,message:'Your account must be approved before submitting.'};
-    const uid=current.uid, result=grade(record.day,record.answers);busy=true;draw();
-    try{await store.addDoc(store.collection(db,'scores',uid,'attempts'),{day:record.day,week:record.week,answers:record.answers,correct:result.correct,total:result.total,recordedAt:store.serverTimestamp()});return {ok:true,message:'Saved successfully. Your teacher can now see your name and score.'};}
+    const uid=current.uid;busy=true;draw();
+    try{let data;if(record.lessonId){const snap=await store.getDoc(store.doc(db,'mathLessons',record.lessonId));if(!snap.exists()||!snap.data().published)throw new Error('Unavailable lesson');const result=gradeLesson(snap.data(),record.answers);data={lessonId:record.lessonId,answers:record.answers,correct:result.correct,total:result.total,recordedAt:store.serverTimestamp()};}else{const result=grade(record.day,record.answers);data={day:record.day,week:record.week,answers:record.answers,correct:result.correct,total:result.total,recordedAt:store.serverTimestamp()};}await store.addDoc(store.collection(db,'scores',uid,'attempts'),data);return {ok:true,message:'Saved successfully. Your teacher can now see your name and score.'};}
     catch{return {ok:false,message:'NOT SAVED to your teacher dashboard. Check your connection, then submit again.'};}
     finally{busy=false;draw();}
   }};
