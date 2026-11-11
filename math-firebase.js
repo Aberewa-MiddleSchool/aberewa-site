@@ -1,57 +1,41 @@
-// Aberewa Mathematics Classroom student authentication and formative score collection.
-// Score integrity caveat: student-browser submissions are formative evidence;
-// browser-side scoring is not suitable as a tamper-resistant official grade.
-import { configured, firebaseConfig } from "./math-firebase-config.js";
-const section = document.getElementById("account-panel");
-if (!section) throw new Error("Missing account panel");
-if (!configured) {
-  section.innerHTML = '<p><strong>Student accounts are not active yet.</strong> Teacher setup must be completed before sign-in and automatic score collection can be enabled. You can continue practising and exporting progress as a CSV.</p>';
-} else {
-  const [{ initializeApp }, auth, store] = await Promise.all([
-    import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"),
-    import("https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"),
-    import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js")
-  ]);
-  const app = initializeApp(firebaseConfig);
-  const a = auth.getAuth(app);
-  const db = store.getFirestore(app);
-  const panel = section;
-  let current = null;
-  const escapeHTML = s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  function renderSignedOut() {
-    panel.innerHTML = '<h3>Student sign-in</h3><p>Use your school-provided account. Never share your password with your teacher.</p><form id="math-login"><label for="math-email">School account email</label> <input required type="email" autocomplete="username" id="math-email"><label for="math-password">Password</label> <input required type="password" autocomplete="current-password" id="math-password"><button>Sign in</button></form><p id="math-auth-message" role="status"></p>';
-    panel.querySelector("form").onsubmit = async e => {
-      e.preventDefault();
-      const email = panel.querySelector("#math-email").value;
-      const password = panel.querySelector("#math-password").value;
-      panel.querySelector("#math-auth-message").textContent = "Signing in…";
-      try { await auth.signInWithEmailAndPassword(a,email,password); }
-      catch(err) { panel.querySelector("#math-auth-message").textContent = "Sign-in failed. Ask your teacher to check your account details."; }
-    };
-  }
-  auth.onAuthStateChanged(a, async user=>{
-    current=user;
-    if(!user){renderSignedOut();return}
-    let displayName="Student";
-    try {
-      const p=await store.getDoc(store.doc(db,"profiles",user.uid));
-      if(p.exists()) displayName = p.data().displayName || displayName;
-    } catch(e) { /* Keep student account usable if profile not yet provisioned */ }
-    panel.innerHTML='<p>Signed in as <strong>'+escapeHTML(displayName)+'</strong></p><p>New scores will be sent to your private student record when you submit an answer check.</p><button type="button" id="math-logout">Sign out</button><p id="math-sync-status" role="status"></p>';
-    panel.querySelector("#math-logout").onclick=()=>auth.signOut(a);
-  });
-  window.AbMathAuth = {
-    async saveScore(record) {
-      if(!current) return {ok:false,message:"Sign in to save your result to the teacher gradebook. You can still download your result."};
-      try {
-        await store.addDoc(store.collection(db,"scores",current.uid,"attempts"),{
-          day:record.day,week:record.week,answers:record.answers.map(Number),
-          recordedAt:store.serverTimestamp()
-        });
-        return {ok:true,message:"Answers saved to your private student record. Your teacher will calculate the recorded formative score."};
-      } catch(e) {
-        return {ok:false,message:"Score was not uploaded. Please download a CSV record and tell your teacher."};
-      }
+import { configured, firebaseConfig } from './math-firebase-config.js';
+import { TEACHER_UID, grade, escapeHTML as esc } from './math-common.js';
+const panel=document.getElementById('account-panel'), button=document.getElementById('grade');
+let current=null, profile=null, stopProfile=()=>{}, busy=false;
+button.disabled=true;
+window.AbMathAuth={async saveScore(){return {ok:false,message:'Sign in and wait for teacher approval before submitting.'};}};
+if(!configured){panel.textContent='Student accounts are awaiting final security verification.';}
+else { try {
+  const [{initializeApp},auth,store]=await Promise.all([
+    import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js'),
+    import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js'),
+    import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js')]);
+  const app=initializeApp(firebaseConfig), a=auth.getAuth(app), db=store.getFirestore(app);
+  await auth.setPersistence(a,auth.browserSessionPersistence);
+  function draw(){
+    button.disabled=busy || !current || profile?.active!==true || current.uid===TEACHER_UID;
+    if(!current){
+      panel.innerHTML='<h3>Student sign-in</h3><form id="login"><label>Email <input id="email" type="email" autocomplete="username" required></label><label>Password <input id="password" type="password" autocomplete="current-password" required minlength="8"></label><label>Name (new accounts only) <input id="name" maxlength="80" autocomplete="name"></label><button name="action" value="signin">Sign in</button><button name="action" value="register" type="submit">Create student account</button></form><p>New accounts need teacher approval before submitting quizzes. Use your own account; sign out on shared computers.</p><p id="auth-status" role="status"></p>';
+      panel.querySelector('form').onsubmit=async e=>{e.preventDefault();const email=panel.querySelector('#email').value.trim(),password=panel.querySelector('#password').value,name=panel.querySelector('#name').value.trim();const status=panel.querySelector('#auth-status');try{
+        if(e.submitter?.value==='register'){
+          if(!name){status.textContent='Enter your name to create your student account.';return;}
+          const result=await auth.createUserWithEmailAndPassword(a,email,password);
+          await store.setDoc(store.doc(db,'profiles',result.user.uid),{displayName:name,email:result.user.email,role:'student',active:false,createdAt:store.serverTimestamp()});
+        }else await auth.signInWithEmailAndPassword(a,email,password);
+      }catch(err){status.textContent=err.code==='auth/email-already-in-use'?'This email already has an account. Choose Sign in.':'Unable to sign in or register. Check your details and connection.';}};
+      return;
     }
-  };
-}
+    if(current.uid===TEACHER_UID){panel.innerHTML='<p>You are signed in as the teacher. <a href="math-teacher.html">Open your private dashboard</a>.</p><button id="logout">Sign out</button>';}
+    else if(!profile){panel.innerHTML='<p>Your account needs a student profile.</p><form id="profile"><label>Your name <input id="profile-name" maxlength="80" required></label><button>Request teacher approval</button></form><button id="logout">Sign out</button><p id="profile-status" role="status"></p>';panel.querySelector('form').onsubmit=async e=>{e.preventDefault();try{await store.setDoc(store.doc(db,'profiles',current.uid),{displayName:panel.querySelector('input').value.trim(),email:current.email,role:'student',active:false,createdAt:store.serverTimestamp()});}catch{panel.querySelector('#profile-status').textContent='Could not save your profile. Please tell your teacher.';}};}
+    else panel.innerHTML='<p>Signed in as <strong>'+esc(profile.displayName)+'</strong>.</p><p>'+(profile.active?'Your teacher receives each submitted quiz automatically.':'Waiting for your teacher to approve your account. You can read the lessons while you wait.')+'</p><button id="logout">Sign out</button>';
+    panel.querySelector('#logout').onclick=()=>auth.signOut(a);
+  }
+  auth.onAuthStateChanged(a,user=>{stopProfile();current=user;profile=null;window.dispatchEvent(new CustomEvent("aberewa-account",{detail:user?.uid}));draw();if(user && user.uid!==TEACHER_UID)stopProfile=store.onSnapshot(store.doc(db,'profiles',user.uid),snap=>{profile=snap.exists()?snap.data():null;draw();},()=>{button.disabled=true;panel.textContent='Unable to verify your account permissions. Reload or tell your teacher.';});});
+  window.AbMathAuth={async saveScore(record){
+    if(!current || !profile?.active || current.uid===TEACHER_UID)return {ok:false,message:'Your account must be approved before submitting.'};
+    const uid=current.uid, result=grade(record.day,record.answers);busy=true;draw();
+    try{await store.addDoc(store.collection(db,'scores',uid,'attempts'),{day:record.day,week:record.week,answers:record.answers,correct:result.correct,total:result.total,recordedAt:store.serverTimestamp()});return {ok:true,message:'Saved successfully. Your teacher can now see your name and score.'};}
+    catch{return {ok:false,message:'NOT SAVED to your teacher dashboard. Check your connection, then submit again.'};}
+    finally{busy=false;draw();}
+  }};
+}catch{panel.textContent='Secure sign-in could not load. Reload this page before submitting.';}}

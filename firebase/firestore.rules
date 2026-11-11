@@ -2,34 +2,52 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
-    function isTeacher() {
-      return signedIn() && request.auth.uid == "rq8Z1su8FNe1O1ETJgB4jjI0Sxx2";
-    }
+    function isTeacher() { return signedIn() && request.auth.uid == 'rq8Z1su8FNe1O1ETJgB4jjI0Sxx2'; }
     function own(uid) { return signedIn() && request.auth.uid == uid; }
-    // One verified teacher administrator UID; never use email alone for authorization.
+    function validProfile(d) {
+      return d.keys().hasOnly(['displayName','email','role','active','createdAt']) &&
+        d.keys().hasAll(['displayName','email','role','active','createdAt']) &&
+        d.displayName is string && d.displayName.size() > 0 && d.displayName.size() <= 80 &&
+        d.email is string && d.role == 'student' && d.active is bool;
+    }
     match /profiles/{uid} {
       allow get: if own(uid) || isTeacher();
       allow list: if isTeacher();
-      allow write: if false;
+      allow create: if own(uid) && !isTeacher() && validProfile(request.resource.data) &&
+        request.resource.data.email == request.auth.token.email &&
+        request.resource.data.active == false && request.resource.data.createdAt == request.time;
+      allow update: if isTeacher() && validProfile(request.resource.data) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active','displayName']);
+      allow delete: if false;
     }
-    // Students submit immutable response choices, never client-computed grades.
-    // The teacher view calculates formative scores from its answer key.
+    function validAnswer(a) { return a is int && a >= 0 && a <= 2; }
+    function key(day) {
+      return {'1':[0,1,1],'2':[0,1,1],'3':[0,1,1],'4':[1,1,1],
+        '5':[1,1,0,1,1],'6':[0,1,1],'7':[0,1,1],'8':[2,0,0],
+        '9':[0,0,1],'10':[1,0,0,0,1]}[string(day)];
+    }
+    function correct(a,k) {
+      return (a[0]==k[0]?1:0)+(a[1]==k[1]?1:0)+(a[2]==k[2]?1:0)+
+        (a.size()==5 ? (a[3]==k[3]?1:0)+(a[4]==k[4]?1:0) : 0);
+    }
     match /scores/{uid}/attempts/{attemptId} {
       allow get, list: if own(uid) || isTeacher();
-      allow create: if own(uid) &&
-        exists(/databases/$(database)/documents/profiles/$(uid)) &&
+      allow create: if own(uid) && !isTeacher() &&
+        get(/databases/$(database)/documents/profiles/$(uid)).data.active == true &&
         get(/databases/$(database)/documents/profiles/$(uid)).data.role == 'student' &&
-        request.resource.data.keys().hasAll(['day', 'week', 'answers', 'recordedAt']) &&
-        request.resource.data.keys().hasOnly(['day', 'week', 'answers', 'recordedAt']) &&
-        request.resource.data.day is int &&
-        request.resource.data.day >= 1 &&
-        request.resource.data.day <= 10 &&
-        request.resource.data.week is int &&
-        request.resource.data.week == (request.resource.data.day <= 5 ? 1 : 2) &&
+        request.resource.data.keys().hasAll(['day','week','answers','correct','total','recordedAt']) &&
+        request.resource.data.keys().hasOnly(['day','week','answers','correct','total','recordedAt']) &&
+        request.resource.data.day is int && request.resource.data.day >= 1 && request.resource.data.day <= 10 &&
+        request.resource.data.week is int && request.resource.data.week == (request.resource.data.day <= 5 ? 1 : 2) &&
         request.resource.data.answers is list &&
         request.resource.data.answers.size() == (request.resource.data.day == 5 || request.resource.data.day == 10 ? 5 : 3) &&
+        validAnswer(request.resource.data.answers[0]) && validAnswer(request.resource.data.answers[1]) && validAnswer(request.resource.data.answers[2]) &&
+        (request.resource.data.answers.size() == 3 || (validAnswer(request.resource.data.answers[3]) && validAnswer(request.resource.data.answers[4]))) &&
+        request.resource.data.total == request.resource.data.answers.size() &&
+        request.resource.data.correct == correct(request.resource.data.answers,key(request.resource.data.day)) &&
         request.resource.data.recordedAt == request.time;
       allow update, delete: if false;
     }
+    match /{path=**}/attempts/{attemptId} { allow read: if isTeacher(); }
   }
 }
