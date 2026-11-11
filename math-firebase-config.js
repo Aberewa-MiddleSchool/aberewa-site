@@ -1,7 +1,7 @@
 // Firebase web app configuration for Aberewa Mathematics Classroom.
 // Public project identifiers. This is not a service-account key.
-// Remain disabled until Firestore rules and teacher access are verified.
-export const configured = false;
+// Classroom access requires teacher approval under the published Firestore rules.
+export const configured = true;
 export const firebaseConfig = {
   apiKey: "AIzaSyCK96qlscLKNTbBGZ3cTjf9EdGZU9oFrNU",
   authDomain: "aberewa-mathematics-classroom.firebaseapp.com",
