@@ -135,6 +135,20 @@ def repair_html(path: Path) -> bool:
     if "</footer>" in text.lower() and 'class="footer-links"' not in text:
         text = re.sub(r'</footer>', TRUST_LINKS + '</footer>', text, count=1, flags=re.I)
 
+    # Preserve authored content and keep dashboard access on future pages.
+    dashboard = '<a class="dashboard-site-link" href="math-teacher.html#inquiries">Dashboard sign in</a>'
+    if 'inquiries.css' not in text and '</head>' in text:
+        text = text.replace('</head>', '<link rel="stylesheet" href="inquiries.css"></head>', 1)
+    if 'class="dashboard-site-link"' not in text:
+        if '</nav>' in text:
+            text = text.replace('</nav>', dashboard + '</nav>', 1)
+        else:
+            text = text.replace('</header>', '<nav aria-label="Dashboard">' + dashboard + '</nav></header>', 1)
+        if '</footer>' in text:
+            text = text.replace('</footer>', dashboard + '</footer>', 1)
+        else:
+            text = text.replace('</body>', '<footer class="site-dashboard-footer">' + dashboard + '</footer></body>', 1)
+
     if text != original:
         path.write_text(text, encoding="utf-8")
         return True
@@ -183,7 +197,7 @@ def main() -> None:
     }
     for name, content in new_pages.items():
         path = ROOT / name
-        if not path.exists() or path.read_text(encoding="utf-8") != content:
+        if not path.exists():
             path.write_text(content, encoding="utf-8")
             changed.append(name)
 
