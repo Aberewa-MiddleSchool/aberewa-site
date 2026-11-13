@@ -1,6 +1,7 @@
 import {firebaseConfig} from './math-firebase-config.js';
 import {TEACHER_UID,grade,escapeHTML as esc,csvCell} from './math-common.js';
 import {mountLessonManager} from './math-lesson-manager.js';
+import {mountInquiryInbox} from './inquiry-inbox.js';
 import {attemptResult} from './math-lessons-common.js';
 const root=document.getElementById('teacher-app');
 const [{initializeApp},auth,store]=await Promise.all([
@@ -28,7 +29,8 @@ auth.onAuthStateChanged(a,user=>{
     return;
   }
   if(user.uid!==TEACHER_UID){root.innerHTML='<p>This account cannot access the teacher dashboard.</p><button id="signout">Sign out</button>';root.querySelector('button').onclick=()=>auth.signOut(a);return;}
-  root.innerHTML='<h2>Private teacher dashboard</h2><p>Names and scores update automatically while this page is open.</p><button id="signout">Sign out</button><button id="download">Download scores CSV</button><p><a href="interactive-mathematics.html">Open existing student quizzes</a></p><p><a href="#manage-lessons">Add or manage mathematics lessons</a></p><h3>Student accounts</h3><p>Approve only students you recognize. Pausing an account stops new submissions.</p><div id="roster">Loading student accounts…</div><h3>Quiz results</h3><label>Filter by student, lesson, or session <input id="filter" type="search"></label><div id="scores">Loading scores…</div><p id="dashboard-status" role="status"></p><section id="manage-lessons" class="lesson-editor"></section>';
+  root.innerHTML='<h2>Private school dashboard</h2><p><a href="#inquiries">Open school clarification inbox</a></p><p>Names and scores update automatically while this page is open.</p><button id="signout">Sign out</button><button id="download">Download scores CSV</button><p><a href="interactive-mathematics.html">Open existing student quizzes</a></p><p><a href="#manage-lessons">Add or manage mathematics lessons</a></p><h3>Student accounts</h3><p>Approve only students you recognize. Pausing an account stops new submissions.</p><div id="roster">Loading student accounts…</div><h3>Quiz results</h3><label>Filter by student, lesson, or session <input id="filter" type="search"></label><div id="scores">Loading scores…</div><p id="dashboard-status" role="status"></p><section id="manage-lessons" class="lesson-editor"></section><section id="inquiries" class="inquiry-section"></section>';
+  stops.push(mountInquiryInbox(root.querySelector('#inquiries'),{db,store}));
   root.querySelector('#signout').onclick=()=>auth.signOut(a);
   stops.push(mountLessonManager(root.querySelector('#manage-lessons'),{db,store,onLessons:map=>{lessons=map;renderScores();}}));
   root.querySelector('#filter').oninput=renderScores;

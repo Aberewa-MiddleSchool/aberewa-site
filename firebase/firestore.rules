@@ -84,5 +84,42 @@ service cloud.firestore {
       allow update, delete: if false;
     }
     match /{path=**}/attempts/{attemptId} { allow read: if isTeacher(); }
+    // Private clarification requests. Classroom data permissions are unchanged.
+    match /inquiryRateLimits/{uid} {
+      allow get: if own(uid);
+      allow list: if false;
+      allow create: if own(uid) &&
+        request.resource.data.keys().hasOnly(['lastAt','lastId']) &&
+        request.resource.data.lastAt == request.time &&
+        request.resource.data.lastId is string;
+      allow update: if own(uid) &&
+        request.resource.data.keys().hasOnly(['lastAt','lastId']) &&
+        request.resource.data.lastAt == request.time &&
+        request.time >= resource.data.lastAt + duration.value(60, 's') &&
+        request.resource.data.lastId is string;
+      allow delete: if false;
+    }
+    function validInquiry(d, id) {
+      return signedIn() && d.keys().hasAll(['ownerUid','email','contactName','category','subject','page','message','createdAt','status','reply','repliedAt']) &&
+        d.keys().hasOnly(['ownerUid','email','contactName','category','subject','page','message','createdAt','status','reply','repliedAt']) &&
+        d.ownerUid == request.auth.uid && d.email == request.auth.token.email &&
+        d.contactName is string && d.contactName.size()>0 && d.contactName.size()<=80 &&
+        d.category in ['Accessibility barrier','Curriculum or lesson clarification','School program or services','Policies or procedures','Website or account help','Other clarification'] &&
+        d.subject is string && d.subject.size()>0 && d.subject.size()<=160 &&
+        d.page is string && d.page.size()<=1000 && (d.page == '' || d.page.matches('https?://.*')) &&
+        d.message is string && d.message.size()>0 && d.message.size()<=5000 &&
+        d.createdAt == request.time && d.status == 'open' && d.reply == '' && d.repliedAt == null &&
+        getAfter(/databases/$(database)/documents/inquiryRateLimits/$(request.auth.uid)).data.lastAt == request.time &&
+        getAfter(/databases/$(database)/documents/inquiryRateLimits/$(request.auth.uid)).data.lastId == id;
+    }
+    match /inquiries/{id} {
+      allow read: if isTeacher() || (signedIn() && resource.data.ownerUid == request.auth.uid);
+      allow create: if validInquiry(request.resource.data, id);
+      allow update: if isTeacher() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reply','status','repliedAt']) &&
+        request.resource.data.reply is string && request.resource.data.reply.size()>0 && request.resource.data.reply.size()<=10000 &&
+        request.resource.data.status == 'answered' && request.resource.data.repliedAt == request.time;
+      allow delete: if false;
+    }
   }
 }
