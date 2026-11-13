@@ -37,14 +37,16 @@ form.onsubmit=async e=>{
   const saved='Your request has been saved to the private school inbox. Check “Your requests and replies” below for our response. Replies stay on this website; no personal administrator email address is shared.';
   status.textContent=saved+' Sending the school a notification…';
   try{
-   const response=await fetch('https://formsubmit.co/ajax/1b89fe4d544bc109c462e02cfb620edb',{
-    method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
-    signal:AbortSignal.timeout(20000),
-    body:JSON.stringify({_subject:'New Aberewa clarification request',message:'A new clarification request is waiting in your private school dashboard.',dashboard:'https://aberewamiddleschool.org/math-teacher.html#inquiries',_url:'https://aberewamiddleschool.org/accessibility.html'})
+   // The provider's AJAX API currently returns server errors. Its standard
+   // endpoint is activated and delivery-tested. An opaque response cannot
+   // establish delivery, so the status only says an alert was requested.
+   await fetch('https://formsubmit.co/1b89fe4d544bc109c462e02cfb620edb',{
+    method:'POST',mode:'no-cors',
+    referrer:location.origin+'/accessibility.html',referrerPolicy:'unsafe-url',
+    signal:AbortSignal.timeout(60000),
+    body:new URLSearchParams({_subject:'New Aberewa clarification request',message:'A new clarification request is waiting in your private school dashboard.',dashboard:'https://aberewamiddleschool.org/math-teacher.html#inquiries',_captcha:'false',_url:'https://aberewamiddleschool.org/accessibility.html'})
    });
-   const result=await response.json();
-   if(!response.ok||!(result.success===true||result.success==='true'))throw new Error('Notification not accepted');
-   status.textContent=saved+' The email service accepted a notification for the school.';
+   status.textContent=saved+' An email alert was requested for the school. Email delivery is not guaranteed.';
   }catch{status.textContent=saved+' We could not confirm the email notification. Your request is still saved; please do not submit it again.';}
 
  }catch{status.textContent='Your request was NOT saved. Wait at least one minute between requests, check your connection, and try again. Your message is still in the form.';}
