@@ -33,7 +33,20 @@ form.onsubmit=async e=>{
  const user=current,ref=store.doc(store.collection(db,'inquiries')),rate=store.doc(db,'inquiryRateLimits',user.uid);
  try{
   await store.runTransaction(db,async tx=>{await tx.get(rate);tx.set(rate,{lastAt:store.serverTimestamp(),lastId:ref.id});tx.set(ref,{...data,ownerUid:user.uid,email:user.email,createdAt:store.serverTimestamp(),status:'open',reply:'',repliedAt:null});});
-  form.reset();status.textContent='Your request has been saved to the private school inbox. Check “Your requests and replies” below for our response. Replies stay on this website; no personal administrator email address is shared.';
+  form.reset();
+  const saved='Your request has been saved to the private school inbox. Check “Your requests and replies” below for our response. Replies stay on this website; no personal administrator email address is shared.';
+  status.textContent=saved+' Sending the school a notification…';
+  try{
+   const response=await fetch('https://formsubmit.co/ajax/1b89fe4d544bc109c462e02cfb620edb',{
+    method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
+    signal:AbortSignal.timeout(20000),
+    body:JSON.stringify({_subject:'New Aberewa clarification request',message:'A new clarification request is waiting in your private school dashboard.',dashboard:'https://aberewamiddleschool.org/math-teacher.html#inquiries',_url:'https://aberewamiddleschool.org/accessibility.html'})
+   });
+   const result=await response.json();
+   if(!response.ok||!(result.success===true||result.success==='true'))throw new Error('Notification not accepted');
+   status.textContent=saved+' The email service accepted a notification for the school.';
+  }catch{status.textContent=saved+' We could not confirm the email notification. Your request is still saved; please do not submit it again.';}
+
  }catch{status.textContent='Your request was NOT saved. Wait at least one minute between requests, check your connection, and try again. Your message is still in the form.';}
  finally{busy=false;send.disabled=!current;}
 };
