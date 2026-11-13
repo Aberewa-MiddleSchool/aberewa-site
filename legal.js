@@ -1,0 +1,4 @@
+const topics=[...document.querySelectorAll('.legal-topic')],filter=document.getElementById('legal-filter'),status=document.getElementById('legal-filter-status');
+filter.addEventListener('input',()=>{const words=filter.value.toLowerCase().trim().split(/\s+/).filter(Boolean);let count=0;for(const topic of topics){topic.hidden=!words.every(word=>topic.textContent.toLowerCase().includes(word));if(!topic.hidden)count++;}status.textContent=words.length?`${count} of ${topics.length} topics match. Clear the search to show all topics.`:'';});
+for(const link of document.querySelectorAll('.legal-toc a'))link.addEventListener('click',()=>{filter.value='';for(const topic of topics)topic.hidden=false;status.textContent='';});
+document.getElementById('legal-print').addEventListener('click',()=>window.print());

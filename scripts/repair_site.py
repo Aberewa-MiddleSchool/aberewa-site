@@ -13,6 +13,7 @@ COUNTER_PATTERNS = [
 
 TRUST_LINKS = (
     '<p class="footer-links">'
+    '<a href="legal.html">Legal &amp; Professional Standards</a> &nbsp;|&nbsp; '
     '<a href="accessibility.html">Accessibility</a> &nbsp;|&nbsp; '
     '<a href="privacy.html">Privacy</a> &nbsp;|&nbsp; '
     '<a href="faq.html">FAQ</a> &nbsp;|&nbsp; '
@@ -92,6 +93,9 @@ def canonical_for(path: Path) -> str:
 def repair_html(path: Path) -> bool:
     original = path.read_text(encoding="utf-8")
     text = original
+
+    if 'href="legal.html"' not in text and "</footer>" in text:
+        text = text.replace("</footer>", '<p class="footer-links"><a href="legal.html">Legal &amp; Professional Standards</a></p></footer>')
 
     for old in OLD_EMAILS:
         text = text.replace(old, OFFICIAL_EMAIL)
