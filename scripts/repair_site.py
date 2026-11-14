@@ -153,6 +153,9 @@ def repair_html(path: Path) -> bool:
         else:
             text = text.replace('</body>', '<footer class="site-dashboard-footer">' + dashboard + '</footer></body>', 1)
 
+    from navigation_layout import normalize_navigation
+    text = normalize_navigation(text)
+
     if text != original:
         path.write_text(text, encoding="utf-8")
         return True
