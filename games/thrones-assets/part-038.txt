@@ -120,7 +120,7 @@ function updateFighter(f,opp,inp,dt){
    if(f.comboChain&&f.comboStage<f.comboChain.length-1){
     f.comboStage++;
     // Capoeira Angola chained kicks follow through to retain close-range contact after knockback.
-    f.x=cap(f.x+f.side*22,85,1195);
+    f.x=cap(f.x+f.side*48,85,1195);
     startStrike(f,f.comboChain[f.comboStage]);
    }else{
     f.atk=null;f.comboChain=null;f.comboStage=0;f.comboTotal=0;f.display='';
