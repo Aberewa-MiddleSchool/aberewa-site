@@ -196,35 +196,41 @@ function draw(){if(screen==='title'){title();return;}if(screen==='roster'){roste
  if(screen==='complete')centerOverlay('TOURNAMENT COMPLETE','ALL TWELVE MATCHES CLEARED','PRESS A TO RETURN TO THE ROSTER');
 }
 // Mouse/touch spectator controls. Optional: gamepads retain their original control scheme.
-// Menu-only keyboard access. No keyboard movement, combat, jump or guard mappings.
-document.addEventListener('keydown',event=>{
- const target=event.target;
- if(target&&(/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(target.tagName)||target.isContentEditable))return;
- const key=event.key;
- if(screen==='title'&&(key==='Enter'||key===' ')){
-  event.preventDefault();keyboardOnlySpectator=true;screen='roster';selectionPhase=1;modeIndex=MODE_WATCH;sound(400,.09);return;
+// Keyboard is a spectator-menu input only; gamepad controls remain unchanged.
+// Capture the key before focused buttons or canvas can consume Space.
+window.addEventListener('keydown',event=>{
+ const key=event.code==='Space'?'Space':event.key;
+ const typing=event.target&&(/^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName)||event.target.isContentEditable);
+ if(typing||event.altKey||event.ctrlKey||event.metaKey)return;
+ const accept=key==='Space'||key==='Enter';
+ if(screen==='title'&&accept){
+  event.preventDefault();event.stopImmediatePropagation();
+  keyboardOnlySpectator=true;modeIndex=MODE_WATCH;selectionPhase=1;screen='roster';
+  return;
  }
  if(screen==='roster'){
-  keyboardOnlySpectator=true;modeIndex=MODE_WATCH;
-  let used=true;
-  if(key==='ArrowLeft')selectionPhase===1?cursor=(cursor+11)%12:p2cursor=(p2cursor+11)%12;
-  else if(key==='ArrowRight')selectionPhase===1?cursor=(cursor+1)%12:p2cursor=(p2cursor+1)%12;
-  else if(key==='ArrowUp')selectionPhase===1?cursor=(cursor+8)%12:p2cursor=(p2cursor+8)%12;
-  else if(key==='ArrowDown')selectionPhase===1?cursor=(cursor+4)%12:p2cursor=(p2cursor+4)%12;
-  else if(key==='Enter'||key===' '){
-   if(modeIndex!==MODE_WATCH)modeIndex=MODE_WATCH;
-   if(selectionPhase===1){selectionPhase=2;p2cursor=p2cursor===cursor?(cursor+1)%12:p2cursor;}
-   else {round=1;runGold=0;startMatch();}
+  const dir={ArrowLeft:-1,ArrowRight:1,ArrowUp:-4,ArrowDown:4}[key];
+  if(dir!==undefined){
+   event.preventDefault();event.stopImmediatePropagation();
+   keyboardOnlySpectator=true;modeIndex=MODE_WATCH;
+   if(selectionPhase===1)cursor=(cursor+12+dir)%12;
+   else p2cursor=(p2cursor+12+dir)%12;
+  }else if(accept){
+   event.preventDefault();event.stopImmediatePropagation();
+   keyboardOnlySpectator=true;modeIndex=MODE_WATCH;
+   if(selectionPhase===1)selectionPhase=2;
+   else {pause=false;round=1;runGold=0;startMatch();}
   }else if(key==='Escape'||key==='Backspace'){
+   event.preventDefault();event.stopImmediatePropagation();
    if(selectionPhase===2)selectionPhase=1;else screen='title';
-  }else used=false;
-  if(used)event.preventDefault();
+  }
   return;
  }
  if((key==='Escape'||key==='Backspace')&&screen!=='title'){
-  event.preventDefault();keyboardOnlySpectator=true;pause=false;screen='roster';modeIndex=MODE_WATCH;selectionPhase=1;
+  event.preventDefault();event.stopImmediatePropagation();
+  keyboardOnlySpectator=true;modeIndex=MODE_WATCH;pause=false;selectionPhase=1;screen='roster';
  }
-});
+},true);
 const spectator=document.createElement('section');
 spectator.id='akkad-spectator-controls';
 spectator.setAttribute('aria-label','CPU versus CPU spectator controls');
