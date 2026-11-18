@@ -25,17 +25,17 @@ const neutral={walk:0,crouch:false,jump:false,kick:false,palm:false,heavy:false,
 function player(spec,x,side,controller){return {spec,x,y:0,vy:0,dx:0,side,controller,hp:1000,atk:null,atkTime:0,atkHit:false,attackRecovery:0,stun:0,knock:0,knockElapsed:0,guard:false,crouch:false,anim:'idle',walkTimer:0,breathSeed:Math.random()*4,combo:0,comboTimer:0,comboChain:null,comboStage:0,comboTotal:0,jumpElapsed:0,display:''};}
 // Every goddess shares the same attack data. Character-specific frames alter presentation only.
 const attacks={
- palm:{dur:.32,wind:.10,act:.12,damage:40,range:122,push:18,label:'PALM',height:'mid'},
- kick:{dur:.46,wind:.16,act:.14,damage:67,range:175,push:28,label:'KICK',height:'mid'},
- heavy:{dur:.64,wind:.24,act:.17,damage:95,range:198,push:42,label:'STRONG KICK',height:'mid'},
+ palm:{dur:.32,wind:.10,act:.12,damage:40,range:122,push:18,label:'MEIA LUA DE FRENTE',height:'mid'},
+ kick:{dur:.46,wind:.16,act:.14,damage:67,range:175,push:28,label:'QUEIXADA',height:'mid'},
+ heavy:{dur:.64,wind:.24,act:.17,damage:95,range:198,push:42,label:'ARMADA',height:'mid'},
  power1:{dur:.75,wind:.25,act:.24,damage:112,range:228,push:48,label:'DIVINE POWER',height:'mid'},
  power2:{dur:.90,wind:.33,act:.26,damage:137,range:250,push:54,label:'DIVINE POWER',height:'mid'},
- crouchPalm:{dur:.35,wind:.12,act:.12,damage:40,range:135,push:18,label:'CROUCH PALM',height:'low'},
- crouchKick:{dur:.49,wind:.17,act:.15,damage:67,range:190,push:28,label:'LOW SWEEP',height:'low'},
- crouchHeavy:{dur:.66,wind:.25,act:.18,damage:95,range:205,push:42,label:'LOW STRONG KICK',height:'low'},
- airPalm:{dur:.34,wind:.09,act:.12,damage:40,range:142,push:18,label:'AIR PALM',height:'air'},
- airKick:{dur:.46,wind:.13,act:.15,damage:67,range:190,push:28,label:'FLYING KICK',height:'air'},
- airHeavy:{dur:.60,wind:.18,act:.18,damage:95,range:206,push:42,label:'FLYING STRONG KICK',height:'air'}
+ crouchPalm:{dur:.35,wind:.12,act:.12,damage:40,range:135,push:18,label:'RABO DE ARRAIA',height:'low'},
+ crouchKick:{dur:.49,wind:.17,act:.15,damage:67,range:190,push:28,label:'NEGATIVA SWEEP',height:'low'},
+ crouchHeavy:{dur:.66,wind:.25,act:.18,damage:95,range:205,push:42,label:'MEIA LUA DE COMPASSO',height:'low'},
+ airPalm:{dur:.34,wind:.09,act:.12,damage:40,range:142,push:18,label:'JUMPING QUEIXADA',height:'air'},
+ airKick:{dur:.46,wind:.13,act:.15,damage:67,range:190,push:28,label:'JUMPING ARMADA',height:'air'},
+ airHeavy:{dur:.60,wind:.18,act:.18,damage:95,range:206,push:42,label:'JUMPING MEIA LUA',height:'air'}
 };
 function addCall(txt,x,y,color='#f6d992',time=.9){callouts.push({txt,x,y,color,t:time,max:time});}
 function fx(x,y,color,n=14,r=40){effects.push({x,y,color,n,r,t:.42,max:.42});}
@@ -60,7 +60,7 @@ function finishCombo(f){if(!f.combo)return;const amt=[0,300,900,1100][Math.min(f
 const threeKickChains={
  palm:['palm','kick','heavy'],
  kick:['kick','heavy','palm'],
- heavy:['heavy','kick','heavy'],
+ heavy:['heavy','palm','kick'],
  crouchPalm:['crouchPalm','crouchKick','crouchHeavy'],
  crouchKick:['crouchKick','crouchPalm','crouchHeavy'],
  crouchHeavy:['crouchHeavy','crouchKick','crouchPalm'],
@@ -76,6 +76,8 @@ function startAttack(f,type){
 }
 function startStrike(f,type){
  f.atk=type;f.atkTime=0;f.atkHit=false;f.guard=false;
+ if(f.comboChain)f.display=attacks[type].label+'  '+(f.comboStage+1)+'/3';
+ else f.display=type==='power1'?f.spec.power1:type==='power2'?f.spec.power2:'';
  f.crouch=attacks[type].height==='low';f.anim=type;
  sound(type.startsWith('power')?520:260+f.comboStage*55,.07,.05);
 }
@@ -107,8 +109,8 @@ function updateFighter(f,opp,inp,dt){
  f.side=opp.x>=f.x?1:-1;
  if(f.comboTimer>0){f.comboTimer-=dt;if(f.comboTimer<=0)finishCombo(f);}
  f.stun=Math.max(0,f.stun-dt);f.attackRecovery=Math.max(0,f.attackRecovery-dt);
- if(f.knock>0){f.knock-=dt;f.knockElapsed+=dt;f.x=cap(f.x+f.dx*dt,80,1200);f.dx*=.97;f.vy+=900*dt;f.y=Math.min(0,f.y+f.vy*dt);if(f.y>=0)f.vy=0;f.anim='down';f.crouch=true; if(f.knock<=0) {f.anim='idle';f.crouch=false;}return;}
- if(f.stun>0){f.anim='hurt';return;}
+ if(f.knock>0){f.atk=null;f.comboChain=null;f.comboStage=0;f.comboTotal=0;f.display='';f.knock-=dt;f.knockElapsed+=dt;f.x=cap(f.x+f.dx*dt,80,1200);f.dx*=.97;f.vy+=900*dt;f.y=Math.min(0,f.y+f.vy*dt);if(f.y>=0)f.vy=0;f.anim='down';f.crouch=true; if(f.knock<=0) {f.anim='idle';f.crouch=false;}return;}
+ if(f.stun>0){f.atk=null;f.comboChain=null;f.comboStage=0;f.comboTotal=0;f.display='';f.anim='hurt';return;}
  if(f.atk){const m=attacks[f.atk];
   f.atkTime+=dt;f.anim=f.atk;f.crouch=m.height==='low';
   // Air attacks preserve jump gravity and horizontal momentum rather than freezing in space.
@@ -118,7 +120,7 @@ function updateFighter(f,opp,inp,dt){
    if(f.comboChain&&f.comboStage<f.comboChain.length-1){
     f.comboStage++;startStrike(f,f.comboChain[f.comboStage]);
    }else{
-    f.atk=null;f.comboChain=null;f.comboStage=0;f.comboTotal=0;
+    f.atk=null;f.comboChain=null;f.comboStage=0;f.comboTotal=0;f.display='';
     f.attackRecovery=.10;f.crouch=false;f.anim=f.y<0?'jump':'idle';
    }
   }return;}
@@ -199,7 +201,28 @@ function drawFighter(f){let id=f.spec.id,idx=0,deep=f.spec.deep;
  const breath=resting?1+Math.sin(clock*2.1+f.breathSeed)*.0037:1;
  ctx.scale(1,breath);
  ctx.imageSmoothingEnabled=true;ctx.drawImage(picture,-265,-418,530,426);
- // Impact VFX follow strike height. Ishtar's attacks are always LOW and crouched.
+ // Attacks display each of their three beats with names and individual hit poses.
+ if(f.atk&&f.display){
+  ctx.save();ctx.scale(f.side,1);
+  ctx.globalAlpha=.9;ctx.font='bold 15px Georgia,serif';ctx.textAlign='center';
+  ctx.lineWidth=3;ctx.strokeStyle='#100918';ctx.strokeText(f.display,0,-449);
+  ctx.fillStyle='#ffe5a7';ctx.fillText(f.display,0,-449);ctx.restore();
+ }
+ // Visibly separate LB / RB powers: unique aura, twin expanding rings and directional energy.
+ if(f.atk&&(f.atk==='power1'||f.atk==='power2')){
+  const right=f.atk==='power2',t=cap(f.atkTime/attacks[f.atk].dur,0,1);
+  const hue=right?'#fff1a0':f.spec.accent;
+  ctx.save();ctx.globalAlpha=(.25+.4*Math.sin(t*Math.PI));
+  const aura=ctx.createRadialGradient(0,-190,15,0,-190,180);
+  aura.addColorStop(0,hue);aura.addColorStop(1,'#ffffff00');
+  ctx.fillStyle=aura;ctx.beginPath();ctx.arc(0,-190,180,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=hue;ctx.lineWidth=right?12:7;
+  for(let ring=0;ring<2;ring++){
+   ctx.beginPath();ctx.ellipse((right?1:-1)*28,-180,35+180*t+ring*48,14+88*t,0,0,Math.PI*2);ctx.stroke();
+  }
+  ctx.restore();
+ }
+ // Impact VFX follow strike height. Ishtar and Gula alone have low combat options.
  if(f.atk&&f.atkHit){const m=attacks[f.atk],p=Math.max(0,1-(f.atkTime-m.wind)/.3);if(p>0){const y=m.height==='low'?-85:m.height==='air'?-205:-184;
  ctx.globalAlpha=p*.85;ctx.strokeStyle=f.atk==='power2'?'#fff2bb':f.spec.accent;ctx.lineWidth=f.atk.startsWith('power')?13:7;ctx.beginPath();ctx.ellipse(m.range*.46,y,m.range*.42,23,0,-.8,1.5);ctx.stroke();ctx.globalAlpha=1;}}
  ctx.restore();}
