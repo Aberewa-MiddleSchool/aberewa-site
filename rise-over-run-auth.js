@@ -12,10 +12,11 @@ function draw(){
  else {panel.innerHTML='<p>Signed in as <strong>'+esc(profile.displayName)+'</strong>. '+(profile.active?'Approved to submit graded exit tickets.':'Awaiting teacher approval. You may practice while waiting.')+'</p><button id="slope-logout">Sign out</button>';}
  panel.querySelector('#slope-logout')?.addEventListener('click',()=>auth.signOut(a));publish();
 }
-async function submit(answers,correct){
+async function submit(answers,correct,exitCorrect){
  if(!user||!profile?.active||user.uid===TEACHER_UID)return {ok:false,message:'Sign in with a teacher-approved student account before submitting.'};
  try{
- const record={lessonId:'rise-over-run-positive-slope',answers,correct,total:3,recordedAt:store.serverTimestamp()};
+ if(!Array.isArray(answers)||answers.length!==53||!Number.isInteger(correct)||!Number.isInteger(exitCorrect))return {ok:false,message:'All 53 answers are required.'};
+ const record={lessonId:'rise-over-run-positive-slope',answers,correct,total:53,exitCorrect,exitTotal:3,recordedAt:store.serverTimestamp()};
  await store.addDoc(store.collection(db,'scores',user.uid,'attempts'),record);
  return {ok:true,message:'Saved to the school gradebook. Your teacher can view your result.'};
  }catch(e){return {ok:false,message:'Score was NOT saved to the teacher gradebook. Verify permissions or connection before trying again.'};}
