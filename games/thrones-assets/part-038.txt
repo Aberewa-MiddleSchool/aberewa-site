@@ -22,7 +22,7 @@ function padInput(i){let p=pads[i],prev=edges[i]||{},b={};for(let j=0;j<17;j++)b
  leftTap:(left&&!prev.left),rightTap:(right&&!prev.right),upTap:(up&&!prev.up),downTap:(down&&!prev.down),ok:tap(0),cancel:tap(1)};
  edges[i]={...b,left,right,up,down};return res;}
 const neutral={walk:0,crouch:false,jump:false,kick:false,palm:false,heavy:false,power1:false,power2:false,guard:false,pause:false,back:false,leftTap:false,rightTap:false,upTap:false,downTap:false,ok:false,cancel:false};
-function player(spec,x,side,controller){return {spec,x,y:0,vy:0,dx:0,side,controller,hp:1000,atk:null,atkTime:0,atkHit:false,attackRecovery:0,stun:0,knock:0,knockElapsed:0,guard:false,crouch:false,anim:'idle',walkTimer:0,breathSeed:Math.random()*4,combo:0,comboTimer:0,display:''};}
+function player(spec,x,side,controller){return {spec,x,y:0,vy:0,dx:0,side,controller,hp:1000,atk:null,atkTime:0,atkHit:false,attackRecovery:0,stun:0,knock:0,knockElapsed:0,guard:false,crouch:false,anim:'idle',walkTimer:0,breathSeed:Math.random()*4,combo:0,comboTimer:0,comboChain:null,comboStage:0,comboTotal:0,jumpElapsed:0,display:''};}
 // Every goddess shares the same attack data. Character-specific frames alter presentation only.
 const attacks={
  palm:{dur:.32,wind:.10,act:.12,damage:40,range:122,push:18,label:'PALM',height:'mid'},
@@ -52,12 +52,33 @@ function begin(){if(modeIndex===MODE_VS_P2&&pads.length<2){addCall('TWO GAMEPADS
 function cpuInput(me,opp,dt,slot){if(me.knock||me.stun||me.atk)return neutral;
  cooldowns[slot]=Math.max(0,cooldowns[slot]-dt);let dist=Math.abs(opp.x-me.x),dir=opp.x>me.x?1:-1;
  let o={...neutral,walk:dist>160?dir:dist<85?-dir:0};
- if(cooldowns[slot]===0){cooldowns[slot]=rng(.28,.74);const r=Math.random();if(dist<245){if(r<.20)o.palm=true;else if(r<.41)o.kick=true;else if(r<.54)o.heavy=true;else if(r<.67)o.power1=true;else if(r<.73)o.power2=true;else if(r<.82)o.crouch=true;else if(r<.89)o.guard=true;else if(r<.92)o.jump=true;}else if(r<.16)o.jump=true;}
+ if(cooldowns[slot]===0){cooldowns[slot]=rng(.28,.74);const r=Math.random();if(dist<245){if(r<.20)o.palm=true;else if(r<.41)o.kick=true;else if(r<.54)o.heavy=true;else if(r<.67)o.power1=true;else if(r<.73)o.power2=true;else if(r<.82&&['ishtar','gula'].includes(me.spec.id)){o.crouch=true;o.kick=true;}else if(r<.89)o.guard=true;else if(r<.92)o.jump=true;}else if(r<.16)o.jump=true;}
  return o;}
 function finishCombo(f){if(!f.combo)return;const amt=[0,300,900,1100][Math.min(f.combo,3)];
  if(f.controller===0 || (f.controller===1&&modeIndex===MODE_VS_P2)){runGold+=amt;addCall(`${f.combo} HIT${f.combo===1?'':'S'} · +${amt.toLocaleString()} GOLD`,f.x,188,'#f7d17f',1.2);}f.combo=0;f.comboTimer=0;}
-function startAttack(f,type){if(f.atk||f.stun||f.knock||f.attackRecovery>0)return;
- f.atk=type;f.atkTime=0;f.atkHit=false;f.guard=false;f.crouch=attacks[type].height==='low';f.anim=type;sound(type.startsWith('power')?520:260,.07,.05);}
+// X, B and Y each execute a three-strike Capoeira Angola kick combination.
+const threeKickChains={
+ palm:['palm','kick','heavy'],
+ kick:['kick','heavy','palm'],
+ heavy:['heavy','kick','heavy'],
+ crouchPalm:['crouchPalm','crouchKick','crouchHeavy'],
+ crouchKick:['crouchKick','crouchPalm','crouchHeavy'],
+ crouchHeavy:['crouchHeavy','crouchKick','crouchPalm'],
+ airPalm:['airPalm','airKick','airHeavy'],
+ airKick:['airKick','airHeavy','airPalm'],
+ airHeavy:['airHeavy','airKick','airHeavy']
+};
+function startAttack(f,type){
+ if(f.atk||f.stun||f.knock||f.attackRecovery>0||!attacks[type])return;
+ f.comboChain=threeKickChains[type]||null;
+ f.comboStage=0;f.comboTotal=f.comboChain?f.comboChain.length:1;
+ startStrike(f,f.comboChain?f.comboChain[0]:type);
+}
+function startStrike(f,type){
+ f.atk=type;f.atkTime=0;f.atkHit=false;f.guard=false;
+ f.crouch=attacks[type].height==='low';f.anim=type;
+ sound(type.startsWith('power')?520:260+f.comboStage*55,.07,.05);
+}
 function doHit(att,def){let m=attacks[att.atk];if(att.atkHit)return;att.atkHit=true;let dx=(def.x-att.x)*att.side,dist=Math.abs(def.x-att.x);
  if(dx<0||dist>m.range+30||def.knock>0)return;
  // Crouch sweeps pass under airborne opponents; air blows need an opponent at reachable height.
@@ -65,7 +86,9 @@ function doHit(att,def){let m=attacks[att.atk];if(att.atkHit)return;att.atkHit=t
  if(m.height==='air'&&Math.abs(att.y-def.y)>185)return;
  if(m.height==='mid'&&def.y< -185)return;
  if(def.guard){fx(def.x,GROUND-126,'#8bddff',7,25);def.stun=.09;addCall('BLOCK',def.x,GROUND-260,'#a4ebff',.45);return;}
- const damage=m.damage;def.hp=Math.max(0,def.hp-damage);def.stun=.23;def.anim='hurt';def.x=cap(def.x+att.side*m.push,120,1160);
+ // Split a face-button move's original damage across three hits; power balance stays shared.
+ const damage=att.comboChain?Math.floor(m.damage/3)+(att.comboStage===2?m.damage%3:0):m.damage;
+ def.hp=Math.max(0,def.hp-damage);def.stun=.23;def.anim='hurt';def.x=cap(def.x+att.side*m.push,120,1160);
  if(att.comboTimer<=0)finishCombo(att);att.combo=Math.min(3,att.combo+1);att.comboTimer=1.10;
  let c=att.spec.accent;if(att.atk==='power1'||att.atk==='power2'){
   c=att.atk==='power1'?att.spec.accent:'#f2d899';
@@ -91,17 +114,25 @@ function updateFighter(f,opp,inp,dt){
   // Air attacks preserve jump gravity and horizontal momentum rather than freezing in space.
   if(f.y<0||f.vy<0){f.vy+=1000*dt;f.y=Math.min(0,f.y+f.vy*dt);f.x=cap(f.x+(inp.walk||0)*130*dt,85,1195);if(f.y===0)f.vy=0;}
   if(!f.atkHit&&f.atkTime>=m.wind)doHit(f,opp);
-  if(f.atkTime>=m.dur){f.atk=null;f.attackRecovery=.07;f.crouch=false;f.anim=f.y<0?'jump':'idle';}return;}
+  if(f.atkTime>=m.dur){
+   if(f.comboChain&&f.comboStage<f.comboChain.length-1){
+    f.comboStage++;startStrike(f,f.comboChain[f.comboStage]);
+   }else{
+    f.atk=null;f.comboChain=null;f.comboStage=0;f.comboTotal=0;
+    f.attackRecovery=.10;f.crouch=false;f.anim=f.y<0?'jump':'idle';
+   }
+  }return;}
  if(f.y<0||f.vy<0){
+  f.jumpElapsed+=dt;
   if(f.attackRecovery<=0){if(inp.heavy){startAttack(f,'airHeavy');return;}if(inp.kick){startAttack(f,'airKick');return;}if(inp.palm){startAttack(f,'airPalm');return;}}
   f.vy+=1000*dt;f.y=Math.min(0,f.y+f.vy*dt);f.x=cap(f.x+(inp.walk||0)*180*dt,85,1195);f.anim='jump';f.crouch=false;
   if(f.y===0){f.vy=0;f.anim='land';f.attackRecovery=.11;}return;}
- if(inp.jump){f.vy=-475;f.y=-3;f.anim='jump';f.crouch=false;sound(410,.06,.04);return;}
+ if(inp.jump){f.vy=-475;f.y=-3;f.jumpElapsed=0;f.anim='jump';f.crouch=false;sound(410,.06,.04);return;}
  if(f.attackRecovery<=0){for(const k of ['power2','power1','heavy','kick','palm'])if(inp[k]){
-   const kind=inp.crouch&&['heavy','kick','palm'].includes(k)?'crouch'+k[0].toUpperCase()+k.slice(1):k;
+   const kind=inp.crouch&&['ishtar','gula'].includes(f.spec.id)&&['heavy','kick','palm'].includes(k)?'crouch'+k[0].toUpperCase()+k.slice(1):k;
    startAttack(f,kind);return;
   }}
- f.guard=!!inp.guard;f.crouch=!!inp.crouch;
+ f.guard=!!inp.guard;f.crouch=!!inp.crouch&&['ishtar','gula'].includes(f.spec.id);
  const delta=(inp.walk||0)*184*dt;
  if(!f.crouch&&!f.guard&&delta!==0){f.x=cap(f.x+delta,85,1195);f.walkTimer+=dt*11;f.anim='walk';}
  else f.anim=f.crouch?'crouch':f.guard?'guard':'idle';
@@ -148,8 +179,14 @@ function drawFighter(f){let id=f.spec.id,idx=0,deep=f.spec.deep;
     f.atk==='kick'?(id==='gula'?[9,10,11,8]:[8,9,10,11]):
     f.atk==='heavy'?(id==='gula'?[10,11,8,9]:[8,9,10,11]):
     id==='gula'?[13,9,11,12,13]:[12,9,10,11,12];
-  idx=frames[Math.min(frames.length-1,Math.floor(t*frames.length))];
- }else if(f.anim==='jump')idx=0; // upright airborne pose, never reuse knee-up kick frames for jumping
+  const stage=f.comboChain?f.comboStage:0;
+  const offsets=low?[0,1,0]:air?[0,1,2]:[0,1,2];
+  idx=frames[(Math.min(frames.length-1,Math.floor(t*frames.length))+offsets[stage])%frames.length];
+ }else if(f.anim==='jump'){
+  // Takeoff, ascent, apex and landing use separate poses instead of a frozen idle image.
+  const phase=f.vy< -240?0:f.vy< -40?1:f.vy<220?2:3;
+  idx=(id==='gula'?[4,5,6,7]:id==='ishtar'?[4,6,5,7]:[4,5,6,7])[phase];
+}
  else if(f.anim==='walk')idx=4+Math.floor(f.walkTimer%4);
  else if(f.crouch)idx=15;
  else if(f.guard)idx=12;
@@ -171,7 +208,7 @@ function hud(){rect(0,0,W,120,'#170b20ec');const p=fighters[0],q=fighters[1];tex
  rect(34,59,bw*(p.hp/1000),22,p.hp<300?'#d14c59':'#e7bd63',6);rect(W-34-bw+bw*(1-q.hp/1000),59,bw*(q.hp/1000),22,q.hp<300?'#d14c59':'#80b5dc',6);
  text(String(Math.ceil(roundTime)),W/2,59,50,'#fff1ca');text('◆ '+runGold.toLocaleString()+' GOLD',W/2,108,20,'#ffde85');
  if(modeIndex===MODE_ARCADE)text(`MATCH ${round} / 12`,W/2,145,18,'#ffedb6');
- rect(0,H-54,W,54,'#160d21df');text('MOVE: STICK  ·  DOWN + X/B/Y: LOW ATTACKS  ·  A: JUMP  ·  AIR X/B/Y: AIR ATTACKS  ·  LB/RB: POWERS  ·  LT: GUARD',W/2,H-28,16,'#f8dca3');
+ rect(0,H-54,W,54,'#160d21df');text('X / B / Y: THREE-KICK COMBOS  ·  ISHTAR / GULA: DOWN + ATTACK  ·  A: JUMP  ·  LB / RB: POWERS  ·  LT: GUARD',W/2,H-28,15,'#f8dca3');
 }
 function drawEffects(){for(const e of effects){const r=e.r*(1.5-e.t/e.max);ctx.globalAlpha=e.t/e.max;ctx.strokeStyle=e.color;ctx.lineWidth=9*e.t/e.max+2;ctx.beginPath();ctx.arc(e.x,e.y,r,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
  for(const e of callouts){ctx.globalAlpha=cap(e.t/Math.min(e.max,.45),0,1);text(e.txt,e.x,e.y,24,e.color);ctx.globalAlpha=1;}}
