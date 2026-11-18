@@ -177,7 +177,7 @@ function drawEffects(){for(const e of effects){const r=e.r*(1.5-e.t/e.max);ctx.g
 function drawBackdrop(){const bg=img('stage-ishtar');if(bg)ctx.drawImage(bg,0,0,W,H);else rect(0,0,W,H,'#1c1029');rect(0,0,W,H,'#08020bc7');}
 function title(){drawBackdrop();text('THRONES OF AKKAD',W/2,139,72,'#ffe4a0');text('TWELVE GODDESSES  ·  FOUR THRONES  ·  ONE TOURNAMENT',W/2,207,26,'#f5d69a');
  for(let i=0;i<12;i++){const x=214+(i%6)*148,y=285+Math.floor(i/6)*177;const pic=img('card-'+roster[i].id);if(pic)ctx.drawImage(pic,x,y,123,118);}
- text('ALL TWELVE SELECTABLE · SHARED MOVE SYSTEM',W/2,625,17,'#ecd0b4');text('PRESS A / BOTTOM FACE BUTTON TO ENTER',W/2,655,25,'#ffde9b');text(noPad,W/2,692,14,pads.length?'#baf8cb':'#ffaeae');}
+ text('ALL TWELVE SELECTABLE · SHARED MOVE SYSTEM',W/2,625,17,'#ecd0b4');text('USE THE CPU VS CPU PANEL OR PRESS A TO ENTER',W/2,655,23,'#ffde9b');text(noPad,W/2,692,14,pads.length?'#baf8cb':'#ffaeae');}
 function rosterScreen(){drawBackdrop();text('CHOOSE YOUR GODDESS',W/2,51,51,'#ffe0a2');text('LB / RB  CHANGE MODE: '+modes[modeIndex],W/2,107,23,'#e8cc9c');
  for(let i=0;i<12;i++){const x=148+(i%4)*253,y=151+Math.floor(i/4)*152,chosen=(selectionPhase===1?cursor:p2cursor)===i;
   rect(x-7,y-7,222,137,chosen?'#f1c76c':'#6d5239',9);const pic=img('card-'+roster[i].id);if(pic)ctx.drawImage(pic,x,y,208,123);
@@ -194,6 +194,49 @@ function draw(){if(screen==='title'){title();return;}if(screen==='roster'){roste
  if(screen==='intermission')centerOverlay('VICTORY · MATCH '+round+' / 12','◆ '+runGold.toLocaleString()+' GOLD',round===12?'PRESS A TO SEE TOURNAMENT RESULT':'PRESS A FOR NEXT OPPONENT');
  if(screen==='complete')centerOverlay('TOURNAMENT COMPLETE','ALL TWELVE MATCHES CLEARED','PRESS A TO RETURN TO THE ROSTER');
 }
+// Mouse/touch spectator controls. Optional: gamepads retain their original control scheme.
+const spectator=document.createElement('section');
+spectator.id='akkad-spectator-controls';
+spectator.setAttribute('aria-label','CPU versus CPU spectator controls');
+spectator.style.cssText='position:fixed;z-index:9999;right:12px;bottom:12px;width:min(350px,calc(100vw - 24px));padding:14px;border:2px solid #d3a75c;border-radius:12px;background:#170d25f5;color:#ffdfab;box-shadow:0 8px 32px #000b;font:14px system-ui,sans-serif;text-align:left';
+const heading=document.createElement('div');
+heading.textContent='WATCH CPU VS CPU · NO CONTROLLER';
+heading.style.cssText='font-weight:800;letter-spacing:.06em;margin-bottom:9px';
+spectator.append(heading);
+const pickers=document.createElement('div');
+pickers.style.cssText='display:flex;gap:8px;margin-bottom:9px';
+function makePicker(labelText,selected){
+ const wrap=document.createElement('label');
+ wrap.style.cssText='flex:1;min-width:0;font-size:12px;display:grid;gap:4px';
+ const label=document.createElement('span');label.textContent=labelText;
+ const select=document.createElement('select');
+ select.style.cssText='width:100%;padding:9px 5px;background:#fff3df;color:#20132d;border-radius:5px;border:0;font:600 13px system-ui';
+ roster.forEach((g,i)=>{const op=document.createElement('option');op.value=String(i);op.textContent=g.name;select.append(op);});
+ select.value=String(selected);wrap.append(label,select);pickers.append(wrap);return select;
+}
+const cpuOne=makePicker('LEFT FIGHTER',0),cpuTwo=makePicker('RIGHT FIGHTER',1);
+spectator.append(pickers);
+const actions=document.createElement('div');
+actions.style.cssText='display:flex;gap:8px';
+function makeAction(label,primary,callback){
+ const btn=document.createElement('button');btn.type='button';btn.textContent=label;
+ btn.style.cssText='flex:1;padding:12px 9px;border-radius:6px;border:1px solid #e5be7d;cursor:pointer;font:800 13px system-ui;background:'+(primary?'#e7b962':'#31203f')+';color:'+(primary?'#1a1024':'#ffe5b9');
+ btn.addEventListener('click',callback);actions.append(btn);return btn;
+}
+makeAction('SELECT / START',true,()=>{
+ cursor=Number(cpuOne.value);p2cursor=Number(cpuTwo.value);
+ modeIndex=MODE_WATCH;selectionPhase=2;round=1;runGold=0;winStreak=0;
+ startMatch();
+});
+makeAction('BACK / SELECT',false,()=>{
+ pause=false;modeIndex=MODE_WATCH;selectionPhase=1;screen='roster';
+});
+spectator.append(actions);
+const note=document.createElement('div');
+note.textContent='Choose any two goddesses, then click SELECT / START. No controller required.';
+note.style.cssText='font-size:11px;line-height:1.4;margin-top:8px;opacity:.85';
+spectator.append(note);
+document.body.append(spectator);
 function frame(t){const dt=cap((t-lastTime)/1000,0,.045);lastTime=t;update(dt);draw();requestAnimationFrame(frame);}requestAnimationFrame(frame);
 // Local testing helpers do not accept keyboard events or change the controller-only user interface.
 window.__AKKAD_TEST__={state:()=>({screen,modeIndex,cursor,p2cursor,round,runGold,players:fighters.map(f=>({id:f.spec.id,x:f.x,y:f.y,hp:f.hp,anim:f.anim,combo:f.combo,knock:f.knock,attack:f.atk}))}),forceMatch:(id=0,mode=1)=>{cursor=id;modeIndex=mode;round=1;runGold=0;startMatch();}};
