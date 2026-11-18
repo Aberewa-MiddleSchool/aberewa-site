@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aberewa Game Arcade — RODA & Thrones of Akkad</title>
+<meta name="description" content="Two controller-playable games from Aberewa: RODA Capoeira Angola and Thrones of Akkad.">
+<style>
+*{box-sizing:border-box}
+:root{color-scheme:dark}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 60% 0%,#3a2338,#090a0d 65%);color:#f4e8ca;font-family:Georgia,serif}
+header,main,footer{width:min(1140px,calc(100% - 36px));margin:auto}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:26px 0;border-bottom:1px solid #716343}
+.brand{font:bold 15px system-ui,sans-serif;letter-spacing:.2em;color:#ead7a5}
+header a,footer a{color:#ead7a5;text-decoration:none}header a:hover,footer a:hover{text-decoration:underline}
+.eyebrow{font:700 12px system-ui,sans-serif;letter-spacing:.2em;color:#d0ac74}
+h1{font-size:clamp(42px,8vw,95px);line-height:1.03;letter-spacing:-.03em;margin:18px 0}
+.intro{max-width:710px;color:#d5c9c1;line-height:1.6;font-size:18px}
+main{padding:62px 0 70px}
+.games{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:23px;margin-top:40px}
+.game{position:relative;min-height:350px;border:1px solid #807150;border-radius:14px;padding:38px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;overflow:hidden;box-shadow:0 15px 40px #0005}
+.game:before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.85}
+.game>*{position:relative;z-index:1}
+.roda{background:linear-gradient(155deg,#273728,#0c1410 80%)}
+.roda:before{background:radial-gradient(ellipse at 75% 10%,#5b744b66,transparent 65%)}
+.akkad{background:linear-gradient(155deg,#472744,#110a1b 80%)}
+.akkad:before{background:radial-gradient(ellipse at 75% 10%,#a5775566,transparent 65%)}
+.game .number{position:absolute;right:30px;top:24px;opacity:.13;font:bold 110px Georgia,serif}
+.game h2{font-size:clamp(34px,5vw,57px);line-height:1.02;margin:0 0 9px;text-transform:uppercase}
+.game p{line-height:1.5;max-width:400px;margin:0 0 24px;color:#e4d7c6}
+.game a{background:#f2ce80;color:#160e0c;text-decoration:none;font:800 14px system-ui,sans-serif;padding:14px 24px;border-radius:5px}
+.game a:hover{background:#fff0b5}
+.game a:focus-visible,header a:focus-visible{outline:3px solid #fff;outline-offset:4px}
+.note{font:13px system-ui,sans-serif;color:#b8aea9;line-height:1.65;margin-top:27px}
+footer{padding:22px 0 30px;border-top:1px solid #5e5043;font:13px system-ui,sans-serif;color:#b8aea9}
+@media(max-width:760px){.games{grid-template-columns:1fr}.game{min-height:310px;padding:27px}main{padding-top:40px}}
+</style>
+</head>
+<body>
+<header><span class="brand">ABEREWA · GAME ARCADE</span><a href="../">Aberewa home</a></header>
+<main>
+<div class="eyebrow">TWO GAMES · ONE ARCADE</div>
+<h1>Choose your<br>battle.</h1>
+<p class="intro">Two original fighting-game projects, each built around a distinct world and style. Connect an Xbox or compatible Logitech controller and choose your game.</p>
+<div class="games">
+<section class="game roda"><span class="number">01</span>
+<div class="eyebrow">CAPOEIRA ANGOLA</div>
+<h2>RODA</h2><p>Fifteen fighters. Brazilian stages. A tournament to defend the studio.</p>
+<a href="../capoeira-angola-game.html">PLAY RODA</a>
+</section>
+<section class="game akkad"><span class="number">02</span>
+<div class="eyebrow">TWELVE GODDESSES · FOUR THRONES</div>
+<h2>Thrones<br>of Akkad</h2><p>Select one of twelve goddesses and battle in an ancient Mesopotamian-inspired arena. Prototype build.</p>
+<a href="thrones-of-akkad.html">PLAY THRONES OF AKKAD</a>
+</section>
+</div>
+<p class="note">Controller-only gameplay: Xbox and compatible Logitech gamepads. Thrones of Akkad remains a work in progress; not every fighter has unique finished animation artwork.</p>
+</main><footer>ABEREWA GAME ARCADE · <a href="../">School website</a></footer>
+</body></html>
