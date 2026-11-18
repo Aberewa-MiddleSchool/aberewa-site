@@ -5,6 +5,7 @@ let screen='title',modeIndex=0,cursor=0,p2cursor=1,selectionPhase=1,round=1,roun
 let fighters=[],effects=[],callouts=[],result='',pause=false,winStreak=0,activeStage=1,lastTime=performance.now(),clock=0;
 const modes=['ARCADE · 12 FIGHTS','VERSUS CPU','VERSUS · TWO CONTROLLERS','WATCH · CPU VS CPU'];
 let pads=[],edges=[{},{}],noPad='CONNECT XBOX OR LOGITECH CONTROLLER',cooldowns=[0,0];
+let keyboardOnlySpectator=false;
 const MODE_ARCADE=0, MODE_VS_CPU=1, MODE_VS_P2=2, MODE_WATCH=3;
 function img(k){const v=art[k];return v?.complete&&v?.naturalWidth?v:null;}
 function copyColor(h){return h||'#e8b75b'}
@@ -108,11 +109,11 @@ function updateFighter(f,opp,inp,dt){
 function update(dt){clock+=dt;pollPads();const a=pads.length?padInput(0):neutral,b=pads.length>1?padInput(1):neutral;
  for(const f of effects)f.t-=dt;effects=effects.filter(f=>f.t>0);
  for(const f of callouts){f.t-=dt;f.y-=12*dt;}callouts=callouts.filter(f=>f.t>0);
- if(screen==='title'){if(a.ok||b.ok){screen='roster';selectionPhase=1;sound(400,.09);}return;}
+ if(screen==='title'){if(a.ok||b.ok){keyboardOnlySpectator=false;screen='roster';selectionPhase=1;sound(400,.09);}return;}
  if(screen==='roster'){
   const inp=selectionPhase===2&&modeIndex===MODE_VS_P2?b:a;
-  if(a.power1&&selectionPhase===1)modeIndex=(modeIndex+3)%4;
-  if(a.power2&&selectionPhase===1)modeIndex=(modeIndex+1)%4;
+  if(a.power1&&selectionPhase===1){keyboardOnlySpectator=false;modeIndex=(modeIndex+3)%4;}
+  if(a.power2&&selectionPhase===1){keyboardOnlySpectator=false;modeIndex=(modeIndex+1)%4;}
   let here=selectionPhase===1?cursor:p2cursor;
   if(inp.leftTap)here=(here+11)%12;if(inp.rightTap)here=(here+1)%12;
   if(inp.upTap)here=(here+8)%12;if(inp.downTap)here=(here+4)%12;
@@ -177,14 +178,14 @@ function drawEffects(){for(const e of effects){const r=e.r*(1.5-e.t/e.max);ctx.g
 function drawBackdrop(){const bg=img('stage-ishtar');if(bg)ctx.drawImage(bg,0,0,W,H);else rect(0,0,W,H,'#1c1029');rect(0,0,W,H,'#08020bc7');}
 function title(){drawBackdrop();text('THRONES OF AKKAD',W/2,139,72,'#ffe4a0');text('TWELVE GODDESSES  ·  FOUR THRONES  ·  ONE TOURNAMENT',W/2,207,26,'#f5d69a');
  for(let i=0;i<12;i++){const x=214+(i%6)*148,y=285+Math.floor(i/6)*177;const pic=img('card-'+roster[i].id);if(pic)ctx.drawImage(pic,x,y,123,118);}
- text('ALL TWELVE SELECTABLE · SHARED MOVE SYSTEM',W/2,625,17,'#ecd0b4');text('ENTER / SPACE OR GAMEPAD A: CHARACTER SELECT',W/2,655,23,'#ffde9b');text(noPad,W/2,692,14,pads.length?'#baf8cb':'#ffaeae');}
-function rosterScreen(){drawBackdrop();text('CHOOSE YOUR GODDESS',W/2,51,51,'#ffe0a2');text('LB / RB  CHANGE MODE: '+modes[modeIndex],W/2,107,23,'#e8cc9c');
+ text('ALL TWELVE SELECTABLE · SHARED MOVE SYSTEM',W/2,625,17,'#ecd0b4');text('SPACE: CPU VS CPU SELECT  ·  CONTROLLER A: ALL MODES',W/2,655,22,'#ffde9b');text(noPad,W/2,692,14,pads.length?'#baf8cb':'#ffaeae');}
+function rosterScreen(){drawBackdrop();text('CHOOSE YOUR GODDESS',W/2,51,51,'#ffe0a2');text(keyboardOnlySpectator?'KEYBOARD SPECTATOR · CPU VS CPU':'LB / RB  CHANGE MODE: '+modes[modeIndex],W/2,107,23,'#e8cc9c');
  for(let i=0;i<12;i++){const x=148+(i%4)*253,y=151+Math.floor(i/4)*152,chosen=(selectionPhase===1?cursor:p2cursor)===i;
   rect(x-7,y-7,222,137,chosen?'#f1c76c':'#6d5239',9);const pic=img('card-'+roster[i].id);if(pic)ctx.drawImage(pic,x,y,208,123);
   if(chosen){ctx.strokeStyle='#fff0b0';ctx.lineWidth=3;ctx.strokeRect(x-9,y-9,227,140);}
  }
  text(selectionPhase===1?'PLAYER 1 · PRESS A TO SELECT':'PLAYER 2 / CPU RIVAL · PRESS A TO SELECT',W/2,637,24,'#ffe5ab');
- text(selectionPhase===2&&modeIndex===MODE_VS_P2?'SECOND CONTROLLER SELECTS':'D-PAD / ARROWS: SELECT  ·  ENTER: CONFIRM  ·  ESC: BACK  ·  NO KEYBOARD FIGHTING',W/2,682,15,'#eee0ca');
+ text(selectionPhase===2&&modeIndex===MODE_VS_P2?'SECOND CONTROLLER SELECTS':'ARROWS: SELECT  ·  SPACE / ENTER: CONFIRM  ·  ESC: BACK  ·  CONTROLLERS: FIGHT',W/2,682,15,'#eee0ca');
  if(callouts.length)drawEffects();}
 function centerOverlay(head,sub,detail){rect(0,0,W,H,'#0d0613be');text(head,W/2,245,64,'#ffdf99');text(sub,W/2,340,30,'#eed3a5');text(detail,W/2,457,24,'#fff5d3');}
 function draw(){if(screen==='title'){title();return;}if(screen==='roster'){rosterScreen();return;}
@@ -201,9 +202,10 @@ document.addEventListener('keydown',event=>{
  if(target&&(/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(target.tagName)||target.isContentEditable))return;
  const key=event.key;
  if(screen==='title'&&(key==='Enter'||key===' ')){
-  event.preventDefault();screen='roster';selectionPhase=1;modeIndex=MODE_WATCH;sound(400,.09);return;
+  event.preventDefault();keyboardOnlySpectator=true;screen='roster';selectionPhase=1;modeIndex=MODE_WATCH;sound(400,.09);return;
  }
  if(screen==='roster'){
+  keyboardOnlySpectator=true;modeIndex=MODE_WATCH;
   let used=true;
   if(key==='ArrowLeft')selectionPhase===1?cursor=(cursor+11)%12:p2cursor=(p2cursor+11)%12;
   else if(key==='ArrowRight')selectionPhase===1?cursor=(cursor+1)%12:p2cursor=(p2cursor+1)%12;
@@ -220,7 +222,7 @@ document.addEventListener('keydown',event=>{
   return;
  }
  if((key==='Escape'||key==='Backspace')&&screen!=='title'){
-  event.preventDefault();pause=false;screen='roster';modeIndex=MODE_WATCH;selectionPhase=1;
+  event.preventDefault();keyboardOnlySpectator=true;pause=false;screen='roster';modeIndex=MODE_WATCH;selectionPhase=1;
  }
 });
 const spectator=document.createElement('section');
@@ -234,7 +236,7 @@ spectator.append(heading);
 const selectMenu=document.createElement('button');
 selectMenu.type='button';selectMenu.textContent='OPEN CHARACTER SELECT';
 selectMenu.style.cssText='width:100%;padding:10px;margin:0 0 10px;background:#442b59;color:#ffdfab;border:1px solid #e5be7d;border-radius:6px;cursor:pointer;font-weight:800';
-selectMenu.addEventListener('click',()=>{pause=false;screen='roster';modeIndex=MODE_WATCH;selectionPhase=1;});
+selectMenu.addEventListener('click',()=>{keyboardOnlySpectator=true;pause=false;screen='roster';modeIndex=MODE_WATCH;selectionPhase=1;});
 spectator.append(selectMenu);
 const pickers=document.createElement('div');
 pickers.style.cssText='display:flex;gap:8px;margin-bottom:9px';
