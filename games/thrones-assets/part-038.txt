@@ -22,7 +22,20 @@ function padInput(i){let p=pads[i],prev=edges[i]||{},b={};for(let j=0;j<17;j++)b
  edges[i]={...b,left,right,up,down};return res;}
 const neutral={walk:0,crouch:false,jump:false,kick:false,palm:false,heavy:false,power1:false,power2:false,guard:false,pause:false,back:false,leftTap:false,rightTap:false,upTap:false,downTap:false,ok:false,cancel:false};
 function player(spec,x,side,controller){return {spec,x,y:0,vy:0,dx:0,side,controller,hp:1000,atk:null,atkTime:0,atkHit:false,attackRecovery:0,stun:0,knock:0,knockElapsed:0,guard:false,crouch:false,anim:'idle',walkTimer:0,breathSeed:Math.random()*4,combo:0,comboTimer:0,display:''};}
-const attacks={palm:{dur:.32,wind:.10,act:.12,damage:40,range:122,push:18,label:'LOW PALM'},kick:{dur:.46,wind:.16,act:.14,damage:67,range:175,push:28,label:'LOW SWEEP'},heavy:{dur:.64,wind:.24,act:.17,damage:95,range:198,push:42,label:'STRONG KICK'},power1:{dur:.75,wind:.25,act:.24,damage:112,range:228,push:48,label:'DIVINE POWER'},power2:{dur:.90,wind:.33,act:.26,damage:137,range:250,push:54,label:'DIVINE POWER'}};
+// Every goddess shares the same attack data. Character-specific frames alter presentation only.
+const attacks={
+ palm:{dur:.32,wind:.10,act:.12,damage:40,range:122,push:18,label:'PALM',height:'mid'},
+ kick:{dur:.46,wind:.16,act:.14,damage:67,range:175,push:28,label:'KICK',height:'mid'},
+ heavy:{dur:.64,wind:.24,act:.17,damage:95,range:198,push:42,label:'STRONG KICK',height:'mid'},
+ power1:{dur:.75,wind:.25,act:.24,damage:112,range:228,push:48,label:'DIVINE POWER',height:'mid'},
+ power2:{dur:.90,wind:.33,act:.26,damage:137,range:250,push:54,label:'DIVINE POWER',height:'mid'},
+ crouchPalm:{dur:.35,wind:.12,act:.12,damage:40,range:135,push:18,label:'CROUCH PALM',height:'low'},
+ crouchKick:{dur:.49,wind:.17,act:.15,damage:67,range:190,push:28,label:'LOW SWEEP',height:'low'},
+ crouchHeavy:{dur:.66,wind:.25,act:.18,damage:95,range:205,push:42,label:'LOW STRONG KICK',height:'low'},
+ airPalm:{dur:.34,wind:.09,act:.12,damage:40,range:142,push:18,label:'AIR PALM',height:'air'},
+ airKick:{dur:.46,wind:.13,act:.15,damage:67,range:190,push:28,label:'FLYING KICK',height:'air'},
+ airHeavy:{dur:.60,wind:.18,act:.18,damage:95,range:206,push:42,label:'FLYING STRONG KICK',height:'air'}
+};
 function addCall(txt,x,y,color='#f6d992',time=.9){callouts.push({txt,x,y,color,t:time,max:time});}
 function fx(x,y,color,n=14,r=40){effects.push({x,y,color,n,r,t:.42,max:.42});}
 function startMatch(){pause=false;roundTime=99;effects=[];callouts=[];const m=modeIndex;
@@ -42,10 +55,14 @@ function cpuInput(me,opp,dt,slot){if(me.knock||me.stun||me.atk)return neutral;
  return o;}
 function finishCombo(f){if(!f.combo)return;const amt=[0,300,900,1100][Math.min(f.combo,3)];
  if(f.controller===0 || (f.controller===1&&modeIndex===MODE_VS_P2)){runGold+=amt;addCall(`${f.combo} HIT${f.combo===1?'':'S'} · +${amt.toLocaleString()} GOLD`,f.x,188,'#f7d17f',1.2);}f.combo=0;f.comboTimer=0;}
-function startAttack(f,type){if(f.atk||f.stun||f.knock||f.attackRecovery>0||f.y<-2)return;
- f.atk=type;f.atkTime=0;f.atkHit=false;f.guard=false;f.crouch=f.spec.id==='ishtar'||f.crouch;f.anim=type;sound(type.startsWith('power')?520:260,.07,.05);}
+function startAttack(f,type){if(f.atk||f.stun||f.knock||f.attackRecovery>0)return;
+ f.atk=type;f.atkTime=0;f.atkHit=false;f.guard=false;f.crouch=attacks[type].height==='low';f.anim=type;sound(type.startsWith('power')?520:260,.07,.05);}
 function doHit(att,def){let m=attacks[att.atk];if(att.atkHit)return;att.atkHit=true;let dx=(def.x-att.x)*att.side,dist=Math.abs(def.x-att.x);
  if(dx<0||dist>m.range+30||def.knock>0)return;
+ // Crouch sweeps pass under airborne opponents; air blows need an opponent at reachable height.
+ if(m.height==='low'&&def.y< -65)return;
+ if(m.height==='air'&&Math.abs(att.y-def.y)>185)return;
+ if(m.height==='mid'&&def.y< -185)return;
  if(def.guard){fx(def.x,GROUND-126,'#8bddff',7,25);def.stun=.09;addCall('BLOCK',def.x,GROUND-260,'#a4ebff',.45);return;}
  const damage=m.damage;def.hp=Math.max(0,def.hp-damage);def.stun=.23;def.anim='hurt';def.x=cap(def.x+att.side*m.push,120,1160);
  if(att.comboTimer<=0)finishCombo(att);att.combo=Math.min(3,att.combo+1);att.comboTimer=1.10;
@@ -53,7 +70,7 @@ function doHit(att,def){let m=attacks[att.atk];if(att.atkHit)return;att.atkHit=t
   c=att.atk==='power1'?att.spec.accent:'#f2d899';
   addCall(att.atk==='power1'?att.spec.power1.toUpperCase():att.spec.power2.toUpperCase(),(att.x+def.x)/2,GROUND-330,c,1.05);
  }
- fx(def.x,GROUND-(att.spec.id==='ishtar'?80:154),c,att.atk.startsWith('power')?18:10,att.atk.startsWith('power')?80:44);
+ fx(def.x,GROUND-(m.height==='low'?85:m.height==='air'?220:180),c,att.atk.startsWith('power')?18:10,att.atk.startsWith('power')?80:44);
  addCall(`${damage} DAMAGE`,def.x,GROUND-278,'#fff0c0',.55);sound(90,.14,.13);
  if(att.combo===3){def.knock=1.36;def.knockElapsed=0;def.stun=0;def.vy=-215;def.y=-2;def.dx=att.side*90;def.anim='down';addCall('THREE-HIT KNOCKDOWN!',(att.x+def.x)/2,GROUND-370,'#ffdb83',1.1);finishCombo(att);}
  if(def.hp<=0){def.hp=0;finishCombo(att);endMatch(att);}
@@ -68,14 +85,21 @@ function updateFighter(f,opp,inp,dt){
  f.stun=Math.max(0,f.stun-dt);f.attackRecovery=Math.max(0,f.attackRecovery-dt);
  if(f.knock>0){f.knock-=dt;f.knockElapsed+=dt;f.x=cap(f.x+f.dx*dt,80,1200);f.dx*=.97;f.vy+=900*dt;f.y=Math.min(0,f.y+f.vy*dt);if(f.y>=0)f.vy=0;f.anim='down';f.crouch=true; if(f.knock<=0) {f.anim='idle';f.crouch=false;}return;}
  if(f.stun>0){f.anim='hurt';return;}
- if(f.atk){const m=attacks[f.atk],speed=f.spec.id==='ninlil'?1.14:f.spec.id==='ereshkigal'?.88:1;
-  f.atkTime+=dt*speed;f.anim=f.atk;f.crouch=f.spec.id==='ishtar'||f.spec.deep;
+ if(f.atk){const m=attacks[f.atk];
+  f.atkTime+=dt;f.anim=f.atk;f.crouch=m.height==='low';
+  // Air attacks preserve jump gravity and horizontal momentum rather than freezing in space.
+  if(f.y<0||f.vy<0){f.vy+=1000*dt;f.y=Math.min(0,f.y+f.vy*dt);f.x=cap(f.x+(inp.walk||0)*130*dt,85,1195);if(f.y===0)f.vy=0;}
   if(!f.atkHit&&f.atkTime>=m.wind)doHit(f,opp);
-  if(f.atkTime>=m.dur){f.atk=null;f.attackRecovery=.07;f.crouch=false;f.anim='idle';}return;}
- if(f.y<0||f.vy<0){f.vy+=1000*dt;f.y=Math.min(0,f.y+f.vy*dt);f.x=cap(f.x+(inp.walk||0)*180*dt,85,1195);f.anim='jump';f.crouch=false;
+  if(f.atkTime>=m.dur){f.atk=null;f.attackRecovery=.07;f.crouch=false;f.anim=f.y<0?'jump':'idle';}return;}
+ if(f.y<0||f.vy<0){
+  if(f.attackRecovery<=0){if(inp.heavy){startAttack(f,'airHeavy');return;}if(inp.kick){startAttack(f,'airKick');return;}if(inp.palm){startAttack(f,'airPalm');return;}}
+  f.vy+=1000*dt;f.y=Math.min(0,f.y+f.vy*dt);f.x=cap(f.x+(inp.walk||0)*180*dt,85,1195);f.anim='jump';f.crouch=false;
   if(f.y===0){f.vy=0;f.anim='land';f.attackRecovery=.11;}return;}
  if(inp.jump){f.vy=-475;f.y=-3;f.anim='jump';f.crouch=false;sound(410,.06,.04);return;}
- if(f.attackRecovery<=0){for(const k of ['power2','power1','heavy','kick','palm'])if(inp[k]){startAttack(f,k);return;}}
+ if(f.attackRecovery<=0){for(const k of ['power2','power1','heavy','kick','palm'])if(inp[k]){
+   const kind=inp.crouch&&['heavy','kick','palm'].includes(k)?'crouch'+k[0].toUpperCase()+k.slice(1):k;
+   startAttack(f,kind);return;
+  }}
  f.guard=!!inp.guard;f.crouch=!!inp.crouch;
  const delta=(inp.walk||0)*184*dt;
  if(!f.crouch&&!f.guard&&delta!==0){f.x=cap(f.x+delta,85,1195);f.walkTimer+=dt*11;f.anim='walk';}
@@ -115,14 +139,18 @@ function drawFighter(f){let id=f.spec.id,idx=0,deep=f.spec.deep;
  if(f.knock>0){idx=f.knockElapsed<.14?13:f.knockElapsed<.32?14:15;}
  else if(f.stun>0)idx=Math.floor(clock*12)%2?12:13;
  else if(f.atk){const t=cap(f.atkTime/attacks[f.atk].dur,0,.999);
-  if(id==='ishtar')idx=t<.2?14:15;
-  else if(f.atk==='palm')idx=t<.42?12:13;
-  else if(f.atk==='kick')idx=[8,9,10,11][Math.floor(t*4)];
-  else if(f.atk==='heavy')idx=[8,9,10,11][Math.floor(t*4)];
-  else idx=[12,9,10,11,12][Math.floor(t*5)];
+  const low=attacks[f.atk].height==='low',air=attacks[f.atk].height==='air';
+  // Ishtar's low striking style and Gula's upright counter-striking style use distinct sprite sequences.
+  const frames=low?(id==='ishtar'?[14,15,15,14]:[15,14,15,14]):
+    air?(id==='gula'?[4,8,10,11]:[4,9,10,11]):
+    f.atk==='palm'?(id==='gula'?[12,13,12,13]:[12,13,13,12]):
+    f.atk==='kick'?(id==='gula'?[9,10,11,8]:[8,9,10,11]):
+    f.atk==='heavy'?(id==='gula'?[10,11,8,9]:[8,9,10,11]):
+    id==='gula'?[13,9,11,12,13]:[12,9,10,11,12];
+  idx=frames[Math.min(frames.length-1,Math.floor(t*frames.length))];
  }else if(f.anim==='jump')idx=0; // upright airborne pose, never reuse knee-up kick frames for jumping
  else if(f.anim==='walk')idx=4+Math.floor(f.walkTimer%4);
- else if(f.crouch||deep)idx=15;
+ else if(f.crouch)idx=15;
  else if(f.guard)idx=12;
  else idx=0; // stationary guard: breathing ONLY, no stepping cycle.
  const picture=img(id+'-'+idx);if(!picture)return;
@@ -132,9 +160,9 @@ function drawFighter(f){let id=f.spec.id,idx=0,deep=f.spec.deep;
  const resting=!f.atk&&f.anim==='idle'&&!f.stun&&!f.knock;
  const breath=resting?1+Math.sin(clock*2.1+f.breathSeed)*.0037:1;
  ctx.scale(1,breath);
- ctx.imageSmoothingEnabled=true;ctx.drawImage(picture,-175,-270,350,278);
+ ctx.imageSmoothingEnabled=true;ctx.drawImage(picture,-265,-418,530,426);
  // Impact VFX follow strike height. Ishtar's attacks are always LOW and crouched.
- if(f.atk&&f.atkHit){const m=attacks[f.atk],p=Math.max(0,1-(f.atkTime-m.wind)/.3);if(p>0){const y=id==='ishtar'?-70:-158;
+ if(f.atk&&f.atkHit){const m=attacks[f.atk],p=Math.max(0,1-(f.atkTime-m.wind)/.3);if(p>0){const y=m.height==='low'?-85:m.height==='air'?-205:-184;
  ctx.globalAlpha=p*.85;ctx.strokeStyle=f.atk==='power2'?'#fff2bb':f.spec.accent;ctx.lineWidth=f.atk.startsWith('power')?13:7;ctx.beginPath();ctx.ellipse(m.range*.46,y,m.range*.42,23,0,-.8,1.5);ctx.stroke();ctx.globalAlpha=1;}}
  ctx.restore();}
 function hud(){rect(0,0,W,120,'#170b20ec');const p=fighters[0],q=fighters[1];text(p.spec.name,34,28,29,'#fce0a5','left');text(q.spec.name,W-34,28,29,'#fce0a5','right');
@@ -142,14 +170,14 @@ function hud(){rect(0,0,W,120,'#170b20ec');const p=fighters[0],q=fighters[1];tex
  rect(34,59,bw*(p.hp/1000),22,p.hp<300?'#d14c59':'#e7bd63',6);rect(W-34-bw+bw*(1-q.hp/1000),59,bw*(q.hp/1000),22,q.hp<300?'#d14c59':'#80b5dc',6);
  text(String(Math.ceil(roundTime)),W/2,59,50,'#fff1ca');text('◆ '+runGold.toLocaleString()+' GOLD',W/2,108,20,'#ffde85');
  if(modeIndex===MODE_ARCADE)text(`MATCH ${round} / 12`,W/2,145,18,'#ffedb6');
- rect(0,H-54,W,54,'#160d21df');text('D-PAD / STICK  MOVE  ·  DOWN  CROUCH  ·  A  JUMP  ·  X  PALM  ·  B  KICK  ·  Y  HEAVY  ·  LB / RB  POWERS  ·  LT  GUARD',W/2,H-28,16,'#f8dca3');
+ rect(0,H-54,W,54,'#160d21df');text('MOVE: STICK  ·  DOWN + X/B/Y: LOW ATTACKS  ·  A: JUMP  ·  AIR X/B/Y: AIR ATTACKS  ·  LB/RB: POWERS  ·  LT: GUARD',W/2,H-28,16,'#f8dca3');
 }
 function drawEffects(){for(const e of effects){const r=e.r*(1.5-e.t/e.max);ctx.globalAlpha=e.t/e.max;ctx.strokeStyle=e.color;ctx.lineWidth=9*e.t/e.max+2;ctx.beginPath();ctx.arc(e.x,e.y,r,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
  for(const e of callouts){ctx.globalAlpha=cap(e.t/Math.min(e.max,.45),0,1);text(e.txt,e.x,e.y,24,e.color);ctx.globalAlpha=1;}}
 function drawBackdrop(){const bg=img('stage-ishtar');if(bg)ctx.drawImage(bg,0,0,W,H);else rect(0,0,W,H,'#1c1029');rect(0,0,W,H,'#08020bc7');}
 function title(){drawBackdrop();text('THRONES OF AKKAD',W/2,139,72,'#ffe4a0');text('TWELVE GODDESSES  ·  FOUR THRONES  ·  ONE TOURNAMENT',W/2,207,26,'#f5d69a');
  for(let i=0;i<12;i++){const x=214+(i%6)*148,y=285+Math.floor(i/6)*177;const pic=img('card-'+roster[i].id);if(pic)ctx.drawImage(pic,x,y,123,118);}
- text('ALL TWELVE SELECTABLE · SHARED TEST ANIMATIONS',W/2,625,17,'#ecd0b4');text('PRESS A / BOTTOM FACE BUTTON TO ENTER',W/2,655,25,'#ffde9b');text(noPad,W/2,692,14,pads.length?'#baf8cb':'#ffaeae');}
+ text('ALL TWELVE SELECTABLE · SHARED MOVE SYSTEM',W/2,625,17,'#ecd0b4');text('PRESS A / BOTTOM FACE BUTTON TO ENTER',W/2,655,25,'#ffde9b');text(noPad,W/2,692,14,pads.length?'#baf8cb':'#ffaeae');}
 function rosterScreen(){drawBackdrop();text('CHOOSE YOUR GODDESS',W/2,51,51,'#ffe0a2');text('LB / RB  CHANGE MODE: '+modes[modeIndex],W/2,107,23,'#e8cc9c');
  for(let i=0;i<12;i++){const x=148+(i%4)*253,y=151+Math.floor(i/4)*152,chosen=(selectionPhase===1?cursor:p2cursor)===i;
   rect(x-7,y-7,222,137,chosen?'#f1c76c':'#6d5239',9);const pic=img('card-'+roster[i].id);if(pic)ctx.drawImage(pic,x,y,208,123);
