@@ -53,4 +53,4 @@ function jump(n){pos=Math.max(0,Math.min(slides.length-1,n));render();window.scr
 $('prev').onclick=()=>jump(pos-1);$('next').onclick=()=>jump(pos+1);$('full').onclick=()=>{const el=$('slide');if(document.fullscreenElement){document.exitFullscreen().catch(()=>{})}else if(el.requestFullscreen){el.requestFullscreen().catch(()=>{})}};
 document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName))return;if(e.key==='ArrowRight')jump(pos+1);if(e.key==='ArrowLeft')jump(pos-1)});
 render();
-</script><footer class="site-dashboard-footer"><div class="school-dashboard-entry"><a class="dashboard-site-link" href="https://aberewamiddleschool.org/math-teacher.html#inquiries">Dashboard sign in <span aria-hidden="true">↗</span></a></div></footer></body></html>
+</script><footer class="site-dashboard-footer"><p class="footer-links"><a href="legal.html">Legal &amp; Professional Standards</a></p><div class="school-dashboard-entry"><a class="dashboard-site-link" href="https://aberewamiddleschool.org/math-teacher.html#inquiries">Dashboard sign in <span aria-hidden="true">↗</span></a></div></footer></body></html>
