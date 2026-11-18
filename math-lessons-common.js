@@ -17,6 +17,7 @@ export function gradeLesson(lesson, answers) {
 }
 export function attemptResult(attempt, lessons, legacyGrade) {
   if (!attempt.lessonId) return {...legacyGrade(attempt.day,attempt.answers),lesson:'Original session '+attempt.day};
+  if (attempt.lessonId === 'rise-over-run-positive-slope') {const {correct,total}=attempt;if (!Array.isArray(attempt.answers)||attempt.answers.length!==3||!Number.isInteger(correct)||total!==3||correct<0||correct>3) throw new Error('Invalid slope exit ticket');return {correct,total:3,score:Math.round(100*correct/3),missed:[],lesson:'Algebra — Rise Over Run (Positive Slope)'};}
   const lesson=lessons.get(attempt.lessonId);
   // Published lesson content is immutable, including after archival.
   if (lesson) return {...gradeLesson(lesson,attempt.answers),lesson:lesson.title};
