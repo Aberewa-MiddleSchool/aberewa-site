@@ -26,6 +26,30 @@
       return result;
     };
   }
+  // RODA's original HUD draws "SCORE 1,000" directly to the canvas.
+  // Intercept only these two precise HUD text positions; leave all other
+  // fighter names, life bars, move names, and canvas drawing unchanged.
+  const previousHud = window.hud;
+  if (typeof previousHud === 'function' && typeof window.text === 'function') {
+    window.hud = function moedaHud(...args) {
+      const drawText = window.text;
+      window.text = function moedaHudText(label, x, y, ...rest) {
+        if (typeof label === 'string' && x === 640 && y === 26 &&
+            label.startsWith('SCORE ') && typeof arcadeScore !== 'undefined') {
+          return drawText.call(this, 'EARNED ' + money(arcadeScore.total), x, y, ...rest);
+        }
+        if (typeof label === 'string' && x === 640 && y === 174) {
+          return drawText.call(this, message(label), x, y, ...rest);
+        }
+        return drawText.call(this, label, x, y, ...rest);
+      };
+      try { return previousHud.apply(this, args); }
+      finally { window.text = drawText; }
+    };
+  } else {
+    console.warn('[RODA earnings] Cannot locate fighting HUD; existing gameplay remains intact.');
+  }
+
   const previousScoreBoard = window.paintScoreBoard;
   if (typeof previousScoreBoard === 'function') {
     window.paintScoreBoard = function moedaScoreBoard() {
