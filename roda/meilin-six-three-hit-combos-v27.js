@@ -35,7 +35,7 @@
   }
   const previousAttackRenderer=drawRedesignedAttack;
   drawRedesignedAttack=function rodaMeilinTechniqueRenderer(p) {
-    if (p.id!==ID || p.attack===null || p.attack===5 || p.attackCrouched)
+    if (p.id!==ID || p.attack===null || p.attack===5)
       return previousAttackRenderer(p);
     const base=moveFor(p,p.attack);
     if (!Array.isArray(base.phases) || base.phases.length!==3) return previousAttackRenderer(p);
