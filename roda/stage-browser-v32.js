@@ -13,7 +13,7 @@
   }
   const selected = id => ((Number(id) % stageList.length) + stageList.length) % stageList.length;
   const story = () => mode === 'solo' || mode === 'watcharcade' || !!arcadeAutoplay;
-  const current = () => story() ? (arcadeArenaOverride ?? arcadeStages[scene==='menu' || scene==='select'?0:Number(arcadeIndex)||0] ?? 0) : stageChoice;
+  const current = () => story() ? (arcadeArenaOverride ?? storyArena(scene==='menu' || scene==='select'?0:Number(arcadeIndex)||0) ?? 0) : stageChoice;
   const gameCanvas = q('#game');
   const css = document.createElement('style');
   css.textContent = `

@@ -10,10 +10,18 @@
     select.add(new Option(profiles[fighter].name+(fighter===15?' · Boss':''),fighter));
   }
   select.value='18';
+  const motion=document.createElement('select'), motionLabel=document.createElement('label');
+  for(const label of ['Kick combinations','Retreat','Jump','Hit reaction','Knockdown','Victory pose']){
+    motion.add(new Option(label,label));
+  }
+  motionLabel.append('Animation ',motion);select.closest('label').after(motionLabel);
+  motion.onchange=()=>{age=0;last=0;playing=true;labels();redraw();schedule();};
   function labels(){
     row.querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-pressed',String(slot===i)));
     caption.replaceChildren();
-    for(const [i,phase] of move().phases.entries()){
+    row.hidden=motion.selectedIndex!==0;
+    if(motion.selectedIndex)caption.textContent=motion.value;
+    for(const [i,phase] of (motion.selectedIndex?[]:move().phases).entries()){
       if(i)caption.append(' → ');
       const span=document.createElement('span');
       span.textContent=(techniqueBook[phase.key]?.name || phase.name || move().name);caption.append(span);
@@ -34,7 +42,20 @@
     g.fillStyle='#f3d699';g.font='bold 18px system-ui';g.fillText(profiles[fighter].name,18,30);
     g.font='14px system-ui';g.fillText(profiles[fighter].home,18,54);
     g.fillStyle='#211d1866';g.beginPath();g.ellipse(375,290,75,10,0,0,Math.PI*2);g.fill();
-    paintFighter(g,body,375,290);
+    if(motion.selectedIndex){
+      const t=age%75;
+      body.attack=null;body.vx=0;
+      if(motion.value==='Victory pose')body.victory=true;
+      if(motion.value==='Retreat')body.tumble={axis:-1,elapsed:t%30,duration:30};
+      if(motion.value==='Hit reaction' && t<28){body.stun=28-t;body.hitAt=tick-t;}
+      if(motion.value==='Knockdown' && t<54){body.down=54-t;body.hitAt=tick-t;}
+      if(motion.value==='Jump' && t<44){
+        body.takeoff=t<4?4-t:0;body.landing=t>37?44-t:0;
+        const flight=Math.max(0,Math.min(1,(t-4)/33));
+        body.y=Math.sin(Math.PI*flight)*100;body.vy=Math.cos(Math.PI*flight)*14;
+      }
+    }
+    paintFighter(g,body,375,290-body.y);
     const phase=at>=m.start && at<m.start+m.active?attackPhase(m,at).phase:-1;
     [...caption.children].forEach((span,i)=>{
       span.style.color=i===phase?'#ffda77':'';
@@ -49,7 +70,7 @@
     const m=move();
     if(age>=24+m.start+m.active+m.end+35){
       age=0;
-      if(cycling){slot=(slot+1)%6;labels();}
+      if(cycling && !motion.selectedIndex){slot=(slot+1)%6;labels();}
     }
     redraw();schedule();
   }
@@ -57,7 +78,7 @@
     if(playing && visible && !document.hidden && !raf)raf=requestAnimationFrame(frame);
   }
   function restart(all){
-    cycling=all;age=0;last=0;playing=true;labels();redraw();schedule();
+    motion.selectedIndex=0;cycling=all;age=0;last=0;playing=true;labels();redraw();schedule();
   }
   for(const [i,m] of characterMoves[0].entries()){
     const button=document.createElement('button');button.type='button';button.textContent=m.button;

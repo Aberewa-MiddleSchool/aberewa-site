@@ -59,7 +59,7 @@
   const oldAdvanceComic=advanceComicEnding;
   advanceComicEnding=function rodaComicNext(...args){
     const result=oldAdvanceComic.apply(this,args);
-    if(pendingComic&&(scene!=='ending'||comic.classList.contains('hidden')))toScore();
+    if(pendingComic&&(comic.classList.contains('hidden')))toScore();
     return result;
   };
   const oldReturnToMenu=returnToMenu;

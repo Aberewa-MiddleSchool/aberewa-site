@@ -52,3 +52,23 @@
 .dalva-panels figcaption{padding:9px 12px;font:500 clamp(14px,1.1vw,18px)/1.4 Georgia,serif}
 #dalvacontinue{margin-top:14px;padding:10px 24px}
 @media(max-width:650px){.dalva-panels{grid-template-columns:1fr}}
+#cabinet #title{padding:0;background:#13180d;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cast-splash{width:100%;height:83%;object-fit:contain}
+.cast-title-controls{display:flex;justify-content:center;gap:.5rem;flex-wrap:wrap;padding:.5rem}
+.cast-select{display:grid;grid-template-columns:minmax(120px,23%) minmax(0,1fr);gap:12px;align-items:start}
+#fullcard{background:#222418;color:#ffdf90;border:2px solid #bf9344;margin:0;text-align:center;position:sticky;top:0}
+#fullcard img,.result-art,#winner-list img{display:block;width:100%;height:auto}
+#fullcard figcaption,#winner-list figcaption{padding:.5rem;font:600 clamp(13px,1.4vw,21px) Georgia,serif}
+#quickstage{display:flex;align-items:center;gap:1rem;padding:.5rem;color:#ffe2a1;background:#232a1b}
+#quickstage[hidden]{display:none}
+#quickstage select{max-width:76%;font:inherit;color:#201e13;background:#fff0c8;padding:.4rem}
+#cabinet #winners,#cabinet #result{background:linear-gradient(#132019aa,#121b12e8),url('../arenas/0.webp') center/cover;overflow-y:auto}
+#cabinet #winners{display:block;padding:1rem;text-align:center;color:#ffe9bb}
+#winner-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,160px));justify-content:center;gap:.5rem;margin:1rem}
+#winner-list figure{margin:0;background:#1d2317}
+#cabinet .result-art{height:clamp(95px,24vh,250px);object-fit:contain}
+#cabinet #result canvas[hidden]{display:none}
+@media(max-width:650px){.cast-select{grid-template-columns:minmax(0,1fr)}#fullcard{position:static;display:flex;align-items:center;justify-content:center}#fullcard img{height:128px;width:auto}#quickstage{gap:.25rem}}
+#story-opponent-card{width:100%;height:clamp(115px,25vh,260px);object-fit:contain}
+#storyportrait[hidden]{display:none}
+#cabinet .fightercard img{width:100%;height:clamp(77px,9vw,135px);object-fit:cover;object-position:center 7%}

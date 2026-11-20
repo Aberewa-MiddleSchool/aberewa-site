@@ -1,14 +1,14 @@
 (() => {
   const gallery=document.querySelector('.fighter-gallery-grid');
-  for(const id of playableIds){
+  for(const id of [...playableIds,15]){
     const card=document.createElement('details'),heading=document.createElement('summary');
     const photo=new Image();
-    photo.src=new URL('portraits/'+id+'.webp',costumeRoot);
+    photo.src=new URL('cast/card-'+id+'.webp',costumeRoot);
     photo.alt='';
     photo.loading='lazy';
     photo.width=320;
-    photo.height=320;
-    heading.append(photo,profiles[id].name);
+    photo.height=530;
+    heading.append(photo,profiles[id].name+(id===15?' · CPU boss':''));
     const bio=document.createElement('p');
     bio.textContent=(id>=16?'Afro-Brazilian · ':'')+profiles[id].home+' · '+fighterTraits[id].style;
     const home=document.createElement('p');

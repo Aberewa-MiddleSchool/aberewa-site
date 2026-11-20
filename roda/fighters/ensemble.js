@@ -11,7 +11,7 @@ const newPlayers = [
 const costumeRoot = new URL('.',document.currentScript.src);
 const costumes = rodaRigs.map((_,id) => {
   const art = new Image();
-  art.src = new URL(id+'.webp',costumeRoot);
+  art.src = new URL(id+'.webp'+(id>=11&&id<=13?'?v=skull':''),costumeRoot);
   return art;
 });
 
@@ -77,6 +77,7 @@ const kickHolds=[
   [5,9],[8,13],[8,15],[3,8],[6,13],[4,8],[7,11]
 ];
 function paintFighter(g,p,x,y,zoom=1,card=false) {
+  if(!card && window.drawCastState && drawCastState(g,p,x,y,zoom*.68))return;
   if(p.id<16 && !card){
     const prior=ctx;ctx=g;g.save();
     try{
@@ -143,7 +144,7 @@ function drawTravelStep(p) {
   let sheet = stepSheets.get(p.id);
   if (!sheet) {
     sheet = new Image();
-    sheet.src = new URL('steps/' + p.id + '.webp', costumeRoot);
+    sheet.src = new URL('steps/' + p.id + '.webp'+(p.id>=11&&p.id<=13?'?v=skull':''), costumeRoot);
     stepSheets.set(p.id, sheet);
   }
   const guard = costumes[p.id];
