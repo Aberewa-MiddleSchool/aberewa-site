@@ -7,7 +7,7 @@ const newPlayers = [
   ['Dalva Brito','Recôncavo da Bahia, Bahia','Low entries and turning kicks','#555688','I heard the change in the beat.',1.11],
   ['Neide Cruz','Belo Horizonte, Minas Gerais','Compact footwork and quick returns','#dda436','There is always another answer.',.94],
   ['Marília Nascimento','Rio de Janeiro, Rio de Janeiro','Measured pressure and lateral kicks','#884b79','I saved that turn for the last exchange.',1.12],
-  ['Aisha','Salvador, Bahia','Sentinel of 2323 · Inverted kicks','#39d8d1','Now you know whose door to open.',1.0]
+  ['Aisha','Salvador, Bahia','Sentinel of 2323 · Inverted kicks','#39d8d1','My reflection never made me work for that opening.',1.0]
 ];
 const costumeRoot = new URL('.',document.currentScript.src);
 const costumes = rodaRigs.map((_,id) => {

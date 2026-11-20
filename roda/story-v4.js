@@ -25,18 +25,18 @@ const storyChapters=[
 let storyTime=0,storyEnding=false;
 let sentinelPanel=0;
 const sentinelCaptions=[
-  'Nestor steps aside. The handle on the skull-marked door will not turn.',
-  'Three notes sound beneath the floorboards. With each note, a strip of turquoise light grows longer.',
-  'The wall becomes a mirror. In its glass, the same room stands three centuries later.',
-  'A woman crosses the bright seam. “Aisha. Salvador, 2323. In my time, this studio is still here.”',
-  '“That man locked the door from his side. My roda opens it from ours.” Aisha sets her heel on the maple floor.',
-  'She lowers into ginga. “Play me first. When the mirror opens, he has to face you himself.”'
+  'Nestor steps aside. As the champion passes the skull-marked door, a berimbau sounds twice from the opposite wall.',
+  'A turquoise line lights up the floor. Somewhere in Salvador, in 2323, Aisha hears her own two notes come back.',
+  'For months, Aisha has been tuning her studio mirror to carry a roda across time. Tonight someone answers from the other side.',
+  'Aisha steps through. “I’m Aisha. Usually I get my reflection. You’re the first person who’s ever answered.”',
+  'She glances at the skull on the door. “Your business? It can wait a song, if you have one to spare.” She gestures toward her studio.',
+  'The champion steps onto the maple floor. Aisha plants one foot behind her. “I’ve practiced with my reflection long enough. Let’s see what I miss when the other player has a mind of their own.”'
 ];
 function paintSentinelPanel(){
  const p=sentinelPanel,art=$('#sentinel-art');
  art.style.backgroundPosition=(p%3*50)+'% '+(Math.floor(p/3)*100)+'%';
  $('#sentinel-caption').textContent=chosen[0]===21 && p===3
-   ? 'Aisha meets her own eyes in the glass. “You crossed into 2026. I am the echo you left in 2323.”'
+   ? 'Aisha meets her own eyes in the glass. “You crossed into 2026. I’m the reflection you used to practice with. Today I get to choose my own steps.”'
    : sentinelCaptions[p];
  $('#storychapter').textContent='THE SENTINEL · PANEL '+(p+1)+' / 6';
  $('#storyadvance').textContent=p===5?'A · FACE AISHA':'A · NEXT PANEL';
