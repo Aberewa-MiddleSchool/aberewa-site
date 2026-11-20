@@ -40,3 +40,11 @@
 #cabinet.android-cabinet:fullscreen .screen:has(>.overlay:not(.hidden)) {overflow:auto;max-height:none;}
 #cabinet.android-cabinet #menu:has(.menupanel) .menu-title {display:none;}
 #cabinet.android-cabinet #menu .menupanel {width:100%;max-width:none;}
+
+#cabinet.android-cabinet .selectbottom {
+  position:sticky;bottom:0;z-index:2;flex-wrap:wrap;background:#17231b;padding:8px;
+}
+#cabinet.android-cabinet .selectbottom [role=status] {font-size:14px;color:#ffe5a8;}
+#cabinet.android-cabinet #confirm,#cabinet.android-cabinet #storyadvance {
+  flex:1 0 100%;min-height:48px;touch-action:manipulation;
+}

@@ -6,7 +6,7 @@
   const cabinet = document.getElementById('cabinet');
   const style = document.createElement('link');
   style.rel = 'stylesheet';
-  style.href = new URL('android-controller.css?v=tap2', document.currentScript.src);
+  style.href = new URL('android-controller.css?v=enter4', document.currentScript.src);
   document.head.append(style);
   cabinet.classList.add('android-cabinet');
   document.querySelector('#menu .tag').textContent='TOUCH CONTROLS';
@@ -26,16 +26,57 @@
       pickStage ? 'Tap the second fighter' : 'Tap your fighter';
     label.scrollIntoView({block:'start'});
   }
-  // Card clicks already update the selected fighter before bubbling to the roster.
-  // Confirm that selection via the same control as a physical gamepad.
+  const confirm = document.getElementById('confirm');
+  const status = document.createElement('span');
+  status.setAttribute('role', 'status');
+  confirm.before(status);
   roster.addEventListener('click', event => {
-    const card = event.target.closest('button.fightercard');
-    if (scene !== 'select' || !card || Number(card.dataset.fighter) !== pick) return;
-    document.getElementById('confirm').click();
+    if (!event.target.closest('button.fightercard')) return;
+    status.textContent = rosterName() + ' selected.';
+    confirm.scrollIntoView({block:'nearest'});
   });
-  document.getElementById('confirm').addEventListener('click', () => {
-    if (scene === 'select') revealSelection();
-    else screen.scrollIntoView({block:'start'});
+  function rosterName() {
+    return document.getElementById('fightername').textContent;
+  }
+
+  // Handle a completed finger tap once, while allowing drags to scroll the roster.
+  function bindTap(key, activate) {
+    let start;
+    key.addEventListener('touchstart', event => {
+      const finger = event.touches[0];
+      start = event.touches.length === 1 ? [finger.clientX, finger.clientY] : null;
+    }, {passive:true});
+    key.addEventListener('touchcancel', () => { start = null; });
+    key.addEventListener('touchend', event => {
+      const finger = event.changedTouches[0];
+      const tap = start && !event.touches.length &&
+        Math.hypot(finger.clientX-start[0], finger.clientY-start[1]) < 12;
+      start = null;
+      if (!tap || !event.cancelable) return;
+      event.preventDefault();
+      activate();
+    }, {passive:false});
+    key.onclick = activate;
+  }
+  bindTap(confirm, () => {
+    if (scene !== 'select') return;
+    if (mode === 'local' && connected().length < 2) {
+      status.textContent = 'Local Versus needs a second controller. For one phone, choose VS CPU or Arcade.';
+      return;
+    }
+    confirmPick();
+    if (scene === 'select') {
+      status.textContent = label.textContent;
+      revealSelection();
+    } else {
+      status.textContent = '';
+      screen.scrollIntoView({block:'start'});
+    }
+  });
+  bindTap(document.getElementById('storyadvance'), () => {
+    if (scene !== 'story' || storyEnding) return;
+    advanceStory();
+    screen.scrollIntoView({block:'start'});
   });
   const selectPanel = document.getElementById('select');
   new MutationObserver(records => {
