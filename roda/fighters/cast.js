@@ -15,12 +15,13 @@ const castKickRows = [
   ['frente','martelo','frente','bencao'], ['costas','rasteira','martelo','costas'],
   ['chapa','bencao','martelo','chapa'], ['au','frente','costas','rasteira']
 ];
-for (const id of [7,18]) {
+{
+  const id=18;
   characterMoves[id] = characterMoves[id].map((old, slot) => {
-    const duration = (id === 7 ? 11 : 14) + slot % 3;
+    const duration = 14 + slot % 3;
     const phases = castKickRows[slot].map((key,index) => ({
       ...techniqueBook[key],key,frames:duration,range:old.range*techniqueBook[key].reach,
-      damage:(id===7?3.2:4.2)*(1+slot*.08),rank:old.rank,
+      damage:4.2*(1+slot*.08),rank:old.rank,
       push:index===3?4:0,knockdown:index===3 && slot>=3
     }));
     const name=phases.map(p=>p.name).join(' → ');
@@ -32,13 +33,14 @@ for (const id of [7,18]) {
 // Hitstun, jump, crouch and a new attack may interrupt it immediately.
 const simulateFighter=updateFighter;
 updateFighter=function(p,op,input,dt){
+  if(p.id===7)return Meilin.update(p,op,input,dt,simulateFighter);
   const axis=input?.x||0;
   const facing=op.x>=p.x?1:-1;
   const available=p.hp>0 && !p.down && !p.stun && p.attack===null &&
     !p.y && !p.takeoff && !p.landing && Math.abs(input?.y||0)<.5;
   if(!available)p.tumble=null;
-  if(available && !p.tumble && Math.abs(axis)>.4 && (p.id===7 || axis*facing<0)){
-    p.tumble={axis:Math.sign(axis),elapsed:0,duration:p.id===7?24:30};
+  if(available && !p.tumble && Math.abs(axis)>.4 && axis*facing<0){
+    p.tumble={axis:Math.sign(axis),elapsed:0,duration:30};
   }
   if(p.tumble){
     p.tumble.elapsed+=dt;
@@ -67,7 +69,8 @@ function castGuard(g,p,x,y,zoom) {
   g.drawImage(im,-rig.points[0][0],-rig.points[0][1]-rig.floor);g.restore();
 }
 function drawCastState(g,p,x,y,zoom) {
-  const id=p.id, special=id===7 || id===18, denim=id>=11 && id<=13;
+  if(p.id===7){Meilin.draw(g,p,x,y,zoom);return true;}
+  const id=p.id, special=id===18, denim=id>=11 && id<=13;
   let name='motion-'+id, cell,cols=6,angle=0;
   const age=Math.max(0,tick-(p.hitAt??tick));
   const beat=5+id%5;
@@ -80,11 +83,11 @@ function drawCastState(g,p,x,y,zoom) {
   }else if(p.stun>0 && !p.guardStun){
     cell=1;angle=(id%2?1:-1)*(.035+(id%4)*.015)*Math.sin(Math.min(1,age/18)*Math.PI);
   }else if(p.attack!=null && (special||denim)){
-    const m=moveFor(p,p.attack), phase=attackPhase(m,p.at);
+    const m=moveFor(p,p.attack);
     const segments=id===18?6:4;
     const progress=Math.max(0,Math.min(.999,(p.at-m.start)/m.active));
-    let index=id===18?Math.min(5,Math.floor(progress*6)):id===7?phase.phase:Math.floor(progress*4);
-    const local=id===7?phase.phaseFrame/phase.frames:progress*segments%1;
+    let index=id===18?Math.min(5,Math.floor(progress*6)):Math.floor(progress*4);
+    const local=progress*segments%1;
     name='attack-'+id;cols=segments;
     cell=p.attack*segments+index;
     if(special && (local<.40 || p.at<m.start || p.at>=m.start+m.active))cell+=6*segments;
@@ -93,13 +96,10 @@ function drawCastState(g,p,x,y,zoom) {
     return false;
   }else if(p.y>0 || p.takeoff>0 || p.landing>0){
     cell=p.takeoff>0?6:p.landing>0?9:p.vy>4?7:p.vy< -4?8:4;
-    if(id===7){name='roll';cols=4;cell=p.takeoff>0?8:p.landing>0?11:p.vy< -4?10:9;}
   }else if(p.tumble){
     const frame=Math.min(3,Math.floor(p.tumble.elapsed/p.tumble.duration*4));
-    if(id===7){name='roll';cols=4;cell=4+(p.tumble.axis*p.dir>0?frame:3-frame);}
-    else cell=10+frame;
-  }else if(id===7){
-    name='roll';cols=4;cell=p.crouch?2:0;
+    cell=10+frame;
+
   }else if(denim && (p.crouch || p.guardStun)){
     cell=6;
   }else if(denim && !(Math.abs(p.walk)>.05 && Math.abs(p.vx)>.1)){
@@ -162,8 +162,8 @@ hallButton.onclick=()=>{
 document.getElementById('close-winners').onclick=returnToMenu;
 function prepareCastBout(ids){
   for(const id of ids){
+    if(id===7)continue;
     castImage('motion-'+id);
-    if([7,11,12,13,18].includes(id))castImage('attack-'+id);
-    if(id===7)castImage('roll');
+    if([11,12,13,18].includes(id))castImage('attack-'+id);
   }
 }
