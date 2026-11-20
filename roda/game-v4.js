@@ -303,9 +303,6 @@ window.addEventListener('blur',()=>{if((scene==='fight'||scene==='result'||scene
 const motionImages=[1,2,3].map(n=>{let im=new Image();im.src='motion-'+n+'.webp';return im});
 const gingaImages=[1,2,3,4].map(n=>{let im=new Image();im.src='ginga-'+n+'.webp';return im});
 const selectOrder=[...playableIds.filter(id=>id>=16),...playableIds.filter(id=>id<16)];
-selectOrder.forEach(i=>{
- if(i===selectOrder[0]||i===0){const title=document.createElement('h3');title.textContent=i===0?'Classic fighters':'New fighters';$('#roster').append(title);}
- const f=roster[i];let b=document.createElement('button');b.className='fightercard';b.dataset.fighter=i;b.setAttribute('aria-label',f[0]);const picture=new Image();picture.src=new URL('cast/card-'+i+'.webp',costumeRoot);picture.alt='';b.append(picture);let span=document.createElement('span');span.textContent=f[0].toUpperCase();b.append(span);const home=document.createElement('small');home.textContent=profiles[i].home;b.append(home);if(i===18){const birth=document.createElement('small');birth.textContent='Born 1568';b.append(birth)}b.onclick=()=>{pick=i;updatePick()};$('#roster').append(b)});
 buildStage();requestAnimationFrame(frame);
 
 function drawArena(){if(activeStage===21){drawSkullStudio();return}if(activeStage>=18){drawPrivateArena();return}let image=arenaImages[Math.floor(activeStage/6)],cell=activeStage%6;let camera=players.length&&scene==='fight'?clamp(((players[0].x+players[1].x)/2-640)*.025,-12,12):Math.sin(tick*.002)*4;if(image.complete&&image.naturalWidth){let aw=image.width/2,ah=image.height/3;ctx.drawImage(image,(cell%2)*aw,Math.floor(cell/2)*ah,aw,ah,-16-camera,-8,W+32,H+16)}else ctx.drawImage(stage,0,0);
@@ -477,6 +474,11 @@ const menuStyle=document.createElement('style');menuStyle.textContent='#menu{ove
 $('#quit').onclick=returnToMenu;
 // Intro uses the same correctly scaled fighter sheet as gameplay.
 installFighterKits();
+// Expansion profiles must exist before their selection cards are built.
+selectOrder.forEach(i=>{
+ if(i===selectOrder[0]||i===0){const title=document.createElement('h3');title.textContent=i===0?'Classic fighters':'New fighters';$('#roster').append(title);}
+ const f=roster[i];let b=document.createElement('button');b.className='fightercard';b.dataset.fighter=i;b.setAttribute('aria-label',f[0]);const picture=new Image();picture.src=new URL('cast/card-'+i+'.webp',costumeRoot);picture.alt='';b.append(picture);let span=document.createElement('span');span.textContent=f[0].toUpperCase();b.append(span);const home=document.createElement('small');home.textContent=profiles[i].home;b.append(home);if(i===18){const birth=document.createElement('small');birth.textContent='Born 1568';b.append(birth)}b.onclick=()=>{pick=i;updatePick()};$('#roster').append(b)});
+
 $('#entermenu').onclick=()=>{scene='menu';show('menu');initAudio();setStageMusic(-1);};
 // The school page shares this runtime, so its older shell receives current labels.
 const versionLabel=document.querySelector('.intro .eyebrow');if(versionLabel)versionLabel.textContent='LOCAL ARCADE FIGHTING / CLASSIC + FIVE';
