@@ -23,3 +23,20 @@
   .android-cabinet .cabinet-bottom {display:none;}
   .android-cabinet #game {object-fit:contain;}
 }
+
+/* Let the page scroll through menus. Only an active bout needs a short viewport. */
+#cabinet.android-cabinet:not(:fullscreen) .screen:has(>.overlay:not(.hidden)) {
+  max-height:none;overflow:visible;height:auto;aspect-ratio:auto;
+}
+#cabinet.android-cabinet:not(:fullscreen) .screen:has(>.overlay:not(.hidden))>#game {
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+}
+#cabinet.android-cabinet:not(:fullscreen) .screen>.overlay:not(.hidden) {
+  position:relative;inset:auto;min-height:160px;
+}
+#cabinet.android-cabinet #title .cast-splash {height:auto;max-height:44dvh;width:100%;object-fit:contain;cursor:pointer}
+#cabinet.android-cabinet .cast-title-controls {flex-shrink:0;}
+#cabinet.android-cabinet .cast-title-controls button,#cabinet.android-cabinet #choose,#cabinet.android-cabinet #confirm {min-height:44px;touch-action:manipulation}
+#cabinet.android-cabinet:fullscreen .screen:has(>.overlay:not(.hidden)) {overflow:auto;max-height:none;}
+#cabinet.android-cabinet #menu:has(.menupanel) .menu-title {display:none;}
+#cabinet.android-cabinet #menu .menupanel {width:100%;max-width:none;}

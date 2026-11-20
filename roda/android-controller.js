@@ -6,9 +6,14 @@
   const cabinet = document.getElementById('cabinet');
   const style = document.createElement('link');
   style.rel = 'stylesheet';
-  style.href = new URL('android-controller.css', document.currentScript.src);
+  style.href = new URL('android-controller.css?v=tap2', document.currentScript.src);
   document.head.append(style);
   cabinet.classList.add('android-cabinet');
+  document.querySelector('#menu .tag').textContent='TOUCH CONTROLS';
+  document.getElementById('padhelp').textContent='Tap a mode, then Choose your fighter.';
+  const enter = document.getElementById('entermenu');
+  enter.textContent='Tap to play';
+  document.querySelector('#title .cast-splash').addEventListener('click',()=>enter.click());
 
   const panel = document.createElement('div');
   panel.className = 'android-controls';
@@ -89,7 +94,12 @@
   const virtual={id:'RODA Android touch',index:-1,connected:true,axes:[0,0],buttons:Array.from({length:17},()=>({pressed:false}))};
   const hardwarePads=connected, hardwareState=padState;
   connected=function(){
-    const pads=hardwarePads();
+    let pads;
+    try { pads=hardwarePads(); }
+    catch (error) {
+      if(error.name!=='SecurityError')throw error;
+      pads=[];
+    }
     if(scene==='setup')return pads;
     if(!pads.length || (mode==='local' && pads.length===1))return [virtual,...pads];
     return pads;
