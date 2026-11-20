@@ -15,6 +15,33 @@
   enter.textContent='Tap to play';
   document.querySelector('#title .cast-splash').addEventListener('click',()=>enter.click());
 
+  const roster = document.getElementById('roster');
+  const label = document.getElementById('picklabel');
+  const heading = document.querySelector('#select h2');
+  const screen = cabinet.querySelector('.screen');
+
+  function revealSelection() {
+    if (scene !== 'select') return;
+    heading.textContent = pickStage && mode === 'cpu' ? 'Tap your opponent' :
+      pickStage ? 'Tap the second fighter' : 'Tap your fighter';
+    label.scrollIntoView({block:'start'});
+  }
+  // Card clicks already update the selected fighter before bubbling to the roster.
+  // Confirm that selection via the same control as a physical gamepad.
+  roster.addEventListener('click', event => {
+    const card = event.target.closest('button.fightercard');
+    if (scene !== 'select' || !card || Number(card.dataset.fighter) !== pick) return;
+    document.getElementById('confirm').click();
+  });
+  document.getElementById('confirm').addEventListener('click', () => {
+    if (scene === 'select') revealSelection();
+    else screen.scrollIntoView({block:'start'});
+  });
+  const selectPanel = document.getElementById('select');
+  new MutationObserver(records => {
+    if (records.length && !selectPanel.classList.contains('hidden')) revealSelection();
+  }).observe(selectPanel,{attributes:true,attributeFilter:['class']});
+
   const panel = document.createElement('div');
   panel.className = 'android-controls';
   panel.setAttribute('role', 'group');
