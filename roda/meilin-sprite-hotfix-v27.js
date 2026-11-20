@@ -1,8 +1,9 @@
 /*
- * RODA v2.7 — Meilin-only sprite geometry repair.
+ * RODA v2.7 — Meilin-only sprite geometry and visual-height repair.
  * Loads AFTER game-v24.js and stage-player-v24.js.
  * Non-destructive: never changes fighter stats, moves, stage selection or scoring.
- * Only activates for the verified original 2048x256 Meilin image assets.
+ * Pixel-crop fixes activate only for verified original 2048x256 Meilin assets.
+ * Her visual height is normalized across all rendering states without altering combat stats.
  */
 (() => {
   'use strict';
@@ -10,9 +11,8 @@
   const CELL = 256;
   const SHEET_W = 2048;
   const SHEET_H = 256;
-  const STANCE_TOP = 80;
   const STANCE_BOTTOM = 240;
-  const STANCE_HEIGHT = STANCE_BOTTOM - STANCE_TOP; // observed alpha bounds: 160 px
+  const STANCE_HEIGHT = 160; // source alpha bounds y80..240
   const DISPLAY_HEIGHT = 305;
   const SCALE = DISPLAY_HEIGHT / STANCE_HEIGHT;
   const GROUND_Y = 590;
@@ -21,10 +21,18 @@
 
   const originalGinga = window.drawGinga;
   const originalFlip = window.drawVeteranFlip;
-  if (typeof originalGinga !== 'function' || typeof originalFlip !== 'function') {
+  const originalVisualHeight = window.visualHeight;
+  if (typeof originalGinga !== 'function' || typeof originalFlip !== 'function' || typeof originalVisualHeight !== 'function') {
     console.warn('[RODA Meilin fix] Missing game renderer; hotfix not applied.');
     return;
   }
+
+  // Existing drawFighter scales all Meilin poses using the fighter height ratio.
+  // Normalizing this visual ratio aligns ginga, attacks, damage and flip poses.
+  // No change to combat stats, hitboxes, damage, or the other fighters.
+  window.visualHeight = function correctedMeilinHeight(id) {
+    return Number(id) === ID ? 1 : originalVisualHeight(id);
+  };
 
   const validSheet = im => im && im.complete && im.naturalWidth === SHEET_W && im.naturalHeight === SHEET_H;
 
@@ -59,4 +67,5 @@
       : 1 + phase.phase * 2 + (phase.phaseFrame >= 7 ? 1 : 0);
     drawCell(p, flipImages[ID], index);
   };
+  window.RODAMeilinFix = Object.freeze({version:'v27.2',fighterId:ID,gingaFrames:FRAMES_GINGA,flipFrames:FRAMES_FLIP,visualHeight:1});
 })();
