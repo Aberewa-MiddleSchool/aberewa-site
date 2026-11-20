@@ -15,3 +15,24 @@
 #move-sequence{min-height:1.6em}
 #move-sequence strong{color:#ffda77;text-decoration:underline;text-underline-offset:.22em}
 .fighter-gallery-grid a{color:#ffe3a1}
+
+#cabinet .overlay.hidden{display:none!important}
+#cabinet .screen:has(>#menu:not(.hidden)),#cabinet .screen:has(>#select:not(.hidden)){height:auto;aspect-ratio:auto}
+#cabinet .screen:has(>#menu:not(.hidden))>#game,#cabinet .screen:has(>#select:not(.hidden))>#game{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#cabinet #menu:not(.hidden),#cabinet #select:not(.hidden){position:relative;inset:auto;box-sizing:border-box;overflow:visible}
+#cabinet #menu{padding:clamp(12px,2vw,30px);gap:18px}
+#cabinet .menupanel{width:min(55%,660px);box-sizing:border-box}
+#cabinet .mode-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}
+#cabinet .mode-buttons button{flex-wrap:wrap}
+#cabinet #select{padding:clamp(8px,1.4vw,20px);gap:8px}
+#cabinet #roster{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:none;gap:5px;flex:none;margin:0}
+#cabinet #roster h3{grid-column:1/-1;margin:3px 0 0;color:#ffdb89;font:700 15px system-ui}
+#cabinet .fightercard{display:flex;flex-direction:column;min-width:0;align-items:stretch}
+#cabinet .fightercard canvas{position:static;width:100%;height:clamp(50px,5.6vw,83px);object-fit:contain;background:#203027}
+#cabinet .fightercard span{position:static;display:block;font-size:clamp(10px,1vw,15px);padding:3px 2px;text-align:center}
+#cabinet .roda-choose-stages summary,#cabinet .roda-menu-stages summary{cursor:pointer;color:#ffe1aa;font-weight:bold;padding:5px}
+#cabinet:fullscreen .screen:has(.overlay:not(.hidden)){overflow-y:auto}
+@media(max-width:650px){#cabinet .menupanel{width:100%;max-width:none}#cabinet .menu-title{display:none}#cabinet .selectbottom{flex-wrap:wrap}#cabinet .fightercard span{font-size:10px}}
+#cabinet #menu{
+  background:linear-gradient(90deg,rgba(11,19,15,.38),rgba(11,19,15,.10) 55%,rgba(11,19,15,.22)),url("https://roda-angola-arcade.woodsystone14.chatgpt.site/meilin-hall-v24.webp") center/cover no-repeat;
+}

@@ -39,13 +39,13 @@
   document.head.append(css);
 
   const create = (name, className) => {
-    const el = document.createElement('div');
+    const el = document.createElement('details');
     el.className = className;el.id=name;return el;
   };
   const menu = create('roda-menu-stages','roda-menu-stages');
-  menu.innerHTML = '<h3>CHOOSE AN ARENA</h3><canvas class="roda-stage-visual" width="640" height="330" aria-label="Actual playable arena preview"></canvas><p class="roda-stage-label"></p><div class="roda-stage-action-row"><button type="button" data-prev>← PREVIOUS</button><button type="button" data-next>NEXT →</button></div>';
+  menu.innerHTML = '<summary>Choose an arena</summary><canvas class="roda-stage-visual" width="640" height="330" aria-label="Actual playable arena preview"></canvas><p class="roda-stage-label"></p><div class="roda-stage-action-row"><button type="button" data-prev>← PREVIOUS</button><button type="button" data-next>NEXT →</button></div>';
   const choose = create('roda-choose-stages','roda-choose-stages');
-  choose.innerHTML = '<p class="roda-stage-label"></p><canvas class="roda-stage-visual" width="640" height="330" aria-label="Actual playable arena preview"></canvas><div class="roda-stage-action-row"><button type="button" data-prev>← PREVIOUS</button><button type="button" data-next>NEXT →</button><button type="button" data-audition>HEAR THIS STAGE BEAT</button></div><div class="roda-stage-grid" aria-label="Choose from all 28 playable stages"></div>';
+  choose.innerHTML = '<summary>Choose an arena</summary><p class="roda-stage-label"></p><canvas class="roda-stage-visual" width="640" height="330" aria-label="Actual playable arena preview"></canvas><div class="roda-stage-action-row"><button type="button" data-prev>← PREVIOUS</button><button type="button" data-next>NEXT →</button><button type="button" data-audition>HEAR THIS STAGE BEAT</button></div><div class="roda-stage-grid" aria-label="Choose from all 28 playable stages"></div>';
   const homeButton=document.createElement('button');
   homeButton.type='button';homeButton.textContent='USE FIGHTER’S HOME ARENA';
   choose.querySelector('.roda-stage-action-row').append(homeButton);
