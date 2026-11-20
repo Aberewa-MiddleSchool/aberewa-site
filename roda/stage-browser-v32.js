@@ -13,7 +13,7 @@
   }
   const selected = id => ((Number(id) % stageList.length) + stageList.length) % stageList.length;
   const story = () => mode === 'solo' || mode === 'watcharcade' || !!arcadeAutoplay;
-  const current = () => story() ? (arcadeStages[Number(arcadeIndex) || 0] ?? 0) : stageChoice;
+  const current = () => story() ? (arcadeArenaOverride ?? arcadeStages[scene==='menu' || scene==='select'?0:Number(arcadeIndex)||0] ?? 0) : stageChoice;
   const gameCanvas = q('#game');
   const css = document.createElement('style');
   css.textContent = `
@@ -54,6 +54,13 @@
   q('#menu .menupanel').insertBefore(menu, chooseBtn);
   q('#select .arena-selector').append(choose);
 
+  const routeButtons= [menu,choose].map(view=>{
+    const button=document.createElement('button');
+    button.type='button';button.textContent='USE STORY ROUTE';
+    button.onclick=()=>{arcadeArenaOverride=null;sync();};
+    view.querySelector('.roda-stage-action-row').append(button);
+    return button;
+  });
   let queued = false;
   const views = [menu,choose];
   function preview() {
@@ -77,27 +84,27 @@
   }
   function sync() {
     const id = selected(current());
-    const locked = story();
-    homeButton.hidden=locked;homeButton.disabled=locked;
+    for(const b of routeButtons)b.hidden=!story() || arcadeArenaOverride===null;
+    homeButton.hidden=false;
     const label = (id + 1) + ' / ' + stageList.length + ' — ' + stageList[id];
     for (const view of views) {
       const text = view.querySelector('.roda-stage-label');
-      text.textContent = label + (locked ? ' · ARCADE STORY STAGE (AUTOMATIC)' : ' · SELECTABLE');
+      text.textContent = label + (story() ? arcadeArenaOverride===null?' · STORY ROUTE':' · CHOSEN FOR THIS RUN' : ' · SELECTABLE');
       for (const button of view.querySelectorAll('[data-prev],[data-next]')) {
-        button.hidden = locked;
-        button.disabled = locked;
+        button.hidden = false;
+        button.disabled = false;
       }
     }
     const grid = choose.querySelector('.roda-stage-grid');
     for (const btn of grid.children) {
       const which = Number(btn.dataset.stage);
       btn.setAttribute('aria-current',String(which === id));
-      btn.disabled = locked;
+      btn.disabled = false;
     }
     preview();
   }
   function chooseStage(i) {
-    if (story()) {sync();return;}
+    if(story())arcadeArenaOverride=selected(i);
     stageChoice = selected(i);
     activeStage = stageChoice;
     if (typeof window.updatePick === 'function' && scene === 'select') window.updatePick();
@@ -106,8 +113,8 @@
     // Selection itself leaves audio quiet unless "HEAR THIS STAGE BEAT" is used.
   }
   for (const view of views) {
-    view.querySelector('[data-prev]').addEventListener('click',()=>chooseStage(stageChoice-1));
-    view.querySelector('[data-next]').addEventListener('click',()=>chooseStage(stageChoice+1));
+    view.querySelector('[data-prev]').addEventListener('click',()=>chooseStage(current()-1));
+    view.querySelector('[data-next]').addEventListener('click',()=>chooseStage(current()+1));
   }
   const grid = choose.querySelector('.roda-stage-grid');
   for (let id=0; id<stageList.length; id++) {
