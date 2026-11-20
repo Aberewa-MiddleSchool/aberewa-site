@@ -155,7 +155,7 @@ function drawTravelStep(p) {
   const signedDistance = p.ginga / fighterTraits[p.id].build;
   const phase = ((signedDistance % 68) + 68) % 68;
   const frame = source === sheet ? Math.floor(phase * 12 / 68) : 0;
-  const scale = rig.scale * (1.49 * 185 / 270);
+  const scale = rig.scale * (285 / 270);
   ctx.save();
   ctx.translate(p.x, 590 - p.y);
   ctx.scale(p.dir * width * scale, scale);
