@@ -99,7 +99,7 @@ function fighterAngles(p) {
   const sway=Math.sin(beat),lift=Math.cos(beat);
   const ready=[sway*.38,-sway*.36+Math.max(0,lift)*.17,-sway*.39,sway*.28,
     -.11+sway*.14,-sway*.52,sway*.41];
-  if (p.victory || (scene==='result' && !p.defeated)) {
+  if (p.victory) {
     const style=p.id%5;
     const salute=[[ -.18,-.1,.15,.2,-.2,-1.7,-.7],[-.5,.22,.12,.16,.55,.4,-.7],
       [-1.7,-2.0,.15,-.25,-.4,-.8,.1],[.16,.2,-.3,.3,.08,-1.45,-.98],
@@ -143,7 +143,7 @@ function paintFighter(g,p,x,y,zoom=1,card=false) {
   if (!rig || !im?.naturalWidth)return;
   const [hip,knee,foot,rearKnee,rearFoot,shoulder,elbow,hand,rearShoulder]=rig.points;
   const stepping=!card && p.attack==null && p.hp>0 && !p.down && !p.stun && !p.crouch &&
-    !p.block && !p.victory && scene!=='result' && !p.y && !p.takeoff;
+    !p.block && !p.victory && (p.preview || scene!=='result') && !p.y && !p.takeoff;
   const gait=stepping?gingaStep(p,rig):null;
   const pose=card?Array(7).fill(0):fighterAngles(p);
   if(gait)pose.splice(0,7,...gait.angles,-.10+gait.sway*.12,-gait.sway*.54,gait.sway*.39);

@@ -19,6 +19,13 @@
       line.textContent=move.button+' · '+move.name;
       list.append(line);
     }
-    card.append(heading,bio,home,list);gallery.append(card);
+    const watch=document.createElement('a');
+    watch.href=new URL('#move-lab',location.href).href;
+    watch.textContent='Watch '+profiles[id].name+'’s moves';
+    watch.addEventListener('click',()=>{
+      const select=document.getElementById('preview-fighter');
+      select.value=String(id);select.dispatchEvent(new Event('change'));
+    });
+    card.append(heading,bio,home,list,watch);gallery.append(card);
   }
 })();

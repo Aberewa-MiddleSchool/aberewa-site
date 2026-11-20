@@ -1,0 +1,80 @@
+(() => {
+  const el=id=>document.getElementById(id);
+  const select=el('preview-fighter'), screen=el('move-screen'), g=screen.getContext('2d');
+  const row=el('move-buttons'), caption=el('move-sequence'), pause=el('preview-pause');
+  let slot=0, age=0, cycling=true, visible=false, last=0, raf=0;
+  let playing=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const id=()=>Number(select.value);
+  const move=()=>characterMoves[id()][slot];
+  for(const fighter of [...playableIds,15]){
+    select.add(new Option(profiles[fighter].name+(fighter===15?' · Boss':''),fighter));
+  }
+  select.value='18';
+  function labels(){
+    row.querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-pressed',String(slot===i)));
+    caption.replaceChildren();
+    for(const [i,phase] of move().phases.entries()){
+      if(i)caption.append(' → ');
+      const span=document.createElement('span');
+      span.textContent=techniqueBook[phase.key].name;caption.append(span);
+    }
+    pause.textContent=playing?'Pause':'Play';
+    el('preview-all').setAttribute('aria-pressed',String(cycling));
+  }
+  function redraw(){
+    const fighter=id(),m=move();
+    const lead=24,at=age-lead;
+    const attacking=at>=0 && at<m.start+m.active+m.end;
+    const body={id:fighter,dir:1,hp:100,y:0,preview:true,
+      attack:attacking?slot:null,at:Math.max(0,at)};
+    const back=g.createLinearGradient(0,0,0,335);
+    back.addColorStop(0,'#243f38');back.addColorStop(.84,'#486153');back.addColorStop(.85,'#927454');back.addColorStop(1,'#594735');
+    g.fillStyle=back;g.fillRect(0,0,760,335);
+    g.fillStyle='#f3d699';g.font='bold 18px system-ui';g.fillText(profiles[fighter].name,18,30);
+    g.font='14px system-ui';g.fillText(profiles[fighter].home,18,54);
+    g.fillStyle='#211d1866';g.beginPath();g.ellipse(375,290,75,10,0,0,Math.PI*2);g.fill();
+    paintFighter(g,body,375,290);
+    const phase=at>=m.start && at<m.start+m.active?attackPhase(m,at).phase:-1;
+    [...caption.children].forEach((span,i)=>{
+      span.style.color=i===phase?'#ffda77':'';
+      span.style.fontWeight=i===phase?'800':'';
+      span.style.textDecoration=i===phase?'underline':'';
+    });
+  }
+  function frame(now){
+    raf=0;
+    if(last)age+=Math.min(4,(now-last)*.06);
+    last=now;
+    const m=move();
+    if(age>=24+m.start+m.active+m.end+35){
+      age=0;
+      if(cycling){slot=(slot+1)%6;labels();}
+    }
+    redraw();schedule();
+  }
+  function schedule(){
+    if(playing && visible && !document.hidden && !raf)raf=requestAnimationFrame(frame);
+  }
+  function restart(all){
+    cycling=all;age=0;last=0;playing=true;labels();redraw();schedule();
+  }
+  for(const [i,m] of characterMoves[0].entries()){
+    const button=document.createElement('button');button.type='button';button.textContent=m.button;
+    button.onclick=()=>{slot=i;restart(false);};row.append(button);
+  }
+  select.onchange=()=>{slot=0;age=0;last=0;labels();redraw();schedule();};
+  pause.onclick=()=>{
+    playing=!playing;last=0;
+    if(!playing){cancelAnimationFrame(raf);raf=0;}
+    labels();schedule();
+  };
+  el('preview-replay').onclick=()=>restart(false);
+  el('preview-all').onclick=()=>{slot=0;restart(true);};
+  new IntersectionObserver(entries=>{
+    visible=entries[0].isIntersecting;last=0;
+    if(!visible){cancelAnimationFrame(raf);raf=0;}else schedule();
+  }).observe(screen);
+  document.addEventListener('visibilitychange',()=>{last=0;schedule();});
+  costumes.forEach(im=>im.addEventListener('load',()=>{if(!playing)redraw();},{once:true}));
+  labels();redraw();
+})();

@@ -8,3 +8,12 @@
 
 .roda-intro-film{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#101510;z-index:5}
 .roda-intro-film[hidden]{display:none}
+#move-lab{max-width:900px;margin:2rem auto;padding:1.2rem;background:#16241e;color:#fff2d1;scroll-margin-top:1rem}
+#move-lab h2{margin:0 0 .8rem}
+#move-lab select,#move-lab button{font:inherit;padding:.5rem .8rem}
+#move-screen{display:block;width:100%;height:auto;margin:.75rem 0;background:#27382f}
+#move-buttons,.preview-controls{display:flex;flex-wrap:wrap;gap:.5rem}
+#move-buttons [aria-pressed="true"]{background:#ffd26e;color:#241b0d}
+#move-sequence{min-height:1.6em}
+#move-sequence strong{color:#ffda77;text-decoration:underline;text-underline-offset:.22em}
+.fighter-gallery-grid a{color:#ffe3a1}
