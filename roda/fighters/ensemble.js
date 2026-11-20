@@ -28,7 +28,7 @@ function installFighterKits() {
     ['frente','chapa','bencao'], ['costas','frente','rasteira'],
     ['chapa','martelo','costas'], ['bencao','au','rasteira']
   ];
-  for (const kit of characterMoves) {
+  for (const kit of characterMoves.slice(16)) {
     kit.forEach((base,button) => {
       const chain=chains[button], frames=16;
       const total=(base.phases||[base]).reduce((sum,phase)=>sum+phase.damage,0);
@@ -42,6 +42,7 @@ function installFighterKits() {
 }
 
 const actionSheets=costumes.map((_,id)=>{
+  if(id<16)return null;
   const image=new Image();
   image.src=new URL('actions/'+id+'.webp',costumeRoot);
   return image;
@@ -75,43 +76,15 @@ const kickHolds=[
   [5,12],[4,10],[7,12],[8,14],[7,14],[3,9],[6,10],
   [5,9],[8,13],[8,15],[3,8],[6,13],[4,8],[7,11]
 ];
-// Preserve the planted-foot anchors and the drawn transitions from Jurema’s sheets.
-function paintJurema(g,p,move,phase){
-  const native=redesignData[1], id=p.id;
-  let drawing=redesignImages[id], data=native, index=0;
-  if(p.victory)index=7;
-  else if(p.hp<=0 || p.down>0)index=5;
-  else if(p.stun>0 && !p.guardStun)index=3;
-  else if(move){
-    let key=phase.key, f=4;
-    if(p.at<move.start)f=Math.min(3,Math.floor(4*p.at/move.start));
-    else if(p.at>=move.start+move.active)f=Math.min(7,6+Math.floor(2*(p.at-move.start-move.active)/move.end));
-    else if(phase.phaseFrame>=phase.frames-4 && phase.phase<2){
-      key=move.phases[phase.phase+1].key;
-      f=Math.floor(phase.phaseFrame-(phase.frames-4));
-    }else f=phase.phaseFrame<4?4:phase.phaseFrame<8?5:phase.phaseFrame<12?6:7;
-    const row={bencao:3,rasteira:4,frente:2,martelo:5}[key];
-    if(row!==undefined)index=row*8+f;
-    else if(key==='chapa'){
-      data=specialData[id][0];drawing=specialImages[data.sheet];index=f;
-    }else{
-      const transition=key==='au', group=0;
-      const name=(transition?'transitions-':'fighters-')+(group+1)+'.webp';
-      const rects=spriteBounds[name].slice(8,16);
-      data={rects};
-      drawing=transition?transitionImages[group]:atlases[group];
-      index=(transition?[0,2,4,5,6,7,5,0]:[0,1,4,6,7,7,4,0])[f];
-    }
-  }else if(p.crouch)index=2;
-  else if(p.y>0 || p.takeoff>0)index=13;
-  else return false;
-  if(!drawing?.naturalWidth)return false;
-  const r=data.rects[index],scale=185/data.rects[0][3];
-  const left=data.anchors?r[0]-data.anchors[index]:-r[2]/2;
-  g.drawImage(drawing,...r,left*scale,-r[3]*scale,r[2]*scale,r[3]*scale);
-  return true;
-}
 function paintFighter(g,p,x,y,zoom=1,card=false) {
+  if(p.id<16 && !card){
+    const prior=ctx;ctx=g;g.save();
+    try{
+      g.translate(x,y);g.scale(.70*zoom,.70*zoom);g.translate(-640,-590);
+      drawFighter({...fighter(p.id,640,p.dir||1),...p,x:640,y:0});
+    }finally{g.restore();ctx=prior;}
+    return;
+  }
   const id=p.id, rig=rodaRigs[id], guard=costumes[id];
   if(!rig || !guard?.naturalWidth)return;
   let row=-1,frame=0,attackPhaseInfo;
@@ -134,9 +107,7 @@ function paintFighter(g,p,x,y,zoom=1,card=false) {
   }
   g.save();g.translate(x,y);
   g.scale((p.dir||1)*fighterTraits[id].build*zoom,zoom);
-  if(id===1 && !card && paintJurema(g,p,attackPhaseInfo?moveFor(p,p.attack):null,attackPhaseInfo)){
-    g.restore();return;
-  }
+
   if(attackPhaseInfo && p.attack===5 && flipData[id] && flipImages[id].naturalWidth){
     const m=moveFor(p,5),phase=attackPhaseInfo;
     const n=p.at<m.start?0:p.at>=m.start+m.active?7:1+phase.phase*2+(phase.phaseFrame>=kickHolds[id][0]?1:0);
@@ -155,6 +126,8 @@ function paintFighter(g,p,x,y,zoom=1,card=false) {
   g.restore();
 }
 function paintedCard(canvas,id,defeat=false) {
+  if(id<15){facePortrait(canvas,id);return;}
+  if(id===15){portrait(canvas,id,defeat);return;}
   const g=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
   const backdrop=g.createLinearGradient(0,0,w,h);
   backdrop.addColorStop(0,defeat?'#414345':fighterTraits[id].accent);

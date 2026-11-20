@@ -16,7 +16,7 @@
     for(const [i,phase] of move().phases.entries()){
       if(i)caption.append(' → ');
       const span=document.createElement('span');
-      span.textContent=techniqueBook[phase.key].name;caption.append(span);
+      span.textContent=(techniqueBook[phase.key]?.name || phase.name || move().name);caption.append(span);
     }
     pause.textContent=playing?'Pause':'Play';
     el('preview-all').setAttribute('aria-pressed',String(cycling));
