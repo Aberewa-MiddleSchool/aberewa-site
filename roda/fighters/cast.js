@@ -68,9 +68,77 @@ function castGuard(g,p,x,y,zoom) {
   g.save();g.translate(x,y);g.scale(scale*(p.dir||1),scale);
   g.drawImage(im,-rig.points[0][0],-rig.points[0][1]-rig.floor);g.restore();
 }
+// One fixed-size whole-body cell contains both the shirt and its printed emblem.
+const shirtSheets=['bento','caio','nestor'];
+function studioFrame(g,name,cell,x,y,zoom,dir){
+  const image=castImage(name);
+  if(!image.naturalWidth)return;
+  g.save();g.translate(x,y);g.scale((dir||1)*zoom,zoom);
+  g.drawImage(image,cell%4*360,Math.floor(cell/4)*360,360,360,-180,-347,360,360);
+  g.restore();
+}
+const shirtKicks={bencao:4,rasteira:5,frente:6,costas:7,chapa:8,martelo:9,au:10,
+  armada:7,lowpush:5,lowsweep:5,lowback:7,lowswitch:5};
+function shirtFrame(p){
+  const age=Math.max(0,tick-(p.hitAt??tick));
+  if(p.victory||(!p.preview&&endWait>0&&players[matchWinner]===p))return 15;
+  if(p.down>0||p.hp<=0)return p.hp>0&&p.down<7?3:age<6?12:age<14?13:14;
+  if(p.stun>0&&!p.guardStun)return 12;
+  if(p.attack!=null){
+    const m=moveFor(p,p.attack);
+    if(p.at<m.start)return 3;
+    if(p.at>=m.start+m.active)return 0;
+    const phase=attackPhase(m,p.at);
+    if(phase.phaseFrame>=(phase.contactEnd??7))return phase.level==='low'?3:2;
+    return shirtKicks[phase.key]??4;
+  }
+  if(p.tumble)return [3,11,10,11,3][Math.min(4,Math.floor(p.tumble.elapsed/p.tumble.duration*5))];
+  if(p.takeoff>0||p.landing>0||p.crouch)return 3;
+  if(p.y>0)return p.vy>0?9:2;
+  if(Math.abs(p.walk)>.05&&Math.abs(p.vx)>.1)return [0,1,2,1][Math.floor(Math.abs(p.ginga)/16)%4];
+  return 0;
+}
+
+// The sheet and cell identify the illustrated contact for each variation.
+const mareChains=[
+  [['frente','Meia-lua curta',1],['rasteira','Rasteira por dentro',2],['bencao','Bênção recolhida',12],['costas','Meia-lua apoiada',14]],
+  [['chapa','Chapa diagonal',4],['martelo','Martelo à cintura',5],['costas','Meia-lua de costas',6],['frente','Meia-lua ascendente',13]],
+  [['rasteira','Rasteira cruzada',8],['armada','Armada lateral',9],['rasteira','Rasteira comprida',10],['chapa','Chapa de frente',11]],
+  [['rasteira','Rasteira de chão',0],['bencao','Bênção oblíqua',1],['frente','Meia-lua por dentro',2],['martelo','Martelo alto',12]],
+  [['costas','Coice em recuo',4],['au','Aú de uma mão',5],['chapa','Chapa baixa',6],['costas','Meia-lua de compasso',13]],
+  [['frente','Meia-lua por fora',8],['bencao','Bênção longa',9],['rasteira','Rasteira de gancho',10],['au','Aú aberto',14]]
+];
+characterMoves[14]=characterMoves[14].map((base,slot)=>{
+  const damage=base.phases.reduce((sum,p)=>sum+p.damage,0);
+  const phases=mareChains[slot].map(([key,name,cell],i)=>{
+    const tech=techniqueBook[key],frames=16+(slot+i)%3;
+    return {...tech,key,name,cell,frames,range:base.range*tech.reach,rank:base.rank,travel:0,
+      contactStart:5,contactEnd:10,damage:damage/4,push:i===3?4:0,knockdown:i===3};
+  });
+  return {...base,phases,start:8,active:phases.reduce((n,p)=>n+p.frames,0),end:15};
+});
+function mareFrame(g,p,x,y,zoom){
+  if(p.victory||(!p.preview&&endWait>0&&players[matchWinner]===p)||p.hp<=0||p.down>0||
+     p.stun>0||p.tumble||p.takeoff>0||p.landing>0||p.y>0||p.crouch&&p.attack==null)return false;
+  if(p.attack==null&&Math.abs(p.vx)>.1)return false;
+  const sheet=p.attack>=3?'mare1':'mare0';
+  let cell=3;
+  if(p.attack!=null){
+    const m=moveFor(p,p.attack);
+    if(p.at>=m.start&&p.at<m.start+m.active){
+      const phase=attackPhase(m,p.at);
+      cell=phase.phaseFrame<phase.contactStart?7:phase.phaseFrame<phase.contactEnd+2?
+        phase.cell:15;
+    }
+  }
+  studioFrame(g,sheet,cell,x,y,zoom,p.dir);return true;
+}
+
 function drawCastState(g,p,x,y,zoom) {
   if(p.id===7){Meilin.draw(g,p,x,y,zoom);return true;}
-  const id=p.id, special=id===18, denim=id>=11 && id<=13;
+  const id=p.id,special=id===18;
+  if(id>=11 && id<=13){studioFrame(g,shirtSheets[id-11],shirtFrame(p),x,y,zoom,p.dir);return true;}
+  if(id===14 && mareFrame(g,p,x,y,zoom))return true;
   let name='motion-'+id, cell,cols=6,angle=0;
   const age=Math.max(0,tick-(p.hitAt??tick));
   const beat=5+id%5;
@@ -82,7 +150,7 @@ function drawCastState(g,p,x,y,zoom) {
     if(p.hp>0 && p.down<8)cell=9;
   }else if(p.stun>0 && !p.guardStun){
     cell=1;angle=(id%2?1:-1)*(.035+(id%4)*.015)*Math.sin(Math.min(1,age/18)*Math.PI);
-  }else if(p.attack!=null && (special||denim)){
+  }else if(p.attack!=null && special){
     const m=moveFor(p,p.attack);
     const segments=id===18?6:4;
     const progress=Math.max(0,Math.min(.999,(p.at-m.start)/m.active));
@@ -91,7 +159,7 @@ function drawCastState(g,p,x,y,zoom) {
     name='attack-'+id;cols=segments;
     cell=p.attack*segments+index;
     if(special && (local<.40 || p.at<m.start || p.at>=m.start+m.active))cell+=6*segments;
-    angle=(denim?.03:.018)*Math.sin(local*Math.PI*2);
+    angle=.018*Math.sin(local*Math.PI*2);
   }else if(p.attack!=null){
     return false;
   }else if(p.y>0 || p.takeoff>0 || p.landing>0){
@@ -100,10 +168,6 @@ function drawCastState(g,p,x,y,zoom) {
     const frame=Math.min(3,Math.floor(p.tumble.elapsed/p.tumble.duration*4));
     cell=10+frame;
 
-  }else if(denim && (p.crouch || p.guardStun)){
-    cell=6;
-  }else if(denim && !(Math.abs(p.walk)>.05 && Math.abs(p.vx)>.1)){
-    castGuard(g,p,x,y,zoom);return true;
   }else return false;
   if(!castTile(g,name,cell,cols,x,y,zoom,p.dir,angle))castGuard(g,p,x,y,zoom);
   return true;
@@ -163,7 +227,9 @@ document.getElementById('close-winners').onclick=returnToMenu;
 function prepareCastBout(ids){
   for(const id of ids){
     if(id===7)continue;
+    if(id>=11 && id<=13){castImage(shirtSheets[id-11]);continue;}
+    if(id===14){castImage('mare0');castImage('mare1');}
     castImage('motion-'+id);
-    if([11,12,13,18].includes(id))castImage('attack-'+id);
+    if(id===18)castImage('attack-'+id);
   }
 }

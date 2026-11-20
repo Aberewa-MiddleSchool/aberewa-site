@@ -120,7 +120,7 @@ function paintFighter(g,p,x,y,zoom=1,card=false) {
     const cell=actionCells[id][row*4+frame];
     g.drawImage(actionSheets[id],cell%4*200,Math.floor(cell/4)*140,200,140,-175,-240,350,245);
   }else{
-    const scale=rig.scale*(card?1:185/270);
+    const scale=rig.scale*(card?1:(285/1.49)/270);
     g.scale(scale,scale);
     g.drawImage(guard,-rig.points[0][0],-rig.points[0][1]-rig.floor);
   }

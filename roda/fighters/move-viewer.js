@@ -99,9 +99,10 @@
   document.addEventListener('visibilitychange',()=>{last=0;schedule();});
   costumes.forEach(im=>im.addEventListener('load',()=>{if(!playing)redraw();},{once:true}));
   const query=new URLSearchParams(location.search);
-  if(query.get('fighter')==='meilin'){
-    select.value='7';
-    const index=characterMoves[7].findIndex(move=>move.button===query.get('button'));
+  const linked={meilin:7,mestre:14,bento:11,caio:12,nestor:13}[query.get('fighter')];
+  if(Number.isInteger(linked)){
+    select.value=String(linked);
+    const index=characterMoves[linked].findIndex(move=>move.button===query.get('button'));
     if(index>=0){slot=index;cycling=false;}
   }
   Meilin.spritesReady.then(redraw);

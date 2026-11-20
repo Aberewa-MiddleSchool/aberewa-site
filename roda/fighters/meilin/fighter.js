@@ -65,11 +65,13 @@ const Meilin = (() => {
       row=3;frame=age>7?1:0;
     }else if(p.attack!=null){
       const move=characterMoves[7][p.attack];
+      if(p.at>=3 && p.at<move.start+move.active){row=2;frame=0;}
       if(p.at>=move.start && p.at<move.start+move.active && kicks[p.attack].naturalWidth){
         const phase=attackPhase(move,p.at);
-        sheet=kicks[p.attack];row=phase.phase;
-        frame=phase.phaseFrame<phase.contactStart/2?0:phase.phaseFrame<phase.contactStart?1:
-          phase.phaseFrame<phase.contactEnd?2:3;
+        if(phase.phaseFrame>=phase.contactStart){
+          sheet=kicks[p.attack];row=phase.phase;
+          frame=phase.phaseFrame<phase.contactEnd?2:3;
+        }
       }
     }else if(p.takeoff>0 || p.landing>0 || p.y>0){
       row=2;frame=p.takeoff>0?0:p.landing>0?3:p.vy>4?1:2;
