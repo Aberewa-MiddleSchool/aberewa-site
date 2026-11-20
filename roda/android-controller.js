@@ -1,12 +1,18 @@
-(() => {
+(async () => {
   'use strict';
-  const platform = navigator.userAgentData?.platform;
-  if (platform ? platform.toLowerCase() !== 'android' : !/\bAndroid\b/i.test(navigator.userAgent)) return;
+  const source = document.currentScript.src;
+  const hints = navigator.userAgentData;
+  const indicatesAndroid = value => /\b(?:Android|K325G)\b/i.test(value || '');
+  if (![hints?.platform, navigator.userAgent, navigator.oscpu].some(indicatesAndroid)) {
+    if (!navigator.maxTouchPoints || !hints?.getHighEntropyValues) return;
+    const info = await hints.getHighEntropyValues(['model','platform']).catch(() => ({}));
+    if (![info.platform, info.model].some(indicatesAndroid)) return;
+  }
 
   const cabinet = document.getElementById('cabinet');
   const style = document.createElement('link');
   style.rel = 'stylesheet';
-  style.href = new URL('android-controller.css?v=enter4', document.currentScript.src);
+  style.href = new URL('android-controller.css?v=enter4', source);
   document.head.append(style);
   cabinet.classList.add('android-cabinet');
   document.querySelector('#menu .tag').textContent='TOUCH CONTROLS';
