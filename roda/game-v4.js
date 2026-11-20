@@ -126,7 +126,7 @@ function advanceAir(p,dt){if(p.y>0||p.vy){p.y+=p.vy*dt;p.vy-=(p.vy>0?.52:.76)*dt
 function updateFighter(p,opp,s,dt){if(p.fallSoundAt&&tick>=p.fallSoundAt){playSample('fall',.8);p.fallSoundAt=0}p.flash=Math.max(0,p.flash-dt);p.invuln=Math.max(0,p.invuln-dt);p.x=clamp(p.x+p.pushV*dt,100,1180);p.pushV*=Math.pow(.84,dt);if(p.down>0){p.down=Math.max(0,p.down-dt);p.attack=null;p.stun=0;p.block=false;advanceAir(p,dt);p.moveText=p.down<14?'RECOVERY':'KNOCKDOWN';if(p.down===0)p.invuln=12;return}p.comboTimer-=dt;if(p.comboTimer<=0)p.combo=0;p.meter=Math.min(100,p.meter+.045*dt);if(p.buffer){p.buffer.ttl-=dt;if(p.buffer.ttl<=0)p.buffer=null}if(p.stun>0){p.stun-=dt;p.block=p.guardStun===true;p.attack=null;p.moveText=p.guardStun?'BLOCK':'HIT';advanceAir(p,dt);return}p.guardStun=false;p.dir=opp.x>=p.x?1:-1;let up=!!s&&s.y<-.6;if(up&&!p.jumpHeld)p.jumpBuffer=9;p.jumpHeld=up;if(p.jumpBuffer>0)p.jumpBuffer-=dt;p.walk=s?.x||0;let stepStart=p.x;p.stepOffset=0;p.landing=Math.max(0,p.landing-dt);if(p.takeoff>0){p.takeoff-=dt;if(p.takeoff<=0){p.vy=14.8;p.y=1;p.crouch=false;p.block=false}}
 if(p.attack!==null){let base=moveFor(p,p.attack);p.at+=dt;let m=attackPhase(base,p.at);if(p.phase!==m.phase){p.phase=m.phase;p.hit=false;p.swingPlayed=false}let active=p.at>=m.start&&p.at<m.start+m.active;if(active&&!p.swingPlayed){p.swingPlayed=true;sfx('swing',m.rank)}
 if(p.y>0&&s){p.vx+=(s.x*fighterTraits[p.id].speed-p.vx)*.16;p.x+=p.vx*dt};if(p.y===0){if(p.at<m.start)p.x+=p.dir*(base.retreat||0)*dt;else if(active)p.x+=p.dir*m.travel*dt;}
-if(active&&m.phaseFrame>=(m.contactStart||0)&&m.phaseFrame<(m.contactEnd??7)&&!p.hit&&Math.abs(opp.x-p.x)<m.range&&Math.abs(opp.y-p.y)<110&&opp.down<=0&&opp.invuln<=0){p.hit=true;let avoids=opp.crouch&&m.level==='high';if(avoids){tone(220,.06,.03)}else{p.confirmed=true;let blocked=opp.block&&(m.level!=='low'||opp.crouch);if(blocked){opp.stun=7;opp.guardStun=true;opp.meter=Math.min(100,opp.meter+5);p.meter=Math.min(100,p.meter+3);opp.moveText='BLOCK';burst((p.x+opp.x)/2,opp.crouch?505:405,'#c9f9ff',9);sfx('block',m.rank);rumble(players.indexOf(opp),.14,60)}else{let dmg=m.damage*Math.max(.55,1-p.combo*.1);let actualDamage=Math.min(opp.hp,dmg);opp.hp=Math.max(0,opp.hp-dmg);scoreContact(p,opp,actualDamage);opp.stun=m.rank===3?33:24;opp.guardStun=false;opp.flash=8;opp.attack=null;opp.buffer=null;p.combo++;p.comboTimer=80;p.meter=Math.min(100,p.meter+8);opp.meter=Math.min(100,opp.meter+6);opp.pushV=p.dir*m.push;opp.hitAt=tick;opp.reaction=m.level==='high'?4:1;opp.impactKind=m.level;if(m.knockdown||opp.hp<=0){opp.down=opp.hp<=0?999: m.rank===3?52:40;opp.comboTimer=0;opp.fallSoundAt=tick+8}rumble(players.indexOf(opp),m.rank===3?.55:.3,90);shake=m.rank===3?10:5;freeze=m.rank===3?4:2;burst((p.x+opp.x)/2,m.level==='low'?530:m.level==='high'?590-270*fighterTraits[opp.id].height/174:410,m.rank===3?fighterTraits[p.id].accent:'#ffe999',m.rank===3?36:18);sfx('hit',m.rank);vocal(opp.id,opp.hp<=0?'defeat':'hit')}if(mode==='training'&&opp.hp<=1){opp.hp=opp.maxHp;opp.down=52}}}
+if(active&&m.phaseFrame>=(m.contactStart||0)&&m.phaseFrame<(m.contactEnd??7)&&!p.hit&&Math.abs(opp.x-p.x)<m.range&&Math.abs(opp.y-p.y)<110&&opp.down<=0&&opp.invuln<=0){p.hit=true;let avoids=opp.crouch&&m.level==='high';if(avoids){tone(220,.06,.03)}else{p.confirmed=true;let blocked=opp.block&&(m.level!=='low'||opp.crouch);if(blocked){opp.stun=7;opp.guardStun=true;opp.meter=Math.min(100,opp.meter+5);p.meter=Math.min(100,p.meter+3);opp.moveText='BLOCK';burst((p.x+opp.x)/2,opp.crouch?505:405,'#c9f9ff',9);sfx('block',m.rank);rumble(players.indexOf(opp),.14,60)}else{let dmg=m.damage*Math.max(.55,1-p.combo*.1);let actualDamage=Math.min(opp.hp,dmg);opp.hp=Math.max(0,opp.hp-dmg);scoreContact(p,opp,actualDamage);opp.stun=m.rank===3?33:24;opp.guardStun=false;opp.flash=8;opp.attack=null;opp.buffer=null;p.combo++;p.comboTimer=80;p.meter=Math.min(100,p.meter+8);opp.meter=Math.min(100,opp.meter+6);opp.pushV=p.dir*m.push;opp.hitAt=tick;opp.reaction=m.level==='high'?4:1;opp.impactKind=m.level;if(m.knockdown||opp.hp<=0){opp.down=opp.hp<=0?999: m.rank===3?52:40;opp.comboTimer=0;opp.fallSoundAt=tick+8}rumble(players.indexOf(opp),m.rank===3?.55:.3,90);shake=m.rank===3?10:5;freeze=m.rank===3?4:2;burst((p.x+opp.x)/2,m.level==='low'?530:m.level==='high'?590-270*fighterTraits[opp.id].height/174:410,m.rank===3?fighterTraits[p.id].accent:'#ffe999',m.rank===3?36:18);kickImpact(m,opp.down>0);vocal(opp.id,opp.hp<=0?'defeat':'hit')}if(mode==='training'&&opp.hp<=1){opp.hp=opp.maxHp;opp.down=52}}}
 const lastContactFinished=m.phase===base.phases.length-1 && m.phaseFrame>=(m.contactEnd??7);
 let cancel=((p.id<16 && p.id!==7 && p.id!==14) || lastContactFinished)&&(p.confirmed||p.at>=m.start+m.active+2)&&p.at>=m.start+Math.max(2,m.active*.3)&&p.buffer&&(moveFor(p,p.buffer.n).rank>m.rank||(p.combo<3&&p.buffer.n!==p.attack&&moveFor(p,p.buffer.n).rank===m.rank));
 if(cancel||p.at>=m.start+m.active+m.end){p.attack=null;if(p.buffer){let queued=p.buffer;p.buffer=null;beginAttack(p,queued.n,queued.crouched)}}
@@ -328,6 +328,37 @@ let shade=ctx.createLinearGradient(0,0,0,H);shade.addColorStop(0,'#071611b0');sh
 function drawRoda(){if(activeStage===21||activeStage===24)return;
  ctx.save();ctx.strokeStyle='#f6e7b666';ctx.lineWidth=2;
  ctx.beginPath();ctx.ellipse(640,590,535,44,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+}
+// Two short, cached one-shots. Each contact plays exactly one impact.
+const kickSoundBuffers = new Map();
+function kickImpact(move, knockedDown) {
+  if (!sound) return;
+  const sweep = move.key === 'rasteira' || move.key === 'lowsweep' || /^rasteira\b/i.test(move.name || '');
+  if (!knockedDown && !sweep) { sfx('hit',move.rank); return; }
+  initAudio();
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  const kind = knockedDown ? 'thud' : 'scuff';
+  let buffer = kickSoundBuffers.get(kind);
+  if (!buffer) {
+    const rate = audioCtx.sampleRate;
+    buffer = audioCtx.createBuffer(1,Math.ceil(rate*(knockedDown ? .13 : .085)),rate);
+    const data = buffer.getChannelData(0);
+    let previousNoise = 0, phase = 0;
+    for (let i=0;i<data.length;i++) {
+      const t = i/rate, noise = Math.random()*2-1;
+      const envelope = Math.min(1,t/.003,(data.length-1-i)/(rate*.01));
+      if (knockedDown) {
+        phase += 2*Math.PI*(85+115*Math.exp(-t*42))/rate;
+        data[i] = envelope*(.48*Math.sin(phase)+.17*Math.sin(phase*2)+.09*Math.sin(phase*3))*Math.exp(-t*29);
+      } else {
+        previousNoise += (1-Math.exp(-2*Math.PI*1800/rate))*(noise-previousNoise);
+        data[i] = envelope*.42*previousNoise*Math.exp(-t*34);
+      }
+    }
+    kickSoundBuffers.set(kind,buffer);
+  }
+  const source = audioCtx.createBufferSource();
+  source.buffer=buffer;source.connect(audioCtx.destination);source.start();
 }
 function sfx(kind,rank=1){if(!sound)return;if(kind==='hit'){playSample('strike',rank===3?.85:.7,1+(rank-2)*.035);return}initAudio();if(!audioCtx||audioCtx.state==='suspended')return;let now=audioCtx.currentTime;let length=kind==='swing'?.12:kind==='block'?.08:kind==='start'?.28:.16+rank*.025;let buf=audioCtx.createBuffer(1,Math.ceil(audioCtx.sampleRate*length),audioCtx.sampleRate),data=buf.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/data.length,kind==='swing'?1.2:3);let source=audioCtx.createBufferSource(),filter=audioCtx.createBiquadFilter(),gain=audioCtx.createGain();source.buffer=buf;filter.type=kind==='swing'?'bandpass':'lowpass';filter.frequency.setValueAtTime(kind==='swing'?1600:kind==='block'?3200:700,now);filter.frequency.exponentialRampToValueAtTime(kind==='swing'?450:160,now+length);gain.gain.setValueAtTime(kind==='swing'?.12:kind==='block'?.16:.22+rank*.035,now);source.connect(filter);filter.connect(gain);gain.connect(audioCtx.destination);source.start();if(kind==='hit')tone(95+rank*9,.15,.09,'sine');if(kind==='block')tone(510,.06,.04,'triangle');if(kind==='start'){tone(330,.2,.08,'triangle');setTimeout(()=>tone(495,.2,.08,'triangle'),130)}}
 function rumble(index,strength,duration){let pad=lastPads[index];try{pad?.vibrationActuator?.playEffect('dual-rumble',{duration,strongMagnitude:strength,weakMagnitude:strength*.65}).catch(()=>{})}catch(e){}}
