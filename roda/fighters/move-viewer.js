@@ -24,7 +24,7 @@
     for(const [i,phase] of (motion.selectedIndex?[]:move().phases).entries()){
       if(i)caption.append(' → ');
       const span=document.createElement('span');
-      span.textContent=(techniqueBook[phase.key]?.name || phase.name || move().name);caption.append(span);
+      span.textContent=(phase.name || techniqueBook[phase.key]?.name || move().name);caption.append(span);
     }
     pause.textContent=playing?'Pause':'Play';
     el('preview-all').setAttribute('aria-pressed',String(cycling));
@@ -98,5 +98,12 @@
   }).observe(screen);
   document.addEventListener('visibilitychange',()=>{last=0;schedule();});
   costumes.forEach(im=>im.addEventListener('load',()=>{if(!playing)redraw();},{once:true}));
+  const query=new URLSearchParams(location.search);
+  if(query.get('fighter')==='meilin'){
+    select.value='7';
+    const index=characterMoves[7].findIndex(move=>move.button===query.get('button'));
+    if(index>=0){slot=index;cycling=false;}
+  }
+  Meilin.spritesReady.then(redraw);
   labels();redraw();
 })();
