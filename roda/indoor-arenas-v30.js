@@ -241,7 +241,13 @@
   };
 
   window.RODAIndoorArenas=Object.freeze({
-    version:'3.2',converted:[...Array(18).keys(),20],
+    surface(id){
+      const image=customRooms[id-22] || (id===21?skullStudioImage:[18,19].includes(id)?privateArenaImages[id-18]:null);
+      if(image)return image.naturalWidth?image:null;
+      if(!cache.has(id))cache.set(id,paint(id));
+      return cache.get(id);
+    },
+    version:'4.2',converted:[...Array(18).keys(),20],
     retainedIndoor:[18,19,21],name:(index)=>rooms[index]||''
   });
 })();

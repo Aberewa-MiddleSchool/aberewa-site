@@ -27,9 +27,10 @@
     const attacking=at>=0 && at<m.start+m.active+m.end;
     const body={id:fighter,dir:1,hp:100,y:0,preview:true,
       attack:attacking?slot:null,at:Math.max(0,at)};
-    const back=g.createLinearGradient(0,0,0,335);
-    back.addColorStop(0,'#243f38');back.addColorStop(.84,'#486153');back.addColorStop(.85,'#927454');back.addColorStop(1,'#594735');
-    g.fillStyle=back;g.fillRect(0,0,760,335);
+    const arena=window.RODAIndoorArenas?.surface(homeArena[fighter]);
+    if(arena)g.drawImage(arena,0,0,760,335);
+    else{g.fillStyle='#243f38';g.fillRect(0,0,760,335);}
+    g.fillStyle='#122018d9';g.fillRect(8,6,310,58);
     g.fillStyle='#f3d699';g.font='bold 18px system-ui';g.fillText(profiles[fighter].name,18,30);
     g.font='14px system-ui';g.fillText(profiles[fighter].home,18,54);
     g.fillStyle='#211d1866';g.beginPath();g.ellipse(375,290,75,10,0,0,Math.PI*2);g.fill();

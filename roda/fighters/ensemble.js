@@ -22,23 +22,15 @@ function installFighterKits() {
     fighterTraits.push({...fighterTraits[[0,6,3,4,11][i]],build,style,accent});
     characterMoves.push(moves.map(m=>({...m,phases:[m]})));
   });
-  // Six different opening techniques per fighter. Rotating the two replies
-  // gives each fighter a distinct set while keeping three distinct techniques in every chain.
-  const keys=['bencao','rasteira','frente','costas','chapa','au','armada','martelo'];
-  const used=new Set();
-  for (const [id,kit] of characterMoves.entries()) {
+  fighterTraits[14].build = .76;
+  const chains = [
+    ['bencao','frente','rasteira'], ['rasteira','bencao','costas'],
+    ['frente','chapa','bencao'], ['costas','frente','rasteira'],
+    ['chapa','martelo','costas'], ['bencao','au','rasteira']
+  ];
+  for (const kit of characterMoves) {
     kit.forEach((base,button) => {
-      const first=(button+id)%keys.length;
-      const replies=keys.filter(k=>k!==keys[first]);
-      const pairs=replies.flatMap(a=>replies.filter(b=>b!==a).map(b=>[a,b]));
-      let index=(id*11+button*3)%pairs.length;
-      let chain;
-      do {
-        chain=[keys[first],...pairs[index]];
-        index=(index+1)%pairs.length;
-      } while(used.has(chain.join('/')));
-      used.add(chain.join('/'));
-      const frames=10+(id+button)%4;
+      const chain=chains[button], frames=16;
       const total=(base.phases||[base]).reduce((sum,phase)=>sum+phase.damage,0);
       const phases=chain.map((key,i)=>({...techniqueBook[key],key,frames,
         range:base.range*techniqueBook[key].reach,damage:total*[.28,.32,.40][i],
@@ -49,120 +41,78 @@ function installFighterKits() {
   }
 }
 
-// Each angle rotates an original painted body part about its pivot. Neither
-// the image scale nor the distance between joints depends on the attack.
-const strikeAngles = {
-  bencao:[-1.05,-1.74,.12,-.18,-.23,.25,-.18],
-  rasteira:[-.38,-1.45,.61,-.53,.70,.32,.25],
-  frente:[-1.74,-2.00,.04,-.20,-.30,-.42,.28],
-  costas:[-2.14,-1.95,.35,-.4,.97,.65,-.35],
-  chapa:[-1.48,-1.64,.12,-.28,-.64,-.64,.25],
-  au:[-.96,-1.63,1.05,.55,2.72,-1.42,-1.35],
-  armada:[-1.60,-2.28,.26,-.25,.57,-.82,-.43],
-  martelo:[-1.85,-1.22,.18,-.36,-.44,.28,-.65]
-};
-// Both soles have world-space marks. Only the stepping foot leaves its mark.
-// Solve each knee from the original painted thigh and shin lengths.
-function legTo(hip,knee,ankle,x,y) {
-  const a=Math.hypot(knee[0]-hip[0],knee[1]-hip[1]);
-  const b=Math.hypot(ankle[0]-knee[0],ankle[1]-knee[1]);
-  const d=Math.min(a+b-.01,Math.max(Math.abs(a-b)+.01,Math.hypot(x,y)));
-  const restA=Math.atan2(knee[1]-hip[1],knee[0]-hip[0]);
-  const restB=Math.atan2(ankle[1]-knee[1],ankle[0]-knee[0]);
-  const bend=Math.sin(restB-restA)>=0?1:-1;
-  const upper=Math.atan2(y,x)-bend*Math.acos(Math.max(-1,Math.min(1,(a*a+d*d-b*b)/(2*a*d))));
-  const lower=Math.atan2(y-a*Math.sin(upper),x-a*Math.cos(upper));
-  const wrap=v=>Math.atan2(Math.sin(v),Math.cos(v));
-  return [wrap(upper-restA),wrap(lower-restB)];
-}
-function gingaStep(p,rig) {
-  const [hip,knee,foot,backKnee,backFoot]=rig.points;
-  const length=(j,f)=>Math.hypot(j[0]-hip[0],j[1]-hip[1])+Math.hypot(f[0]-j[0],f[1]-j[1]);
-  const span=Math.min(length(knee,foot),length(backKnee,backFoot));
-  const beat=(tick*(.008+.00034*(p.id%7))+p.id*.17)%1;
-  const frontSteps=beat>=.5,phase=(beat*2)%1;
-  const back=Math.sin(phase*Math.PI)**2;
-  const lift=Math.sin(phase*2*Math.PI)**2*.105*span;
-  const hipX=(frontSteps?1:-1)*back*.11*span;
-  const sole=span*(.76-.035*back)+Math.max(rig.floor-foot[1]+hip[1],rig.floor-backFoot[1]+hip[1]);
-  function targets(j,f,moving,offset){
-    const x=span*(offset-(moving?.77*back:0))-hipX;
-    const ankleY=sole-(rig.floor-f[1]+hip[1])-(moving?lift:0);
-    return legTo(hip,j,f,x,ankleY);
+const actionSheets=costumes.map((_,id)=>{
+  const image=new Image();
+  image.src=new URL('actions/'+id+'.webp',costumeRoot);
+  return image;
+});
+const actionCells=[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,25,25,25,25,26,26,26,26]];
+const inversionSheet=new Image();
+inversionSheet.src=new URL('actions/inversions.webp',costumeRoot);
+function paintInversion(g,p,phase){
+  const id=p.id;
+  if(id>=16){
+    g.drawImage(inversionSheet,(id-16)*225,0,225,185,-149,-241,298,245);
+    return;
   }
-  return {angles:[...targets(knee,foot,frontSteps,.29),...targets(backKnee,backFoot,!frontSteps,.20)],
-    x:hipX,y:sole, sway:Math.sin(beat*2*Math.PI)};
-}
-
-function fighterAngles(p) {
-  const beat=tick*(.045+.0023*(p.id%6))+(p.ginga||0)*.022+p.id*.65;
-  const sway=Math.sin(beat),lift=Math.cos(beat);
-  const ready=[sway*.38,-sway*.36+Math.max(0,lift)*.17,-sway*.39,sway*.28,
-    -.11+sway*.14,-sway*.52,sway*.41];
-  if (p.victory) {
-    const style=p.id%5;
-    const salute=[[ -.18,-.1,.15,.2,-.2,-1.7,-.7],[-.5,.22,.12,.16,.55,.4,-.7],
-      [-1.7,-2.0,.15,-.25,-.4,-.8,.1],[.16,.2,-.3,.3,.08,-1.45,-.98],
-      [-.6,.32,.35,-.25,-.38,-.68,-1.3]][style];
-    salute[4]+=(Math.floor(p.id/5)-2)*.07;salute[5]+=(p.id%4)*.16;return salute;
+  if(combatData[id]){
+    const table=combatKeys[id],button=table.findIndex(keys=>keys.includes('au'));
+    const n=(button+2)*8+combatContacts[id][button][table[button].indexOf('au')];
+    const f=185/combatData[id].stanceHeight;
+    g.drawImage(combatImages[id],n%8*320,Math.floor(n/8)*320,320,320,-160*f,-300*f,320*f,320*f);
+    return;
   }
-  if(p.down>0 || p.hp<=0)return [.3,.25,.2,-.32,-1.38,.4,.3];
-  if(p.stun>0)return [-.19,.25,.1,-.15,-.4,-.33,-.42];
-  if(p.attack==null)return p.crouch?[.42,-.8,-.63,.58,.48,.24,-.4]:ready;
-  const move=characterMoves[p.id][p.attack], phase=attackPhase(move,p.at);
-  if(p.demoKey)phase.key=p.demoKey;
-  const age=p.at-move.start;
-  if(age<0 || age>=move.active)return ready;
-  const progress=phase.phaseFrame/phase.frames;
-  const extension=Math.sin(Math.PI*Math.min(1,(progress+.12)/1.12));
-  const flair=(p.id%7-3)*.055, timing=(p.id%5-2)*.09;
-  const swing=Math.pow(extension,1+timing), arc=Math.sin(progress*2*Math.PI);
-  // Shoulder lead, hip turn, knee chamber and follow-through are individual
-  // animation accents for Tainá, Luzia, Dalva, Neide and Marília respectively.
-  const accents=[
-    [.10,-.22,.22,-.15,.28,-.40,.24],
-    [-.28,.37,.08,-.09,-.12,.32,-.31],
-    [.16,.13,-.19,.23,.37,-.26,.15],
-    [-.35,.47,-.12,.10,-.24,.19,-.36],
-    [.27,-.16,.31,-.19,-.31,.23,.29]
-  ][p.id-16];
-  const accentBeat=Math.sin(Math.PI*progress)*(1-.5*progress);
-  return strikeAngles[phase.key].map((v,i)=>ready[i]*(1-swing)+
-    (v+(i===0?flair:i===4?-flair*.7:0))*swing+(accents?accents[i]*accentBeat:0)+arc*(i===1?.22+flair:0));
+  const group=Math.floor(id/5),rects=spriteBounds['transitions-'+(group+1)+'.webp'];
+  const n=id%5*8, r=rects[n+(phase.phaseFrame<9?6:7)];
+  const scale=185/rects[n][3];
+  g.drawImage(transitionImages[group],...r,-r[2]*scale/2,-r[3]*scale,r[2]*scale,r[3]*scale);
 }
-function turn(point,angle) {
-  const [x,y]=point;
-  return [x*Math.cos(angle)-y*Math.sin(angle),x*Math.sin(angle)+y*Math.cos(angle)];
-}
-function joint(origin,a,b,angle) {
-  const d=turn([b[0]-a[0],b[1]-a[1]],angle);
-  return [origin[0]+d[0],origin[1]+d[1]];
-}
+const kickRows=['bencao','rasteira','frente','costas','chapa','martelo'];
+// Extension and recoil frames are illustrated separately for each fighter.
+// These holds affect presentation only. The three contacts use the shared game clock.
+const kickHolds=[
+  [6,11],[3,8],[8,12],[6,14],[3,7],[7,13],[4,9],
+  [5,12],[4,10],[7,12],[8,14],[7,14],[3,9],[6,10],
+  [5,9],[8,13],[8,15],[3,8],[6,13],[4,8],[7,11]
+];
 function paintFighter(g,p,x,y,zoom=1,card=false) {
-  const rig=rodaRigs[p.id],im=costumes[p.id];
-  if (!rig || !im?.naturalWidth)return;
-  const [hip,knee,foot,rearKnee,rearFoot,shoulder,elbow,hand,rearShoulder]=rig.points;
-  const stepping=!card && p.attack==null && p.hp>0 && !p.down && !p.stun && !p.crouch &&
-    !p.block && !p.victory && (p.preview || scene!=='result') && !p.y && !p.takeoff;
-  const gait=stepping?gingaStep(p,rig):null;
-  const pose=card?Array(7).fill(0):fighterAngles(p);
-  if(gait)pose.splice(0,7,...gait.angles,-.10+gait.sway*.12,-gait.sway*.54,gait.sway*.39);
-  const [thigh,shin,backThigh,backShin,body,arm,forearm]=pose;
-  const origin=[0,0], newKnee=joint(origin,hip,knee,thigh), newBack=joint(origin,hip,rearKnee,backThigh);
-  const newShoulder=joint(origin,hip,shoulder,body);
-  const newElbow=joint(newShoulder,shoulder,elbow,arm+body);
-  const angles=[backThigh,backShin,thigh,shin,body,arm+body,forearm+body,body-arm*.64,gait?0:backShin,gait?0:shin];
-  const anchors=[origin,newBack,origin,newKnee,origin,newShoulder,newElbow,joint(origin,hip,rearShoulder,body),joint(newBack,rearKnee,rearFoot,backShin),joint(newKnee,knee,foot,shin)];
-  const floor=Math.max(joint(newKnee,knee,foot,shin)[1]+rig.floor-(foot[1]-hip[1]),
-    joint(newBack,rearKnee,rearFoot,backShin)[1]+rig.floor-(rearFoot[1]-hip[1]),
-    joint(newElbow,elbow,hand,forearm+body)[1],turn([0,rig.top],body)[1]);
-  g.save();
-  g.translate(x,y);
-  const scale=rig.scale*zoom*(card?1:0.76);
-  g.scale(scale*(p.dir||1)*fighterTraits[p.id].build,scale);
-  g.translate(gait?gait.x:0,-(gait?gait.y:floor));
-  if(card)g.drawImage(im,-hip[0],-hip[1]);
-  else paintSkin(g,p.id,im,anchors,angles);
+  const id=p.id, rig=rodaRigs[id], guard=costumes[id];
+  if(!rig || !guard?.naturalWidth)return;
+  let row=-1,frame=0,attackPhaseInfo;
+  if(!card){
+    if(p.victory)row=7;
+    else if(p.hp<=0 || p.down>0)row=8;
+    else if(p.attack!=null){
+      const move=moveFor(p,p.attack),phase=attackPhase(move,p.at);
+      attackPhaseInfo=phase;
+      row=kickRows.indexOf(phase.key);
+      if(p.at<move.start)frame=0;
+      else if(p.at>=move.start+move.active)frame=3;
+      else{
+        const [hold,recoil]=kickHolds[id];
+        frame=phase.phaseFrame<hold?1:phase.phaseFrame<recoil?2:
+          phase.phaseFrame<phase.frames-2?3:0;
+        if(frame===0 && phase.phase<2)row=kickRows.indexOf(move.phases[phase.phase+1].key);
+      }
+    }else if(p.crouch || p.takeoff>0 || p.landing>0)row=6;
+  }
+  g.save();g.translate(x,y);
+  g.scale((p.dir||1)*fighterTraits[id].build*zoom,zoom);
+  if(attackPhaseInfo && p.attack===5 && flipData[id] && flipImages[id].naturalWidth){
+    const m=moveFor(p,5),phase=attackPhaseInfo;
+    const n=p.at<m.start?0:p.at>=m.start+m.active?7:1+phase.phase*2+(phase.phaseFrame>=kickHolds[id][0]?1:0);
+    const f=185/flipData[id].stanceHeight;
+    g.drawImage(flipImages[id],n%8*320,Math.floor(n/8)*320,320,320,-160*f,-300*f,320*f,320*f);
+  }else if(attackPhaseInfo?.key==='au'){
+    paintInversion(g,p,attackPhaseInfo);
+  }else if(row>=0 && actionSheets[id].naturalWidth){
+    const cell=actionCells[id][row*4+frame];
+    g.drawImage(actionSheets[id],cell%4*200,Math.floor(cell/4)*140,200,140,-175,-240,350,245);
+  }else{
+    const scale=rig.scale*(card?1:185/270);
+    g.scale(scale,scale);
+    g.drawImage(guard,-rig.points[0][0],-rig.points[0][1]-rig.floor);
+  }
   g.restore();
 }
 function paintedCard(canvas,id,defeat=false) {
