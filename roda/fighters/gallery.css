@@ -1,0 +1,10 @@
+#fighter-gallery{max-width:1120px;margin:2rem auto;padding:1rem;color:#fff3d4;background:#16241e}
+#fighter-gallery h2{margin:0 0 1rem}
+.fighter-gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px;align-items:start}
+.fighter-gallery-grid details{border:1px solid #94774d;background:#21342a;padding:8px}
+.fighter-gallery-grid summary{cursor:pointer;font-weight:800}
+.fighter-gallery-grid canvas{width:100%;height:auto;display:block;margin-bottom:6px}
+.fighter-gallery-grid ol{padding-left:1.2rem;line-height:1.5}
+
+.roda-intro-film{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#101510;z-index:5}
+.roda-intro-film[hidden]{display:none}

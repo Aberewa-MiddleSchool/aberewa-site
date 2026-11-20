@@ -15,8 +15,8 @@
     return;
   }
   // Each scene has a dedicated speed, string tuning and interlocking pulse.
-  const tempi=[68,76,82,70,78,74,66,84,72,86,64,80,73,69,88,75,79,71,67,83,77,61];
-  const tunings=[106,123,131,110,147,119,98,137,113,154,104,127,116,109,144,121,135,112,99,143,152,92];
+  const tempi=[68,76,82,70,78,74,66,84,72,86,64,80,73,69,88,75,79,71,67,83,77,61,74,91,63,82,86,72];
+  const tunings=[106,123,131,110,147,119,98,137,113,154,104,127,116,109,144,121,135,112,99,143,152,92,115,143,96,124,137,107];
   const patterns=[
     'x--o--x-xx-o-x--','x-o-x---x--o-xx-','x-xx--o-x-o--x-x',
     'x--o-x-x--o-xx--','x-x-o---xx-o--x-','x--o-xx-x--o-xx-',
@@ -25,7 +25,7 @@
     'x-xx-o--x---x-ox','x---ox-x-x--o-x-','xx-o--x--x-ox-x-',
     'x-o---xx-x-o-x--','x--o-x--xx-o-x-x','x-x--ox-x--o--xx',
     'x---o-x-xx--ox--','x-o-xx-x---o-x--','x-ox--x-xx--o-x-',
-    'x---o--x--xx-o--'
+    'x---o--x--xx-o--','x--oxx---x-o-x--','xx-o-x--o-x---xx','x---o---x-o-x---','x-o--xx-o---x-x-','xx-o-x--x-o--x-x','x--o-x--ox-x-o--'
   ];
   let currentStage=-1, timer=null, context=null, noise=null, nextTime=0, step=0;
   let rhythmOutput = null;

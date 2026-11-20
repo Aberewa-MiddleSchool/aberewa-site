@@ -22,7 +22,7 @@
     'THE RODA TRIUMPH','THE JADE INVERSION','THE RIVER SALUTE',
     'THE SOLAR ARC','THE AXÉ SALUTE','THE IRON GUARD',
     'THE BACKSTEP VICTORY','THE WHEELING SALUTE',
-    'THE MARÉ INVERSION','THE LAST THREAT'
+    'THE MARÉ INVERSION','THE LAST THREAT','THE TIDE SALUTE','RECIFE RISES','THE CROWN BOW','THE GOLDEN TURN','THE OPEN CIRCLE'
   ];
   const card=document.querySelector('#result .winner-card');
   const caption=document.createElement('div');
@@ -53,7 +53,7 @@
     const start=Number(move.start)||0, active=Math.max(4,Number(move.active)||18);
     const at=start+Math.max(1,Math.min(active-1,Math.floor(active*(.12+.63*flourish))));
     const pose={...winner,
-      x:640,y:0,vy:0,dir:id%2===0?1:-1,vx:0,
+      victory:true,x:640,y:0,vy:0,dir:id%2===0?1:-1,vx:0,
       hp:Math.max(1,winner.maxHp||100),maxHp:winner.maxHp||100,
       stun:0,down:0,guardStun:false,flash:0,invuln:0,
       crouch:false,takeoff:0,landing:0,block:false,
@@ -73,14 +73,14 @@
         pctx.fillStyle=band;pctx.fillRect(0,210,portrait.width,70);
       }
       caption.textContent=(labels[id]||'VICTORY SALUTE')+
-        (hold?' · FINISHER':' · RETURN TO GINGA');
+        ' · VICTORY POSE';
     } catch (err) {
       if(!errorLogged){errorLogged=true;console.warn('[RODA victory] Original winner portrait retained',err);}
     }
     return output;
   };
   window.RODAVictoryStances=Object.freeze({
-    version:'3.2',fighterCount:slots.length,
+    version:'3.2',fighterCount:labels.length,
     names:[...labels],artSource:'existing fighter-specific animation sheets'
   });
 })();

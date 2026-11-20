@@ -45,7 +45,11 @@
   const menu = create('roda-menu-stages','roda-menu-stages');
   menu.innerHTML = '<h3>CHOOSE AN ARENA</h3><canvas class="roda-stage-visual" width="640" height="330" aria-label="Actual playable arena preview"></canvas><p class="roda-stage-label"></p><div class="roda-stage-action-row"><button type="button" data-prev>← PREVIOUS</button><button type="button" data-next>NEXT →</button></div>';
   const choose = create('roda-choose-stages','roda-choose-stages');
-  choose.innerHTML = '<p class="roda-stage-label"></p><canvas class="roda-stage-visual" width="640" height="330" aria-label="Actual playable arena preview"></canvas><div class="roda-stage-action-row"><button type="button" data-prev>← PREVIOUS</button><button type="button" data-next>NEXT →</button><button type="button" data-audition>HEAR THIS STAGE BEAT</button></div><div class="roda-stage-grid" aria-label="Choose from all 22 playable stages"></div>';
+  choose.innerHTML = '<p class="roda-stage-label"></p><canvas class="roda-stage-visual" width="640" height="330" aria-label="Actual playable arena preview"></canvas><div class="roda-stage-action-row"><button type="button" data-prev>← PREVIOUS</button><button type="button" data-next>NEXT →</button><button type="button" data-audition>HEAR THIS STAGE BEAT</button></div><div class="roda-stage-grid" aria-label="Choose from all 28 playable stages"></div>';
+  const homeButton=document.createElement('button');
+  homeButton.type='button';homeButton.textContent='USE FIGHTER’S HOME ARENA';
+  choose.querySelector('.roda-stage-action-row').append(homeButton);
+  homeButton.onclick=()=>chooseStage(homeArena[pick]);
   const chooseBtn = q('#choose');
   q('#menu .menupanel').insertBefore(menu, chooseBtn);
   q('#select .arena-selector').append(choose);
@@ -74,6 +78,7 @@
   function sync() {
     const id = selected(current());
     const locked = story();
+    homeButton.hidden=locked;homeButton.disabled=locked;
     const label = (id + 1) + ' / ' + stageList.length + ' — ' + stageList[id];
     for (const view of views) {
       const text = view.querySelector('.roda-stage-label');
@@ -110,7 +115,7 @@
     b.type='button';b.dataset.stage=String(id);
     const shortName=stageList[id].split(' · ')[0];
     b.textContent=String(id+1).padStart(2,'0')+' · '+shortName;
-    if (id>=18) {
+    if ([18,19,21].includes(id)) {
       const small=document.createElement('small');
       small.textContent=id===21?'ORIGINAL SKULL BOSS':'ORIGINAL PRIVATE ARENA';
       b.append(small);

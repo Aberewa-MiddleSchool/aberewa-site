@@ -35,12 +35,24 @@
     'NATAL INDOOR ATRIUM · RIO GRANDE DO NORTE',
     'MESTRE’S PRIVATE STUDIO · SALVADOR',
     'MEILIN’S TRAINING HALL · CURITIBA',
-    'MEILIN’S GARDEN · CURITIBA',
-    'THE MYSTERY MAN’S SKULL STUDIO'
+    'MEILIN’S CONSERVATORY · CURITIBA',
+    'THE MYSTERY MAN’S SKULL STUDIO',
+    'TAINÁ’S BOATHOUSE · SALVADOR',
+    'LUZIA’S REHEARSAL CINEMA · RECIFE',
+    'DALVA’S ENGENHO · RECÔNCAVO DA BAHIA',
+    'NEIDE’S CERAMICS ATELIER · BELO HORIZONTE',
+    'MARÍLIA’S COSTUME WORKSHOP · RIO DE JANEIRO',
+    'BENTO’S DENIM WORKROOM · PORTO ALEGRE'
   ];
   // Mutate the shared array so the original arcade sequence, selection menus,
   // stage captions and story still use the same indexes and stay synchronized.
-  for (let i = 0; i < Math.min(rooms.length, stageNames.length); i++) stageNames[i] = rooms[i];
+  stageNames.splice(0,stageNames.length,...rooms);
+  const customRooms = rooms.slice(22).map((_,n)=>{
+    const img=new Image();
+    img.src=new URL('arenas/'+(22+n)+'.webp',document.currentScript.src);
+    img.addEventListener('load',()=>window.RODAStageBrowser?.refresh(),{once:true});
+    return img;
+  });
 
   const colors = [
     ['#514335','#756149','#d3a35e','#433324','#ad744b'],
@@ -216,7 +228,12 @@
 
   window.drawArena = function indoorRodaArena(...args){
     const id=Number(activeStage);
-    if (id===18 || id===19 || id===20 || id===21 || id<0 || id>20) {
+    const paintedRoom=customRooms[id-22];
+    if(paintedRoom?.naturalWidth){
+      ctx.drawImage(paintedRoom,0,0,W,H);
+      return;
+    }
+    if ([18,19,21].includes(id) || id<0 || id>=rooms.length) {
       return oldDrawArena.apply(this,args);
     }
     if (!cache.has(id)) cache.set(id,paint(id));
@@ -224,7 +241,7 @@
   };
 
   window.RODAIndoorArenas=Object.freeze({
-    version:'3.2',converted:[...Array(18).keys()],
-    retainedIndoor:[18,19,20,21],name:(index)=>rooms[index]||''
+    version:'3.2',converted:[...Array(18).keys(),20],
+    retainedIndoor:[18,19,21],name:(index)=>rooms[index]||''
   });
 })();
