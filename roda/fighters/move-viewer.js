@@ -63,11 +63,21 @@
       span.style.textDecoration=i===phase?'underline':'';
     });
   }
+  let audition=false;
   function frame(now){
     raf=0;
+    const previousAge=age;
     if(last)age+=Math.min(4,(now-last)*.06);
     last=now;
     const m=move();
+    if(audition && id()===21 && motion.selectedIndex===0 && scene!=='fight' && sound){
+      let contact=24+m.start;
+      for(const phase of m.phases){
+        const at=contact+(phase.contactStart||0);
+        if(previousAge<at && age>=at)strikeSound({id:21,attack:slot},'hit',m);
+        contact+=phase.frames;
+      }
+    }
     if(age>=24+m.start+m.active+m.end+35){
       age=0;
       if(cycling && !motion.selectedIndex){slot=(slot+1)%6;labels();}
@@ -78,13 +88,15 @@
     if(playing && visible && !document.hidden && !raf)raf=requestAnimationFrame(frame);
   }
   function restart(all){
+    audition=id()===21;
+    if(audition && sound)initAudio();
     motion.selectedIndex=0;cycling=all;age=0;last=0;playing=true;labels();redraw();schedule();
   }
   for(const [i,m] of characterMoves[0].entries()){
     const button=document.createElement('button');button.type='button';button.textContent=m.button;
     button.onclick=()=>{slot=i;restart(false);};row.append(button);
   }
-  select.onchange=()=>{slot=0;age=0;last=0;labels();redraw();schedule();};
+  select.onchange=()=>{audition=false;slot=0;age=0;last=0;labels();redraw();schedule();};
   pause.onclick=()=>{
     playing=!playing;last=0;
     if(!playing){cancelAnimationFrame(raf);raf=0;}
@@ -99,7 +111,7 @@
   document.addEventListener('visibilitychange',()=>{last=0;schedule();});
   costumes.forEach(im=>im.addEventListener('load',()=>{if(!playing)redraw();},{once:true}));
   const query=new URLSearchParams(location.search);
-  const linked={meilin:7,mestre:14,bento:11,caio:12,nestor:13}[query.get('fighter')];
+  const linked={aisha:21,meilin:7,mestre:14,bento:11,caio:12,nestor:13}[query.get('fighter')];
   if(Number.isInteger(linked)){
     select.value=String(linked);
     const index=characterMoves[linked].findIndex(move=>move.button===query.get('button'));

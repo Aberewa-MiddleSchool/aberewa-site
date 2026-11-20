@@ -6,28 +6,36 @@ const Meilin = (() => {
     image.src=new URL(name+'.webp',root);
     return image;
   }
-  const movement=load('movement'), salute=load('salute');
-  const kicks=Array.from({length:6},(_,i)=>load('low-'+i));
-  const spritesReady=Promise.allSettled([movement,salute,...kicks].map(image=>image.decode()));
+  const movement=load('ginga-roll');
+  const pairs=['sole-sweep','crescent-hook','turn-ground'].map(load);
+  const spritesReady=Promise.allSettled([movement,...pairs].map(image=>image.decode()));
   const ease=t=>t*t*(3-2*t);
-  const chains=[
-    ['Bênção baixa','Chapa lateral baixa','Meia-lua baixa','Bênção longa baixa'],
-    ['Rasteira curta','Rasteira de giro','Meia-lua de costas baixa','Rasteira longa'],
-    ['Gancho baixo','Bênção baixa','Rasteira de giro','Chapa baixa'],
-    ['Meia-lua de costas baixa','Chapa curta baixa','Meia-lua de frente baixa','Rasteira lateral'],
-    ['Chapa lateral baixa','Meia-lua de costas baixa','Rasteira de chão','Meia-lua de frente baixa'],
-    ['Gancho baixo','Rasteira de dentro','Chapa de chão','Meia-lua de giro baixa']
+  const families=[
+    [['bencao','Bênção baixa'],['bencao','Bênção curta'],['bencao','Bênção em avanço'],['bencao','Bênção longa']],
+    [['rasteira','Rasteira curta'],['rasteira','Rasteira de giro'],['rasteira','Rasteira sentada'],['rasteira','Rasteira longa']],
+    [['frente','Meia-lua de dentro'],['costas','Meia-lua de fora'],['frente','Meia-lua em esquiva'],['costas','Meia-lua de costas']],
+    [['chapa','Chapa curta'],['martelo','Gancho por dentro'],['chapa','Chapa lateral'],['chapa','Chapa cruzada']],
+    [['rasteira','Rasteira apoiada'],['chapa','Chapa sentada'],['rasteira','Rasteira de lado'],['chapa','Chapa com apoio']],
+    [['rasteira','Rasteira de negativa'],['bencao','Bênção sentada'],['chapa','Chapa de chão'],['martelo','Gancho baixo']]
   ];
-  characterMoves[7]=chains.map((names,slot)=>{
+  // Each number selects a unique preparation/contact pair in the new atlases.
+  // Interleave body positions so the four kicks on one button read differently.
+  const chains=[
+    [0,4,8,12], [5,17,1,21], [9,13,6,18],
+    [14,2,22,10], [16,11,3,7], [20,15,19,23]
+  ];
+  characterMoves[7]=chains.map((sequence,slot)=>{
     const base=moves[slot];
-    const phases=names.map((name,i)=>{
-      const frames=17+(slot+i)%5;
-      return {name,key:'lowpush',level:'low',travel:0,frames,
-        contactStart:Math.ceil(frames*.43),contactEnd:Math.ceil(frames*.68),
-        range:base.range,damage:base.damage/4,push:i===3?3:0,knockdown:i===3 && slot>=3};
+    const phases=sequence.map((pose,index)=>{
+      const family=Math.floor(pose/4);
+      const [key,name]=families[family][pose%4];
+      const frames=20+(index+slot)%4;
+      return {...techniqueBook[key],key,name,pose,level:'low',travel:0,frames,
+        contactStart:8,contactEnd:14,range:base.range,damage:base.damage/4,
+        push:index===3?3:0,knockdown:index===3 && slot>=3};
     });
-    const name=names.join(' → ');
-    return {...base,level:'low',name,signature:name,phases,start:6+slot,end:8+slot,
+    const name=phases.map(p=>p.name).join(' → ');
+    return {...base,name,signature:name,phases,start:8,end:8,level:'low',
       active:phases.reduce((total,p)=>total+p.frames,0)};
   });
   function update(p,op,input,dt,simulate) {
@@ -54,31 +62,31 @@ const Meilin = (() => {
     const won=p.victory || (!p.preview && endWait>0 && players[matchWinner]===p);
     const age=Math.max(0,tick-(p.hitAt??tick));
     let sheet=movement,row=0,frame=0;
-    if(won && salute.naturalWidth){
-      const scale=zoom*1.31;
-      g.save();g.translate(x,y);g.scale((p.dir||1)*scale,scale);
-      g.drawImage(salute,-salute.naturalWidth/2,-salute.naturalHeight);g.restore();return;
-    }
-    if(p.down>0 || p.hp<=0){
+    if(won){frame=3;}
+    else if(p.down>0 || p.hp<=0){
       row=3;frame=p.hp>0 && p.down<9?1:Math.min(3,Math.floor(age/6));
     }else if(p.stun>0 && !p.guardStun){
       row=3;frame=age>7?1:0;
     }else if(p.attack!=null){
-      const move=characterMoves[7][p.attack];
-      if(p.at>=3 && p.at<move.start+move.active){row=2;frame=0;}
-      if(p.at>=move.start && p.at<move.start+move.active && kicks[p.attack].naturalWidth){
+      const slot=p.attack,move=characterMoves[7][slot];
+      const recovery=p.at-move.start-move.active;
+      if(p.at<move.start){frame=p.at<3?1:2;}
+      else if(recovery>=0){frame=recovery<4?2:1;}
+      else{
         const phase=attackPhase(move,p.at);
-        if(phase.phaseFrame>=phase.contactStart){
-          sheet=kicks[p.attack];row=phase.phase;
-          frame=phase.phaseFrame<phase.contactEnd?2:3;
-        }
+        const extended=phase.phaseFrame>=phase.contactStart && phase.phaseFrame<phase.contactEnd;
+        const family=Math.floor(phase.pose/4);
+        const pair=pairs[Math.floor(family/2)];
+        if(pair.naturalWidth){
+          sheet=pair;row=phase.pose%4;frame=(family%2)*2+Number(extended);
+        }else frame=2;
       }
     }else if(p.takeoff>0 || p.landing>0 || p.y>0){
       row=2;frame=p.takeoff>0?0:p.landing>0?3:p.vy>4?1:2;
     }else if(p.tumble){
       row=1;frame=Math.min(3,Math.floor(4*p.tumble.elapsed/p.tumble.duration));
       if(p.tumble.axis*(p.dir||1)<0)frame=3-frame;
-    }else if(p.crouch){row=2;frame=0;}
+    }else if(p.crouch){frame=2;}
     if(!sheet.naturalWidth)return;
     const scale=zoom*1.40;
     g.save();g.translate(x,y);g.scale((p.dir||1)*scale,scale);
