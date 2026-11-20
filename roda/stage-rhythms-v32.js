@@ -8,7 +8,9 @@
 (() => {
   'use strict';
   const originalMusic = window.setStageMusic;
-  if (typeof originalMusic !== 'function') {
+  const musicToggle = document.getElementById('musicmute');
+  const originalToggle = musicToggle?.onclick;
+  if (typeof originalMusic !== 'function' || typeof originalToggle !== 'function') {
     console.warn('[RODA stage beats] Existing stage music unavailable.');
     return;
   }
@@ -26,7 +28,14 @@
     'x---o--x--xx-o--'
   ];
   let currentStage=-1, timer=null, context=null, noise=null, nextTime=0, step=0;
+  let rhythmOutput = null;
   const READAHEAD=.3, LOOKAHEAD_MS=85;
+
+  function silenceRhythm() {
+    rhythmOutput?.disconnect();
+    rhythmOutput = null;
+    nextTime = 0;
+  }
 
   function ctxReady(){
     if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state !== 'closed') {
@@ -51,7 +60,7 @@
     gain.gain.setValueAtTime(.0001,at);
     gain.gain.exponentialRampToValueAtTime(loud,at+.007);
     gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
-    osc.connect(filter);filter.connect(gain);gain.connect(c.destination);
+    osc.connect(filter);filter.connect(gain);gain.connect(rhythmOutput);
     osc.start(at);osc.stop(at+duration+.02);
   }
   function drum(at,loud){
@@ -62,7 +71,7 @@
     g.gain.setValueAtTime(.0001,at);
     g.gain.exponentialRampToValueAtTime(loud,at+.005);
     g.gain.exponentialRampToValueAtTime(.0001,at+.21);
-    osc.connect(g);g.connect(c.destination);osc.start(at);osc.stop(at+.23);
+    osc.connect(g);g.connect(rhythmOutput);osc.start(at);osc.stop(at+.23);
   }
   function shake(at,loud){
     const c=context;if(!c)return;
@@ -72,7 +81,7 @@
     g.gain.setValueAtTime(.0001,at);
     g.gain.exponentialRampToValueAtTime(loud,at+.003);
     g.gain.exponentialRampToValueAtTime(.0001,at+.085);
-    source.connect(hp);hp.connect(g);g.connect(c.destination);
+    source.connect(hp);hp.connect(g);g.connect(rhythmOutput);
     source.start(at);source.stop(at+.09);
   }
   function hit(n,at){
@@ -97,10 +106,14 @@
     }
   }
   function schedule(){
-    if(!ctxReady() || currentStage<0 || !sound ||
+    if(!ctxReady() || currentStage<0 || !sound || !musicEnabled ||
        document.hidden || !['fight','select'].includes(scene)) {
-      nextTime=0;
+      silenceRhythm();
       return;
+    }
+    if (!rhythmOutput) {
+      rhythmOutput = context.createGain();
+      rhythmOutput.connect(context.destination);
     }
     const now=context.currentTime;
     if(!nextTime || nextTime<now-.5)nextTime=now+.08;
@@ -111,35 +124,44 @@
       step=(step+1)%32;
     }
   }
-  function start(stage,preview){
+  function start(stage){
     const id=Number(stage);
-    if(!Number.isInteger(id) || id<0 || id>=tempi.length){
-      currentStage=-1;nextTime=0;step=0;return;
+    const nextStage=Number.isInteger(id) && id>=0 && id<tempi.length ? id : -1;
+    if (nextStage !== currentStage) {
+      silenceRhythm();
+      step=0;
     }
-    const switched=id!==currentStage;
-    currentStage=id;
-    if(switched){nextTime=0;step=0;}
-    if(!timer)timer=setInterval(schedule,LOOKAHEAD_MS);
-    if(preview && typeof window.initAudio==='function')window.initAudio();
-    // Sound starts only after the browser receives an audio-unlocking gesture.
+    currentStage=nextStage;
+    if(currentStage>=0 && !timer)timer=setInterval(schedule,LOOKAHEAD_MS);
     schedule();
   }
   window.setStageMusic=function stageSpecificMusic(stage){
     const result=originalMusic.apply(this,arguments);
-    start(stage,false);
+    start(stage);
     return result;
   };
+  musicToggle.onclick = function toggleStageMusic(event) {
+    if (musicEnabled) {
+      originalToggle.call(this, event);
+      silenceRhythm();
+      return;
+    }
+    musicEnabled = true;
+    window.setStageMusic(currentStage);
+    musicToggle.textContent = 'PAUSE MUSIC';
+  };
+  document.getElementById('sound').addEventListener('click', () => {
+    if (!sound) silenceRhythm();
+  });
   function audition(id){
     if (typeof window.initAudio === 'function')window.initAudio();
     window.setStageMusic(Number(id));
-    // 'select' scene is permitted for the preview music.
-    schedule();
     const status=document.getElementById('musicstatus');
     if(status) status.textContent='Stage '+(Number(id)+1)+': unique original berimbau, atabaque and pandeiro arrangement.';
   }
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)nextTime=0;});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)silenceRhythm();});
   window.RODAStageRhythms=Object.freeze({
-    version:'3.2',stageCount:tempi.length,tempi:[...tempi],
+    version:'3.2.1',stageCount:tempi.length,tempi:[...tempi],
     audition, stop:()=>start(-1), get currentStage(){return currentStage;}
   });
 })();
