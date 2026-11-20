@@ -33,7 +33,7 @@ function openStory(ending=false){if(ending){openComicEnding();return}storyEnding
  configureFinalComic(!ending&&arcadeOrder[arcadeIndex]===15);
  $('#storyadvance').textContent=ending?'A · RETURN TO TITLE':arcadeOrder[arcadeIndex]===15?'A · FIGHT THE MYSTERY MAN':'A · ENTER THE RODA';$('#sessionlabel').textContent=ending?'THE STUDIO SURVIVES':`STORY · CHAPTER ${arcadeIndex+1} / ${arcadeOrder.length}`;setStageMusic(ending?0:activeStage);
 }
-function advanceStory(){if(storyEnding){advanceComicEnding();return}scene='fight';show(null);roundIntro=true;introDuration=round===1?270:120;announceTime=introDuration;announcement=round===1?'ENTER THE RODA':roundLabel();}
+function advanceStory(){if(storyEnding){advanceComicEnding();return}if(meetsDalva()){openDalvaComic();return}scene='fight';show(null);roundIntro=true;introDuration=round===1?270:120;announceTime=introDuration;announcement=round===1?'ENTER THE RODA':roundLabel();}
 
 let comicPage=0;
 const endingCaptions=[

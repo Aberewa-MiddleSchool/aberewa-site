@@ -135,3 +135,30 @@ function paintedCard(canvas,id,defeat=false) {
   g.fillStyle=backdrop;g.fillRect(0,0,w,h);
   paintFighter(g,{id,dir:1},w*.45,h*2.16,h/125,true);
 }
+
+// Both soles follow the signed distance of travel. Each half-cycle plants one
+// foot and lifts the other. Reversing direction plays the same steps backward.
+const stepSheets = new Map();
+function drawTravelStep(p) {
+  let sheet = stepSheets.get(p.id);
+  if (!sheet) {
+    sheet = new Image();
+    sheet.src = new URL('steps/' + p.id + '.webp', costumeRoot);
+    stepSheets.set(p.id, sheet);
+  }
+  const guard = costumes[p.id];
+  const source = sheet.naturalWidth ? sheet : guard;
+  if (!source.naturalWidth) return;
+  const rig = rodaRigs[p.id];
+  const width = p.id < 16 ? 1 : fighterTraits[p.id].build;
+  const signedDistance = p.ginga / fighterTraits[p.id].build;
+  const phase = ((signedDistance % 68) + 68) % 68;
+  const frame = source === sheet ? Math.floor(phase * 12 / 68) : 0;
+  const scale = rig.scale * (1.49 * 185 / 270);
+  ctx.save();
+  ctx.translate(p.x, 590 - p.y);
+  ctx.scale(p.dir * width * scale, scale);
+  ctx.drawImage(source, frame % 6 * 320, Math.floor(frame / 6) * 320, 320, 320,
+    -rig.points[0][0], -rig.points[0][1] - rig.floor, 320, 320);
+  ctx.restore();
+}

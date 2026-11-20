@@ -3,7 +3,7 @@
 .fighter-gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px;align-items:start}
 .fighter-gallery-grid details{border:1px solid #94774d;background:#21342a;padding:8px}
 .fighter-gallery-grid summary{cursor:pointer;font-weight:800}
-.fighter-gallery-grid canvas{width:100%;height:auto;display:block;margin-bottom:6px}
+.fighter-gallery-grid img{width:100%;height:auto;display:block;margin-bottom:6px}
 .fighter-gallery-grid ol{padding-left:1.2rem;line-height:1.5}
 
 #move-lab{max-width:900px;margin:2rem auto;padding:1.2rem;background:#16241e;color:#fff2d1;scroll-margin-top:1rem}
@@ -36,3 +36,19 @@
 #cabinet #menu{
   background:linear-gradient(90deg,rgba(11,19,15,.38),rgba(11,19,15,.10) 55%,rgba(11,19,15,.22)),url("https://roda-angola-arcade.woodsystone14.chatgpt.site/meilin-hall-v24.webp") center/cover no-repeat;
 }
+#cabinet .fightercard{border:1px solid #a98549;background:#242314;color:#f5deaa;overflow:hidden}
+#cabinet .fightercard img{display:block;position:static;align-self:center;width:100%;height:auto;max-height:clamp(75px,10vw,148px);object-fit:contain;background:#222314}
+#cabinet .fightercard span{color:#ffe0a1;background:transparent;font-family:Georgia,serif}
+#cabinet .fightercard small{display:block;font:normal clamp(9px,.85vw,13px)/1.2 system-ui;padding:0 3px 5px;text-align:center}
+#cabinet .fightercard.active,#cabinet .fightercard:focus-visible{outline:3px solid #ffdb80;outline-offset:-3px;background:#423620}
+@media(max-width:600px){#cabinet #roster{grid-template-columns:repeat(3,minmax(0,1fr))}#cabinet .fightercard img{max-height:100px}}
+#cabinet .screen:has(>#dalvacomic:not(.hidden)){height:auto;aspect-ratio:auto}
+#cabinet .screen:has(>#dalvacomic:not(.hidden))>#game{display:none}
+#cabinet #dalvacomic:not(.hidden){position:relative;display:block;inset:auto;padding:clamp(12px,2vw,28px);background:#201f15;color:#ffedcb}
+#dalvacomic h2{margin:0 0 14px;color:#ffd884;font:700 clamp(23px,3vw,38px) Georgia,serif}
+.dalva-panels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.dalva-panels figure{margin:0;border:1px solid #aa884f;background:#f8e8c4;color:#272019}
+.dalva-panels img{display:block;width:100%;height:auto}
+.dalva-panels figcaption{padding:9px 12px;font:500 clamp(14px,1.1vw,18px)/1.4 Georgia,serif}
+#dalvacontinue{margin-top:14px;padding:10px 24px}
+@media(max-width:650px){.dalva-panels{grid-template-columns:1fr}}
