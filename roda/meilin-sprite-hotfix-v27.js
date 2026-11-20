@@ -1,71 +1,57 @@
-/*
- * RODA v2.7 — Meilin-only sprite geometry and visual-height repair.
- * Loads AFTER game-v24.js and stage-player-v24.js.
- * Non-destructive: never changes fighter stats, moves, stage selection or scoring.
- * Pixel-crop fixes activate only for verified original 2048x256 Meilin assets.
- * Her visual height is normalized across all rendering states without altering combat stats.
- */
+/* RODA v2.7.4: Meilin sprite geometry and size matching. Other fighters untouched. */
 (() => {
   'use strict';
-  const ID = 7;
-  const CELL = 256;
-  const SHEET_W = 2048;
-  const SHEET_H = 256;
-  const STANCE_BOTTOM = 240;
-  const STANCE_HEIGHT = 160; // source alpha bounds y80..240
-  const DISPLAY_HEIGHT = 305;
-  const SCALE = DISPLAY_HEIGHT / STANCE_HEIGHT;
-  const GROUND_Y = 590;
-  const FRAMES_GINGA = 6;  // the last two 256px cells are fully transparent
-  const FRAMES_FLIP = 8;
-
-  const originalGinga = window.drawGinga;
-  const originalFlip = window.drawVeteranFlip;
-  const originalVisualHeight = window.visualHeight;
-  if (typeof originalGinga !== 'function' || typeof originalFlip !== 'function' || typeof originalVisualHeight !== 'function') {
-    console.warn('[RODA Meilin fix] Missing game renderer; hotfix not applied.');
+  const ID = 7, CELL = 256, SHEET_W = 2048, SHEET_H = 256;
+  const GINGA_FRAMES = 6, FLIP_FRAMES = 8;
+  const GINGA_HEIGHT = 160; // measured standing silhouette in source frame 0
+  const FLIP_STANCE_HEIGHT = 143; // measured standing pose in flip frames 0 and 7
+  const FLOOR_IN_FRAME = 240;
+  const previousGinga = typeof drawGinga === 'function' ? drawGinga : null;
+  const previousFlip = typeof drawVeteranFlip === 'function' ? drawVeteranFlip : null;
+  const previousHeight = typeof visualHeight === 'function' ? visualHeight : null;
+  if (!previousGinga || !previousFlip || !previousHeight) {
+    console.warn('[RODA] Missing original renderer. Meilin fix safely skipped.');
     return;
   }
-
-  // Existing drawFighter scales all Meilin poses using the fighter height ratio.
-  // Normalizing this visual ratio aligns ginga, attacks, damage and flip poses.
-  // No change to combat stats, hitboxes, damage, or the other fighters.
-  window.visualHeight = function correctedMeilinHeight(id) {
-    return Number(id) === ID ? 1 : originalVisualHeight(id);
-  };
-
-  const validSheet = im => im && im.complete && im.naturalWidth === SHEET_W && im.naturalHeight === SHEET_H;
-
-  function drawCell(p, im, index) {
-    const frame = Math.max(0, Math.min(FRAMES_FLIP - 1, Math.trunc(index) || 0));
+  const isOriginal = image => !!image?.complete && image.naturalWidth === SHEET_W && image.naturalHeight === SHEET_H;
+  function standingTarget() {
+    // Keep the same idle stature as Meilin's other authored redesign poses.
+    const data = typeof redesignData !== 'undefined' && redesignData[ID];
+    const reference = Number(data?.referenceHeight);
+    const sourceHeight = Number(data?.rects?.[0]?.[3]);
+    return reference > 0 && sourceHeight > 0 ? 305 * sourceHeight / reference : 305;
+  }
+  function drawFrame(p, img, frame, visibleReferenceHeight) {
+    const scale = standingTarget() / visibleReferenceHeight;
+    const index = Math.max(0, Math.min(7, Math.trunc(frame) || 0));
     ctx.save();
-    ctx.translate(p.x, GROUND_Y - p.y);
+    ctx.translate(p.x, 590 - p.y);
     ctx.scale(p.dir, 1);
-    // Source artwork shares the same frame origin and a 240px floor line.
-    // Do not independently resize aerial poses to their bounding boxes.
-    ctx.drawImage(im, frame * CELL, 0, CELL, CELL,
-      -CELL * SCALE / 2, -STANCE_BOTTOM * SCALE, CELL * SCALE, CELL * SCALE);
+    // Fix the common floor line; do not rescale individual airborne frames.
+    ctx.drawImage(img, index * CELL, 0, CELL, CELL,
+      -CELL * scale / 2, -FLOOR_IN_FRAME * scale, CELL * scale, CELL * scale);
     ctx.restore();
   }
-
-  window.drawGinga = function repairedGinga(p) {
-    if (p.id !== ID || !validSheet(gingaImagesV26[ID])) return originalGinga(p);
-    const im = gingaImagesV26[ID];
-    // Recalculate cycle length from the six REAL frames; never request blank 6 or 7.
-    const cycle = FRAMES_GINGA * 22;
-    const phase = ((p.ginga % cycle) + cycle) % cycle;
-    const index = Math.abs(p.vx) > 0.25 ? Math.floor(phase / 22) : 0;
-    drawCell(p, im, index);
+  visualHeight = function rodaMeilinVisualHeight(id) {
+    return Number(id) === ID ? 1 : previousHeight(id);
   };
-
-  window.drawVeteranFlip = function repairedFlip(p) {
-    if (p.id !== ID || !validSheet(flipImages[ID])) return originalFlip(p);
-    const base = moveFor(p, p.attack);
-    const phase = attackPhase(base, p.at);
-    const index = p.at < base.start ? 0
-      : p.at >= base.start + base.active ? 7
-      : 1 + phase.phase * 2 + (phase.phaseFrame >= 7 ? 1 : 0);
-    drawCell(p, flipImages[ID], index);
+  drawGinga = function rodaMeilinGinga(p) {
+    const img = typeof gingaImagesV26 !== 'undefined' && gingaImagesV26[ID];
+    if (p.id !== ID || !isOriginal(img)) return previousGinga(p);
+    const period = GINGA_FRAMES * 22;
+    const phase = ((p.ginga % period) + period) % period;
+    const frame = Math.abs(p.vx) > .25 ? Math.floor(phase / 22) : 0;
+    drawFrame(p, img, frame, GINGA_HEIGHT);
   };
-  window.RODAMeilinFix = Object.freeze({version:'v27.2',fighterId:ID,gingaFrames:FRAMES_GINGA,flipFrames:FRAMES_FLIP,visualHeight:1});
+  drawVeteranFlip = function rodaMeilinFlip(p) {
+    const img = typeof flipImages !== 'undefined' && flipImages[ID];
+    if (p.id !== ID || !isOriginal(img)) return previousFlip(p);
+    const move = moveFor(p, p.attack), state = attackPhase(move, p.at);
+    const phase = Math.max(0, Math.min(2, state.phase | 0));
+    const index = p.at < move.start ? 0 : p.at >= move.start + move.active ? 7
+      : Math.min(6, 1 + phase * 2 + (state.phaseFrame >= 7 ? 1 : 0));
+    drawFrame(p, img, index, FLIP_STANCE_HEIGHT);
+  };
+  window.RODAMeilinFix = Object.freeze({version:'v27.4',fighterId:ID,gingaFrames:GINGA_FRAMES,
+    flipFrames:FLIP_FRAMES,reference:'redesigned stance'});
 })();
