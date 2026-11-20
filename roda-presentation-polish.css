@@ -1,0 +1,66 @@
+/* RODA page-level presentation improvements. The game engine and sprite pipeline
+   live at roda-angola-arcade.woodsystone14.chatgpt.site, not in this repo.
+   These rules intentionally do not alter hitboxes, scale, or gameplay. */
+#title {
+  isolation:isolate;
+  overflow:auto;
+  background:
+    radial-gradient(ellipse at 50% 55%,rgba(220,171,67,.18),transparent 50%),
+    radial-gradient(ellipse at 50% 15%,rgba(61,99,65,.4),transparent 65%),
+    linear-gradient(155deg,#0a120d 5%,#15271b 52%,#080c0a);
+}
+#title::before,#title::after{
+  content:"";pointer-events:none;position:absolute;inset:-30%;z-index:-1;
+}
+#title::before{
+  background:conic-gradient(from 20deg at 50% 55%,transparent 0deg,
+    rgba(243,194,78,.13) 17deg,transparent 35deg,
+    transparent 112deg,rgba(255,234,157,.12) 130deg,
+    transparent 150deg,transparent 240deg,rgba(217,166,51,.12) 260deg,
+    transparent 285deg);
+  animation:roda-title-rays 14s linear infinite;
+}
+#title::after{
+  inset:0;
+  background:repeating-linear-gradient(0deg,transparent 0 5px,rgba(255,255,255,.025) 6px 7px);
+  mix-blend-mode:screen;
+  opacity:.42;
+}
+#title .title-content{position:relative;z-index:1;max-width:790px;margin-inline:auto;
+  text-align:center;filter:drop-shadow(0 5px 18px #0009);}
+#title .title-content h2{
+  letter-spacing:.12em;
+  text-shadow:0 2px 1px #4b2d12,0 7px 0 #1b2418,0 12px 27px #000,
+    0 0 42px rgba(244,194,79,.45);
+  animation:roda-logo-arrive .9s cubic-bezier(.2,.85,.3,1) both;
+}
+#title .title-content h3{letter-spacing:.26em;text-shadow:0 3px 14px #000;}
+#title .pressstart{animation:roda-start-pulse 1.6s ease-in-out infinite;letter-spacing:.2em}
+#title .title-rings{filter:drop-shadow(0 0 22px rgba(234,191,92,.4));animation:roda-rings-glow 3.6s ease-in-out infinite}
+#title #enableaudio,#title #titlesetup{transition:transform .2s ease,box-shadow .2s ease}
+#title #enableaudio:hover,#title #titlesetup:hover{transform:translateY(-2px);box-shadow:0 8px 24px #0008}
+#result{overflow-y:auto;overscroll-behavior:contain}
+#result .result-grid{width:min(100%,1120px);margin-inline:auto;gap:clamp(12px,2vw,30px)}
+#result .winner-card,#result .loser-card{
+  min-width:0;padding:clamp(10px,1.5vw,22px);
+  box-shadow:0 16px 40px rgba(0,0,0,.46),inset 0 0 0 1px rgba(255,222,131,.22);
+}
+#result #winnerportrait,#result #loserportrait{
+  display:block;width:100%;max-width:none;height:auto;aspect-ratio:3/2;
+  object-fit:contain;image-rendering:auto;
+  background:radial-gradient(ellipse at 50% 85%,#263f2e,#0a120d 75%);
+}
+#result .winner-card h3,#result .loser-card h3{font-size:clamp(18px,2.5vw,30px)}
+#story .opponent-panel #storyportrait{display:block;width:100%;height:auto;max-width:none;aspect-ratio:3/2}
+@keyframes roda-title-rays{to{transform:rotate(360deg)}}
+@keyframes roda-logo-arrive{from{opacity:0;transform:translateY(24px) scale(.94);filter:blur(6px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes roda-start-pulse{0%,100%{opacity:.55;text-shadow:0 0 0 transparent}50%{opacity:1;text-shadow:0 0 20px #ffdf83}}
+@keyframes roda-rings-glow{0%,100%{opacity:.7}50%{opacity:1}}
+@media(max-width:650px){#result .result-grid{grid-template-columns:1fr!important}
+  #result .winner-card,#result .loser-card{max-width:560px;margin-inline:auto}
+  #title .title-content{padding-inline:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  #title::before,#title .title-content h2,#title .pressstart,#title .title-rings{animation:none!important}
+  #title #enableaudio,#title #titlesetup{transition:none}
+}
