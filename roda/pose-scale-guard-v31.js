@@ -37,6 +37,10 @@
     if (!p || !Number.isInteger(p.id)) {
       return previousDraw.apply(this, arguments);
     }
+    // Meilin has a dedicated fixed-size sprite renderer. The generic
+    // oversize clamp was modifying individual kick frames as they changed
+    // animation rows, creating an apparent size jump and visual popping.
+    if (p.id === 7) return previousDraw.apply(this, arguments);
     const idle = p.attack === null && p.stun <= 0 && p.down <= 0 &&
       !p.crouch && p.y === 0 && p.takeoff <= 0 && p.landing <= 0;
     const id = p.id;

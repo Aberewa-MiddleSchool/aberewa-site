@@ -41,25 +41,21 @@
     }
     const base=moveFor(p,p.attack);
     if(!Array.isArray(base?.phases)||base.phases.length!==3)return originalBody(p,t);
+    // Use the same stable wind-up and recovery as the game's polished
+    // Mestre combinations, avoiding the unreliable extreme frames (0/1/7).
+    if(p.at < base.start || p.at >= base.start + base.active){
+      return drawGinga(p);
+    }
     const state=attackPhase(base,p.at);
     const segment=Math.max(0,Math.min(2,Number(state.phase)||0));
-    let key=base.phases[segment]?.key, pose;
-    if(p.at<base.start){
-      key=base.phases[0].key;
-      pose=Math.min(2,Math.floor(Math.max(0,p.at)/Math.max(1,base.start)*3));
-    }else if(p.at>=base.start+base.active){
-      key=base.phases[2].key;
-      pose=Math.min(7,5+Math.floor(Math.max(0,p.at-base.start-base.active)/Math.max(1,base.end)*3));
-    }else{
-      const duration=Math.max(1,Number(state.frames)||12);
-      const elapsed=Math.max(0,Math.min(duration-1,Number(state.phaseFrame)||0));
-      pose=Math.min(7,Math.floor(elapsed*8/duration));
-    }
-    const r=row[key];
-    if(r===undefined)return originalBody(p,t);
-    // Each stage uses its own authored 8-frame atlas row and original
-    // redesign scale; no frame-by-frame rescaling or repeating one kick.
-    return drawRedesignFrame(p,r*8+pose);
+    const key=base.phases[segment]?.key;
+    const techniqueRow=row[key];
+    if(techniqueRow===undefined)return originalBody(p,t);
+    const elapsed=Math.max(0,Number(state.phaseFrame)||0);
+    // Authored strike images 2, 4 and 6 are the stable contact/key poses
+    // used by the original game's veteran combinations.
+    const pose=elapsed<3?2:elapsed<8?4:6;
+    return drawRedesignFrame(p,techniqueRow*8+pose);
   };
   // The engine attenuates follow-up hits, so compensate only for Meilin's
   // current attack. Three clean strikes remove exactly 10% of opponent maxHP.
