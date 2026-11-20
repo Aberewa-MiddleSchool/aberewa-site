@@ -39,7 +39,7 @@ updateFighter=function(p,op,input,dt){
   const available=p.hp>0 && !p.down && !p.stun && p.attack===null &&
     !p.y && !p.takeoff && !p.landing && Math.abs(input?.y||0)<.5;
   if(!available)p.tumble=null;
-  if(available && !p.tumble && Math.abs(axis)>.4 && axis*facing<0){
+  if(available && !p.tumble && Math.abs(axis)>.4 && (axis*facing<0 || p.id===21)){
     p.tumble={axis:Math.sign(axis),elapsed:0,duration:30};
   }
   if(p.tumble){
@@ -134,7 +134,32 @@ function mareFrame(g,p,x,y,zoom){
   studioFrame(g,sheet,cell,x,y,zoom,p.dir);return true;
 }
 
+// Aisha's whole-body drawings share a single scale and floor line.
+const aishaContacts={bencao:4,frente:5,chapa:4,martelo:5,rasteira:6,costas:13,au:9};
+function aishaFrame(p){
+  if(p.victory || (!p.preview && endWait>0 && players[matchWinner]===p))return 15;
+  if(p.down>0 || p.hp<=0)return tick-p.hitAt<8?7:14;
+  if(p.stun>0 && !p.guardStun)return 7;
+  if(p.attack!=null){
+    const m=moveFor(p,p.attack);
+    if(p.at<m.start)return 2;
+    if(p.at>=m.start+m.active)return 1;
+    const phase=attackPhase(m,p.at), t=phase.phaseFrame/phase.frames;
+    const key=phase.key;
+    if(key==='au')return t<.22?8:t<.66?9:t<.86?10:11;
+    if(t<.17)return key==='costas'?12:2;
+    if(t<.68)return aishaContacts[key]??4;
+    return key==='costas'||key==='rasteira'?11:1;
+  }
+  if(p.tumble)return (p.tumble.axis*p.dir>0?[2,8,9,10,11]:[2,10,9,8,11])[Math.min(4,Math.floor(p.tumble.elapsed/p.tumble.duration*5))];
+  if(p.y>0)return 3;
+  if(p.takeoff>0||p.landing>0||p.crouch)return 2;
+  if(Math.abs(p.vx)>.1)return [0,1,2,1][Math.floor(Math.abs(p.ginga)/14)%4];
+  return 0;
+}
+
 function drawCastState(g,p,x,y,zoom) {
+  if(p.id===21){studioFrame(g,'aisha',aishaFrame(p),x,y,zoom,p.dir);return true;}
   if(p.id===7){Meilin.draw(g,p,x,y,zoom);return true;}
   const id=p.id,special=id===18;
   if(id>=11 && id<=13){studioFrame(g,shirtSheets[id-11],shirtFrame(p),x,y,zoom,p.dir);return true;}
@@ -226,6 +251,7 @@ hallButton.onclick=()=>{
 document.getElementById('close-winners').onclick=returnToMenu;
 function prepareCastBout(ids){
   for(const id of ids){
+    if(id===21){castImage('aisha');continue;}
     if(id===7)continue;
     if(id>=11 && id<=13){castImage(shirtSheets[id-11]);continue;}
     if(id===14){castImage('mare0');castImage('mare1');}

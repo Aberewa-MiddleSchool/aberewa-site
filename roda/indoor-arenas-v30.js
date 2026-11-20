@@ -35,7 +35,8 @@
     'DALVA’S ENGENHO · RECÔNCAVO DA BAHIA',
     'NEIDE’S CERAMICS ATELIER · BELO HORIZONTE',
     'MARÍLIA’S COSTUME WORKSHOP · RIO DE JANEIRO',
-    'BENTO’S DENIM WORKROOM · PORTO ALEGRE'
+    'BENTO’S DENIM WORKROOM · PORTO ALEGRE',
+    'AISHA’S MIRROR STUDIO · SALVADOR, 2323'
   ];
   // Mutate the shared array so the original arcade sequence, selection menus,
   // stage captions and story still use the same indexes and stay synchronized.

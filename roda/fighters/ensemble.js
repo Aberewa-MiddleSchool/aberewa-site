@@ -1,12 +1,13 @@
 // The boss keeps his saved ID. Display order is shared by cards and controller input.
-const playableIds = [...Array(15).keys(),16,17,18,19,20];
-const homeArena=[0,5,8,4,3,6,9,19,7,2,15,27,17,10,18,21,22,23,24,25,26];
+const playableIds = [...Array(15).keys(),16,17,18,19,20,21];
+const homeArena=[0,5,8,4,3,6,9,19,7,2,15,27,17,10,18,21,22,23,24,25,26,28];
 const newPlayers = [
   ['Tainá Reis','Salvador, Bahia','Patient sweeping counters','#227c77','The rhythm gave me time.',.98],
   ['Luzia Santos','Recife, Pernambuco','Fast combinations from close range','#bb5438','There was my opening.',1.07],
   ['Dalva Brito','Recôncavo da Bahia, Bahia','Low entries and turning kicks','#555688','I heard the change in the beat.',1.11],
   ['Neide Cruz','Belo Horizonte, Minas Gerais','Compact footwork and quick returns','#dda436','There is always another answer.',.94],
-  ['Marília Nascimento','Rio de Janeiro, Rio de Janeiro','Measured pressure and lateral kicks','#884b79','I saved that turn for the last exchange.',1.12]
+  ['Marília Nascimento','Rio de Janeiro, Rio de Janeiro','Measured pressure and lateral kicks','#884b79','I saved that turn for the last exchange.',1.12],
+  ['Aisha','Salvador, Bahia','Sentinel of 2323 · Inverted kicks','#39d8d1','Now you know whose door to open.',1.0]
 ];
 const costumeRoot = new URL('.',document.currentScript.src);
 const costumes = rodaRigs.map((_,id) => {
@@ -19,7 +20,7 @@ function installFighterKits() {
   newPlayers.forEach(([name,home,style,accent,win,build],i) => {
     roster.push([name,style]);
     profiles.push({name,home,personality:style,win,lose:'I’ll be back in the circle.',pitch:165+i*9});
-    fighterTraits.push({...fighterTraits[[0,6,3,4,11][i]],build,style,accent});
+    fighterTraits.push({...fighterTraits[[0,6,3,4,11,4][i]],build,style,accent});
     characterMoves.push(moves.map(m=>({...m,phases:[m]})));
   });
   fighterTraits[14].build = .76;
@@ -28,13 +29,20 @@ function installFighterKits() {
     ['frente','chapa','bencao'], ['costas','frente','rasteira'],
     ['chapa','martelo','costas'], ['bencao','au','rasteira']
   ];
+  const sentinelChains=[
+    ['bencao','frente','chapa'], ['rasteira','costas','rasteira'],
+    ['frente','martelo','bencao'], ['chapa','costas','martelo'],
+    ['au','costas','frente'], ['rasteira','au','chapa']
+  ];
   for (const kit of characterMoves.slice(16)) {
+    const sentinel=kit===characterMoves[21];
     kit.forEach((base,button) => {
-      const chain=chains[button], frames=16;
+      const chain=(sentinel?sentinelChains:chains)[button], frames=16;
       const total=(base.phases||[base]).reduce((sum,phase)=>sum+phase.damage,0);
       const phases=chain.map((key,i)=>({...techniqueBook[key],key,frames,
         range:base.range*techniqueBook[key].reach,damage:total*[.28,.32,.40][i],
         rank:base.rank,push:i===2?3:0,knockdown:i===2 && (button>=4||key==='rasteira')}));
+      if(sentinel)for(const phase of phases){phase.contactStart=4;phase.contactEnd=10;}
       const name=chain.map(key=>techniqueBook[key].name).join(' → ');
       kit[button]={...base,...phases[0],phases,active:3*frames,name,signature:name};
     });

@@ -29,10 +29,10 @@ function makeArcade(){
  const champion=chosen[0], visitors=[16,17,18,19,20];
  const original=Array.from({length:11},(_,id)=>id);
  const reserve=[...original,...visitors].find(id=>id!==champion);
- const opponents=[...original.slice(0,10),...visitors,original[10],11,12,13,15];
+ const opponents=[...original.slice(0,10),...visitors,original[10],11,12,13,21,15];
  arcadeOrder=isEnforcer(champion)
    ? [...original,...visitors,...[11,12,13].filter(id=>id!==champion),2,14]
-   : opponents.map(id=>id===champion?reserve:id);
+   : opponents.map(id=>id===champion && id!==21?reserve:id);
  arcadeIndex=0;chosen[1]=arcadeOrder[0];
 }
 
@@ -102,7 +102,7 @@ function openSetup(){scene='setup';setupPad=null;setupStep=-1;setupWait=true;sho
 $('#padsetup').onclick=openSetup;$('#setupcancel').onclick=()=>{scene='menu';show('menu');prevPads={}};$('#setupreset').onclick=()=>{customPads={};try{localStorage.removeItem('roda-controller-map')}catch(e){}$('#setupcancel').click()};
 function calibratePads(pads){if(setupPad===null){let p=pads.find(p=>p.buttons.some(b=>b.pressed));if(!p)return;setupPad=p.index;setupStep=0;setupBindings={};setupNeutral=p.axes.slice();setupWait=true;$('#setupdevice').textContent=p.id;$('#setupstep').textContent='Release all controls…';return}let p=pads.find(p=>p.index===setupPad);if(!p){$('#setupstep').textContent='Reconnect the controller to continue.';return}let neutral=!p.buttons.some(b=>b.pressed)&&p.axes.every((v,i)=>Math.abs(v-(setupNeutral[i]||0))<.2);if(setupWait){if(neutral){setupWait=false;$('#setupstep').textContent='Press '+setupSteps[setupStep][1]}return}let bi=p.buttons.findIndex(b=>b.pressed),a=null;if(bi>=0)a={type:'button',index:bi};else{let ai=p.axes.findIndex((v,i)=>Math.abs(v-(setupNeutral[i]||0))>.45);if(ai>=0)a={type:'axis',index:ai,value:p.axes[ai],neutral:setupNeutral[ai]||0,hat:ai>3||Math.abs(setupNeutral[ai]||0)>1}}if(!a)return;setupBindings[setupSteps[setupStep][0]]=a;setupStep++;if(setupStep>=setupSteps.length){customPads[p.id]=setupBindings;try{localStorage.setItem('roda-controller-map',JSON.stringify(customPads))}catch(e){}scene='menu';show('menu');$('#padhelp').textContent='Controller mapping saved. Ready to play.';prevPads={};return}setupWait=true;$('#setupstep').textContent='Registered. Release all controls…'}
 const stageNames=['SALVADOR · BAHIA','OLINDA · PERNAMBUCO','RIO DE JANEIRO · RJ','BELÉM · PARÁ','SÃO LUÍS · MARANHÃO','RECIFE · PERNAMBUCO','MANAUS · AMAZONAS · NIGHT','FORTALEZA · CEARÁ','CACHOEIRA · BAHIA · NIGHT','SÃO PAULO · SP','OURO PRETO · MINAS GERAIS','FLORIANÓPOLIS · SANTA CATARINA','PORTO SEGURO · BAHIA · NIGHT','PARATY · RJ · NIGHT','SALVADOR HARBOR · BAHIA · NIGHT','BELO HORIZONTE · MINAS GERAIS','BRASÍLIA · DISTRITO FEDERAL','NATAL · RIO GRANDE DO NORTE','MESTRE’S STUDIO · SALVADOR','MEILIN’S TRAINING HALL · CURITIBA','MEILIN’S GARDEN · CURITIBA','THE MYSTERY MAN’S SKULL STUDIO'];
-let activeStage=0,stageChoice=0,arcadeArenaOverride=null;const arcadeStages=[0,5,8,4,3,6,2,7,1,19,22,23,24,25,26,20,27,17,10,21];const arenaImages=['brazil-arenas.webp','brazil-arenas-2.webp','brazil-arenas-3.webp'].map(src=>{let i=new Image();i.src=src;return i});const musicianImage=new Image();musicianImage.src='roda-musicians.webp';const crowdImage=new Image();crowdImage.src='roda-crowd-v22.webp';
+let activeStage=0,stageChoice=0,arcadeArenaOverride=null;const arcadeStages=[0,5,8,4,3,6,2,7,1,19,22,23,24,25,26,20,27,17,10,28,21];const arenaImages=['brazil-arenas.webp','brazil-arenas-2.webp','brazil-arenas-3.webp'].map(src=>{let i=new Image();i.src=src;return i});const musicianImage=new Image();musicianImage.src='roda-musicians.webp';const crowdImage=new Image();crowdImage.src='roda-crowd-v22.webp';
 
 let navAt=0;
 function pollPads(){lastPads=connected();if(scene==='setup'){calibratePads(lastPads);return []}let states=lastPads.map(padState);$('#connection').textContent=lastPads.length?`● ${lastPads.length} CONTROLLER${lastPads.length>1?'S':''} CONNECTED`:'● CONNECT A CONTROLLER';$('#status').textContent=mode==='watch'||arcadeAutoplay?'CPU CONTROL · NO CONTROLLER REQUIRED':lastPads.length?'CONTROLLER READY':'AWAITING CONTROLLER';if(mode!=='watch'&&!arcadeAutoplay&&(scene==='fight'||scene==='result'||scene==='story')&&(!lastPads.length||(mode==='local'&&lastPads.length<2))){togglePause('Controller disconnected. Reconnect, then press Start.');return states}let s=(scene==='select'?states[pickStage]:states[0])||states[0];if(!s)return states;
@@ -124,9 +124,9 @@ function beginAttack(p,n,crouched=p.crouch){p.attackCrouched=!!crouched&&p.y===0
 function requestAttack(p,n,crouched=p.crouch){if(p.down>0||p.hp<=0)return;if(p.attack===null&&p.stun<=0&&p.takeoff<=0)beginAttack(p,n,crouched);else p.buffer={n,crouched:!!crouched,ttl:24}}
 function advanceAir(p,dt){if(p.y>0||p.vy){p.y+=p.vy*dt;p.vy-=(p.vy>0?.52:.76)*dt;if(p.y<=0){p.y=0;p.vy=0;p.landing=6;burst(p.x,590,'#d0b48155',5)}}}
 function updateFighter(p,opp,s,dt){if(p.fallSoundAt&&tick>=p.fallSoundAt){playSample('fall',.8);p.fallSoundAt=0}p.flash=Math.max(0,p.flash-dt);p.invuln=Math.max(0,p.invuln-dt);p.x=clamp(p.x+p.pushV*dt,100,1180);p.pushV*=Math.pow(.84,dt);if(p.down>0){p.down=Math.max(0,p.down-dt);p.attack=null;p.stun=0;p.block=false;advanceAir(p,dt);p.moveText=p.down<14?'RECOVERY':'KNOCKDOWN';if(p.down===0)p.invuln=12;return}p.comboTimer-=dt;if(p.comboTimer<=0)p.combo=0;p.meter=Math.min(100,p.meter+.045*dt);if(p.buffer){p.buffer.ttl-=dt;if(p.buffer.ttl<=0)p.buffer=null}if(p.stun>0){p.stun-=dt;p.block=p.guardStun===true;p.attack=null;p.moveText=p.guardStun?'BLOCK':'HIT';advanceAir(p,dt);return}p.guardStun=false;p.dir=opp.x>=p.x?1:-1;let up=!!s&&s.y<-.6;if(up&&!p.jumpHeld)p.jumpBuffer=9;p.jumpHeld=up;if(p.jumpBuffer>0)p.jumpBuffer-=dt;p.walk=s?.x||0;let stepStart=p.x;p.stepOffset=0;p.landing=Math.max(0,p.landing-dt);if(p.takeoff>0){p.takeoff-=dt;if(p.takeoff<=0){p.vy=14.8;p.y=1;p.crouch=false;p.block=false}}
-if(p.attack!==null){let base=moveFor(p,p.attack);p.at+=dt;let m=attackPhase(base,p.at);if(p.phase!==m.phase){p.phase=m.phase;p.hit=false;p.swingPlayed=false}let active=p.at>=m.start&&p.at<m.start+m.active;if(active&&!p.swingPlayed){p.swingPlayed=true;sfx('swing',m.rank)}
+if(p.attack!==null){let base=moveFor(p,p.attack);p.at+=dt;let m=attackPhase(base,p.at);if(p.phase!==m.phase){p.phase=m.phase;p.hit=false;p.swingPlayed=false}let active=p.at>=m.start&&p.at<m.start+m.active;if(active&&!p.swingPlayed){p.swingPlayed=true;strikeSound(p,'swing',m)}
 if(p.y>0&&s){p.vx+=(s.x*fighterTraits[p.id].speed-p.vx)*.16;p.x+=p.vx*dt};if(p.y===0){if(p.at<m.start)p.x+=p.dir*(base.retreat||0)*dt;else if(active)p.x+=p.dir*m.travel*dt;}
-if(active&&m.phaseFrame>=(m.contactStart||0)&&m.phaseFrame<(m.contactEnd??7)&&!p.hit&&Math.abs(opp.x-p.x)<m.range&&Math.abs(opp.y-p.y)<110&&opp.down<=0&&opp.invuln<=0){p.hit=true;let avoids=opp.crouch&&m.level==='high';if(avoids){tone(220,.06,.03)}else{p.confirmed=true;let blocked=opp.block&&(m.level!=='low'||opp.crouch);if(blocked){opp.stun=7;opp.guardStun=true;opp.meter=Math.min(100,opp.meter+5);p.meter=Math.min(100,p.meter+3);opp.moveText='BLOCK';burst((p.x+opp.x)/2,opp.crouch?505:405,'#c9f9ff',9);sfx('block',m.rank);rumble(players.indexOf(opp),.14,60)}else{let dmg=m.damage*Math.max(.55,1-p.combo*.1);let actualDamage=Math.min(opp.hp,dmg);opp.hp=Math.max(0,opp.hp-dmg);scoreContact(p,opp,actualDamage);opp.stun=m.rank===3?33:24;opp.guardStun=false;opp.flash=8;opp.attack=null;opp.buffer=null;p.combo++;p.comboTimer=80;p.meter=Math.min(100,p.meter+8);opp.meter=Math.min(100,opp.meter+6);opp.pushV=p.dir*m.push;opp.hitAt=tick;opp.reaction=m.level==='high'?4:1;opp.impactKind=m.level;if(m.knockdown||opp.hp<=0){opp.down=opp.hp<=0?999: m.rank===3?52:40;opp.comboTimer=0;opp.fallSoundAt=tick+8}rumble(players.indexOf(opp),m.rank===3?.55:.3,90);shake=m.rank===3?10:5;freeze=m.rank===3?4:2;burst((p.x+opp.x)/2,m.level==='low'?530:m.level==='high'?590-270*fighterTraits[opp.id].height/174:410,m.rank===3?fighterTraits[p.id].accent:'#ffe999',m.rank===3?36:18);kickImpact(m,opp.down>0);vocal(opp.id,opp.hp<=0?'defeat':'hit')}if(mode==='training'&&opp.hp<=1){opp.hp=opp.maxHp;opp.down=52}}}
+if(active&&m.phaseFrame>=(m.contactStart||0)&&m.phaseFrame<(m.contactEnd??7)&&!p.hit&&Math.abs(opp.x-p.x)<m.range&&Math.abs(opp.y-p.y)<110&&opp.down<=0&&opp.invuln<=0){p.hit=true;let avoids=opp.crouch&&m.level==='high';if(avoids){tone(220,.06,.03)}else{p.confirmed=true;let blocked=opp.block&&(m.level!=='low'||opp.crouch);if(blocked){opp.stun=7;opp.guardStun=true;opp.meter=Math.min(100,opp.meter+5);p.meter=Math.min(100,p.meter+3);opp.moveText='BLOCK';burst((p.x+opp.x)/2,opp.crouch?505:405,'#c9f9ff',9);strikeSound(p,'block',m);rumble(players.indexOf(opp),.14,60)}else{let dmg=m.damage*Math.max(.55,1-p.combo*.1);let actualDamage=Math.min(opp.hp,dmg);opp.hp=Math.max(0,opp.hp-dmg);scoreContact(p,opp,actualDamage);opp.stun=m.rank===3?33:24;opp.guardStun=false;opp.flash=8;opp.attack=null;opp.buffer=null;p.combo++;p.comboTimer=80;p.meter=Math.min(100,p.meter+8);opp.meter=Math.min(100,opp.meter+6);opp.pushV=p.dir*m.push;opp.hitAt=tick;opp.reaction=m.level==='high'?4:1;opp.impactKind=m.level;if(m.knockdown||opp.hp<=0){opp.down=opp.hp<=0?999: m.rank===3?52:40;opp.comboTimer=0;opp.fallSoundAt=tick+8}rumble(players.indexOf(opp),m.rank===3?.55:.3,90);shake=m.rank===3?10:5;freeze=m.rank===3?4:2;burst((p.x+opp.x)/2,m.level==='low'?530:m.level==='high'?590-270*fighterTraits[opp.id].height/174:410,m.rank===3?fighterTraits[p.id].accent:'#ffe999',m.rank===3?36:18);strikeSound(p,'hit',m,opp.down>0);vocal(opp.id,opp.hp<=0?'defeat':'hit')}if(mode==='training'&&opp.hp<=1){opp.hp=opp.maxHp;opp.down=52}}}
 const lastContactFinished=m.phase===base.phases.length-1 && m.phaseFrame>=(m.contactEnd??7);
 let cancel=((p.id<16 && p.id!==7 && p.id!==14) || lastContactFinished)&&(p.confirmed||p.at>=m.start+m.active+2)&&p.at>=m.start+Math.max(2,m.active*.3)&&p.buffer&&(moveFor(p,p.buffer.n).rank>m.rank||(p.combo<3&&p.buffer.n!==p.attack&&moveFor(p,p.buffer.n).rank===m.rank));
 if(cancel||p.at>=m.start+m.active+m.end){p.attack=null;if(p.buffer){let queued=p.buffer;p.buffer=null;beginAttack(p,queued.n,queued.crouched)}}
@@ -328,6 +328,36 @@ function drawRoda(){if(activeStage===21||activeStage===24)return;
 }
 // Two short, cached one-shots. Each contact plays exactly one impact.
 const kickSoundBuffers = new Map();
+// Keep the Sentinel's synth on the effects bus, driven by actual attack events.
+function strikeSound(attacker, kind, move, knockedDown=false) {
+  if (attacker.id!==21) {
+    if (kind==='hit') kickImpact(move,knockedDown);
+    else sfx(kind,move.rank);
+    return;
+  }
+  if (!sound) return;
+  initAudio();
+  if (!audioCtx || audioCtx.state!=='running') return;
+  const slot=attacker.attack??0;
+  const sweep=kind==='swing', guard=kind==='block';
+  const duration=sweep?.08:guard?.065:knockedDown?.18:.12;
+  const start=sweep?290+slot*34:guard?1350:175+slot*13;
+  const end=sweep?start*2.3:guard?560:knockedDown?44:68;
+  const t=audioCtx.currentTime, osc=audioCtx.createOscillator(), env=audioCtx.createGain();
+  const mod=audioCtx.createOscillator(), depth=audioCtx.createGain();
+  osc.type=guard?'triangle':'sine';
+  osc.frequency.setValueAtTime(start,t);
+  osc.frequency.exponentialRampToValueAtTime(end,t+duration);
+  mod.frequency.value=guard?330:90+slot*9;
+  depth.gain.setValueAtTime(sweep?32:118,t);
+  depth.gain.exponentialRampToValueAtTime(1,t+duration);
+  env.gain.setValueAtTime(.001,t);
+  env.gain.exponentialRampToValueAtTime(sweep?.055:guard?.10:.22,t+.004);
+  env.gain.exponentialRampToValueAtTime(.001,t+duration);
+  mod.connect(depth);depth.connect(osc.frequency);osc.connect(env);env.connect(audioCtx.destination);
+  osc.onended=()=>{osc.disconnect();env.disconnect();mod.disconnect();depth.disconnect();};
+  mod.start(t);osc.start(t);mod.stop(t+duration);osc.stop(t+duration);
+}
 function kickImpact(move, knockedDown) {
   if (!sound) return;
   const sweep = move.key === 'rasteira' || move.key === 'lowsweep' || /^rasteira\b/i.test(move.name || '');
@@ -481,8 +511,8 @@ selectOrder.forEach(i=>{
 
 $('#entermenu').onclick=()=>{scene='menu';show('menu');initAudio();setStageMusic(-1);};
 // The school page shares this runtime, so its older shell receives current labels.
-const versionLabel=document.querySelector('.intro .eyebrow');if(versionLabel)versionLabel.textContent='LOCAL ARCADE FIGHTING / CLASSIC + FIVE';
+const versionLabel=document.querySelector('.intro .eyebrow');if(versionLabel)versionLabel.textContent='LOCAL ARCADE FIGHTING / CLASSIC + SIX';
 const reviewLink=document.querySelector('.review-entry a');if(reviewLink)reviewLink.textContent='WATCH THE ACTUAL GAME ANIMATIONS · BUILD 2.7 →';
-const arenaHeading=document.querySelector('.soundtrack h3');if(arenaHeading)arenaHeading.textContent='28 ARENAS. A WORLD OF RHYTHM.';
+const arenaHeading=document.querySelector('.soundtrack h3');if(arenaHeading)arenaHeading.textContent='29 ARENAS. A WORLD OF RHYTHM.';
 const menuTag=document.querySelector('.menupanel .tag');if(menuTag)menuTag.textContent='PLAY OR WATCH';
 const mestreNote=document.querySelector('.under p.small');if(mestreNote)mestreNote.textContent='Hold away to cartwheel. Meilin rolls in either direction. Meilin and Dalva have four-kick chains. In Arcade, the studio challenges the Mystery Man. His three hired fighters face Mestre Maré.';

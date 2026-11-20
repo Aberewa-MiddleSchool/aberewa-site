@@ -18,10 +18,31 @@ const storyChapters=[
 ['THE DECIDING RODA','Curitiba · Meilin’s conservatory','In Meilin’s conservatory, one last qualifying test settles who represents the studio. A returning rival demands a rematch: the champion must prove the result was no accident.','When the music ends, the studio stands behind its representative. The stranger’s challengers are next.',10,3],
 ['THE MYSTERY MAN’S THREE','Porto Alegre · Bento’s denim workroom','The studio qualifiers are over. The mystery man sends his three fighters: Bento, Caio, and Nestor. They work for him. Defeat them to reach the mystery man’s final challenge.','Bento steps into the roda as the first hired challenger. The studio stands behind you.',11,9],
 ['CAIO · THE SECOND CHALLENGER','Natal · Working for the mystery man','Bento is defeated. Caio now enters for the mystery man. His speed is dangerous, but his doubts about his employer are growing.','Two victories will leave the stranger with only one guard between the champion and the final clause.',12,6],
-['NESTOR · THE LAST CHALLENGER','Ouro Preto · Working for the mystery man','Caio is defeated. Nestor is the mystery man’s last fighter. Beat his low traps and only the mystery man’s final challenge remains.','Defeat this final obstacle, and the stranger must allow the last match. The mystery man is waiting in his skull studio.',13,9],
+['NESTOR · THE LAST CHALLENGER','Ouro Preto · Working for the mystery man','Caio is defeated. Nestor is the mystery man’s last fighter. Beat his low traps and only the mystery man’s final challenge remains.','Beyond Nestor stands a door marked with a skull. A thin cyan line runs underneath it.',13,9],
+['THE MIRROR DOOR','Salvador · 2323','','',0,1],
 ['THE MAN BEHIND THE THREAT','The grey-and-gold skull studio','You have defeated the hired challengers. One opponent remains: the mystery man himself. Enter his grey-and-gold studio and face him inside the skull-marked roda.','“You have defeated my fighters. Now face me.” Every attack is a three-hit power combination. Defeat him to complete Arcade mode.',14,2]
 ];
 let storyTime=0,storyEnding=false;
+let sentinelPanel=0;
+const sentinelCaptions=[
+  'Nestor steps aside. The handle on the skull-marked door will not turn.',
+  'Three notes sound beneath the floorboards. With each note, a strip of turquoise light grows longer.',
+  'The wall becomes a mirror. In its glass, the same room stands three centuries later.',
+  'A woman crosses the bright seam. “Aisha. Salvador, 2323. In my time, this studio is still here.”',
+  '“That man locked the door from his side. My roda opens it from ours.” Aisha sets her heel on the maple floor.',
+  'She lowers into ginga. “Play me first. When the mirror opens, he has to face you himself.”'
+];
+function paintSentinelPanel(){
+ const p=sentinelPanel,art=$('#sentinel-art');
+ art.style.backgroundPosition=(p%3*50)+'% '+(Math.floor(p/3)*100)+'%';
+ $('#sentinel-caption').textContent=chosen[0]===21 && p===3
+   ? 'Aisha meets her own eyes in the glass. “You crossed into 2026. I am the echo you left in 2323.”'
+   : sentinelCaptions[p];
+ $('#storychapter').textContent='THE SENTINEL · PANEL '+(p+1)+' / 6';
+ $('#storyadvance').textContent=p===5?'A · FACE AISHA':'A · NEXT PANEL';
+ $('#story .story-controls span').textContent=arcadeAutoplay?'WATCH ARCADE':'READ AT YOUR OWN PACE';
+ storyTime=arcadeAutoplay?300:Infinity;
+}
 const guardEndings={
   11:[
     'Bento lowers his guard. Across the municipal arena, Mestre Maré is still watching his feet.',
@@ -63,7 +84,7 @@ function guardChapter(){
 }
 function openStory(ending=false){if(ending){openComicEnding();return}storyEnding=ending;scene='story';show('story');storyTime=ending?1500:1080;
  const chapter=ending?['THE DOORS STAY OPEN','Salvador · A new morning','Before the witnesses, the final result voids the stranger’s claim. His threat has failed. No fighter saved this place alone.','Mestre opens the doors. The women, their neighbours, and a new generation enter together. The unknown man vanishes—but the roda remains.',15,2]:isEnforcer(chosen[0])?guardChapter():storyChapters[arcadeIndex];
- $('#storychapter').textContent=ending?'EPILOGUE · THE STUDIO SURVIVES':`CHAPTER ${arcadeIndex+1} / ${arcadeOrder.length} · ${arcadeIndex<arcadeOrder.length-4?'THE QUALIFIERS':arcadeIndex<arcadeOrder.length-1?'THE HIRED CHALLENGERS':'THE FINAL BOSS'}`;
+ $('#storychapter').textContent=ending?'EPILOGUE · THE STUDIO SURVIVES':`CHAPTER ${arcadeIndex+1} / ${arcadeOrder.length} · ${arcadeIndex<16?'THE QUALIFIERS':arcadeIndex<arcadeOrder.length-1?'THE HIRED CHALLENGERS':'THE FINAL BOSS'}`;
  $('#storytitle').textContent=chapter[0];$('#storyplace').textContent=chapter[1];$('#storycopy1').textContent=chapter[2];$('#storycopy2').textContent=chapter[3];
  const cells=[chapter[4],chapter[5]];
  if(!isEnforcer(chosen[0])&&arcadeIndex>=16&&arcadeIndex<=18)cells[0]=12+arcadeIndex-16;
@@ -79,10 +100,13 @@ function openStory(ending=false){if(ending){openComicEnding();return}storyEnding
  $('#storyrole').textContent=ending?'The victory belongs to the whole circle.':profiles[opp].home+' · '+fighterTraits[opp].style;
  if(!ending&&chosen[0]>=11 && chosen[0]<=14){$('#storyrole').textContent+=isEnforcer(chosen[0])?' · The hired fighter’s route':' · Mestre’s route';}
  configureFinalComic(!ending&&arcadeOrder[arcadeIndex]===15);
+ const sentinel=arcadeOrder[arcadeIndex]===21;
+ $('#sentinel-strip').hidden=!sentinel;
+ if(sentinel){$('#story .comic-grid').style.display='none';sentinelPanel=0;}
  if(isEnforcer(chosen[0]))$('#storychapter').textContent='CONTRACT · '+(arcadeIndex+1)+' / '+arcadeOrder.length;
- $('#storyadvance').textContent=isEnforcer(chosen[0])&&arcadeIndex===arcadeOrder.length-1?'A · FACE MESTRE MARÉ':ending?'A · RETURN TO TITLE':arcadeOrder[arcadeIndex]===15?'A · FIGHT THE MYSTERY MAN':'A · ENTER THE RODA';$('#sessionlabel').textContent=ending?'THE STUDIO SURVIVES':`STORY · CHAPTER ${arcadeIndex+1} / ${arcadeOrder.length}`;setStageMusic(ending?0:activeStage);
+ $('#storyadvance').textContent=isEnforcer(chosen[0])&&arcadeIndex===arcadeOrder.length-1?'A · FACE MESTRE MARÉ':ending?'A · RETURN TO TITLE':arcadeOrder[arcadeIndex]===15?'A · FIGHT THE MYSTERY MAN':'A · ENTER THE RODA';$('#sessionlabel').textContent=ending?'THE STUDIO SURVIVES':`STORY · CHAPTER ${arcadeIndex+1} / ${arcadeOrder.length}`;setStageMusic(ending?0:activeStage);if(sentinel)paintSentinelPanel();
 }
-function advanceStory(){if(storyEnding){advanceComicEnding();return}if(meetsDalva()){openDalvaComic();return}scene='fight';show(null);roundIntro=true;introDuration=round===1?270:120;announceTime=introDuration;announcement=round===1?'ENTER THE RODA':roundLabel();}
+function advanceStory(){if(!storyEnding && arcadeOrder[arcadeIndex]===21 && sentinelPanel<5){sentinelPanel++;paintSentinelPanel();return}if(storyEnding){advanceComicEnding();return}if(meetsDalva()){openDalvaComic();return}scene='fight';show(null);roundIntro=true;introDuration=round===1?270:120;announceTime=introDuration;announcement=round===1?'ENTER THE RODA':roundLabel();}
 
 let comicPage=0;
 const endingCaptions=[
