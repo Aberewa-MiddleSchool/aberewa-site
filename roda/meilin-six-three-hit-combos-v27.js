@@ -3,13 +3,14 @@
   'use strict';
   const ID = 7;
   const combos = [
-    {name:'Jade Current',keys:['bencao','frente','costas']},
-    {name:'Low Jade',keys:['rasteira','bencao','frente']},
-    {name:'Emerald Crescent',keys:['frente','costas','rasteira']},
-    {name:'Dragon Wheel',keys:['costas','frente','bencao']},
-    {name:'Golden Passage',keys:['rasteira','costas','frente']}
+    {name:'Jade Current',keys:['bencao','frente','costas']},      // mid → high → high
+    {name:'Low Jade',keys:['rasteira','bencao','frente']},       // low → mid → high
+    {name:'Emerald Crescent',keys:['frente','costas','bencao']},// high → high → mid
+    {name:'Dragon Wheel',keys:['costas','frente','bencao']},    // high → high → mid
+    {name:'Golden Passage',keys:['bencao','costas','frente']}   // mid → high → high
   ];
   const rowFor = {frente:2,bencao:3,rasteira:4,costas:5};
+  const levelFor = {frente:'high',bencao:'mid',rasteira:'low',costas:'high'};
   if (typeof characterMoves === 'undefined' || !Array.isArray(characterMoves[ID]) ||
       characterMoves[ID].length < 6 || typeof techniqueBook === 'undefined' ||
       typeof updateFighter !== 'function' || typeof drawRedesignedAttack !== 'function' ||
@@ -24,7 +25,8 @@
     const old = characterMoves[ID][n];
     const prior = Array.isArray(old.phases)&&old.phases.length ? old.phases : [old];
     const phases = combos[n].keys.map((key,i)=>({
-      ...prior[Math.min(i,prior.length-1)], ...techniqueBook[key], key,frames:12,
+      ...prior[Math.min(i,prior.length-1)], ...techniqueBook[key], key,
+      level:levelFor[key], frames:12,
       range:Math.max(180,Number(old.range)||180),damage:10/3,
       rank:Math.max(1,Number(old.rank)||1),knockdown:i===2,
       push:i===2?3:0,travel:i===2?.15:.1
