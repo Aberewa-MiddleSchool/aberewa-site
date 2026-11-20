@@ -3,10 +3,21 @@
   const source = document.currentScript.src;
   const hints = navigator.userAgentData;
   const indicatesAndroid = value => /\b(?:Android|K325G)\b/i.test(value || '');
-  if (![hints?.platform, navigator.userAgent, navigator.oscpu].some(indicatesAndroid)) {
-    if (!navigator.maxTouchPoints || !hints?.getHighEntropyValues) return;
+  const quickPlay = new URLSearchParams(location.search).get('play') === 'android';
+  let android = [hints?.platform, navigator.userAgent, navigator.appVersion,
+    navigator.platform, navigator.oscpu].some(indicatesAndroid);
+  if (!android && navigator.maxTouchPoints && hints?.getHighEntropyValues) {
     const info = await hints.getHighEntropyValues(['model','platform']).catch(() => ({}));
-    if (![info.platform, info.model].some(indicatesAndroid)) return;
+    android = [info.platform, info.model].some(indicatesAndroid);
+  }
+  if (!android) {
+    if (quickPlay && navigator.maxTouchPoints) {
+      const note = document.createElement('p');
+      note.textContent = 'Android phone? In Chrome, turn off Desktop site and reload this page to enable touch controls.';
+      document.querySelector('#cabinet .screen').before(note);
+      note.scrollIntoView({block:'center'});
+    }
+    return;
   }
 
   const cabinet = document.getElementById('cabinet');
@@ -45,26 +56,8 @@
     return document.getElementById('fightername').textContent;
   }
 
-  // Handle a completed finger tap once, while allowing drags to scroll the roster.
-  function bindTap(key, activate) {
-    let start;
-    key.addEventListener('touchstart', event => {
-      const finger = event.touches[0];
-      start = event.touches.length === 1 ? [finger.clientX, finger.clientY] : null;
-    }, {passive:true});
-    key.addEventListener('touchcancel', () => { start = null; });
-    key.addEventListener('touchend', event => {
-      const finger = event.changedTouches[0];
-      const tap = start && !event.touches.length &&
-        Math.hypot(finger.clientX-start[0], finger.clientY-start[1]) < 12;
-      start = null;
-      if (!tap || !event.cancelable) return;
-      event.preventDefault();
-      activate();
-    }, {passive:false});
-    key.onclick = activate;
-  }
-  bindTap(confirm, () => {
+  // Chrome handles tap versus scroll and dispatches one accessible button click.
+  confirm.onclick = () => {
     if (scene !== 'select') return;
     if (mode === 'local' && connected().length < 2) {
       status.textContent = 'Local Versus needs a second controller. For one phone, choose VS CPU or Arcade.';
@@ -78,12 +71,12 @@
       status.textContent = '';
       screen.scrollIntoView({block:'start'});
     }
-  });
-  bindTap(document.getElementById('storyadvance'), () => {
+  };
+  document.getElementById('storyadvance').onclick = () => {
     if (scene !== 'story' || storyEnding) return;
     advanceStory();
     screen.scrollIntoView({block:'start'});
-  });
+  };
   const selectPanel = document.getElementById('select');
   new MutationObserver(records => {
     if (records.length && !selectPanel.classList.contains('hidden')) revealSelection();
@@ -105,6 +98,7 @@
     buttons.set(index, key);
     parent.append(key);
     key.addEventListener('pointerdown', event => {
+      if (event.pointerType !== 'touch') return;
       event.preventDefault();
       key.setPointerCapture(event.pointerId);
       held.set(event.pointerId, index);
@@ -146,7 +140,7 @@
     directions.set(event.pointerId,{x:axis(event.clientX,rect.left,rect.width),y:axis(event.clientY,rect.top,rect.height)});
     lightArrows();
   }
-  dpad.onpointerdown = event => {event.preventDefault();dpad.setPointerCapture(event.pointerId);point(event);};
+  dpad.onpointerdown = event => {if(event.pointerType !== 'touch')return;event.preventDefault();dpad.setPointerCapture(event.pointerId);point(event);};
   dpad.onpointermove = event => {if(directions.has(event.pointerId))point(event);};
   dpad.onlostpointercapture = dpad.onpointerup = dpad.onpointercancel = event => {directions.delete(event.pointerId);lightArrows();};
   const actions=document.createElement('div');
@@ -189,4 +183,24 @@
     if(dir.y)state.y=dir.y;
     return state;
   };
+  if (quickPlay) {
+    const practice = document.createElement('button');
+    practice.type = 'button';
+    practice.className = 'primary';
+    practice.textContent = 'Start practice with Aisha';
+    screen.before(practice);
+    practice.onclick = () => {
+      if (scene !== 'title') return;
+      enter.click();
+      setMode('training');
+      choose();
+      pick = 21;
+      updatePick();
+      confirm.click();
+    };
+    new MutationObserver(() => {
+      practice.hidden = scene !== 'title';
+    }).observe(document.getElementById('title'), {attributes:true, attributeFilter:['class']});
+    practice.scrollIntoView({block:'center'});
+  }
 })();
