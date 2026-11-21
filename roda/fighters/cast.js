@@ -203,7 +203,36 @@ function drawHomeGinga(g,p,x,y,zoom){
  g.save();g.translate(x,y);g.scale(scale*p.dir,scale);
  g.drawImage(art,frame%6*320,Math.floor(frame/6)*320,320,320,-rig.points[0][0],-rig.points[0][1]-rig.floor,320,320);g.restore();return true;
 }
+function drawCinza(g,p,x,y,zoom){
+ const phase=p.attack==null?null:attackPhase(moveFor(p,p.attack),p.at);
+ const kick=phase&&p.at>=moveFor(p,p.attack).start&&p.at<moveFor(p,p.attack).start+moveFor(p,p.attack).active;
+ const low=p.crouch||p.down>0||p.hp<=0||(kick&&phase.level==='low');
+ const flip=!!p.tumble||(kick&&phase.key==='au');
+ const airborne=p.y>0||p.takeoff>0;
+ const beat=Math.sin((p.ginga||tick)*.075);
+ g.save();g.translate(x,y);g.scale((p.dir||1)*zoom,zoom);
+ if(p.stun>0)g.rotate(-.16);
+ if(flip)g.rotate(Math.sin((p.tumble?.elapsed||phase?.phaseFrame||0)*.22)*.6);
+ const bodyY=low?-122:-170;
+ g.lineCap='round';g.lineJoin='round';
+ const stroke=(color,width,pts)=>{g.strokeStyle=color;g.lineWidth=width;g.beginPath();g.moveTo(...pts[0]);for(let i=1;i<pts.length;i++)g.lineTo(...pts[i]);g.stroke()};
+ const extended=kick?phase.phaseFrame<phase.frames*.68:false;
+ const front=extended?148:low?70:52+beat*9;
+ const rear=low?-85:-56-beat*8;
+ stroke('#585b62',28,[[0,bodyY+14],[front,low?-35:extended?-100:-24]]);
+ stroke('#585b62',28,[[0,bodyY+14],[rear,low?-20:-18]]);
+ stroke('#c42f34',19,[[front,low?-35:extended?-100:-24],[front+15,low?-33:extended?-102:-23]]);
+ stroke('#c42f34',19,[[rear,low?-20:-18],[rear-13,low?-18:-18]]);
+ stroke('#17191d',48,[[0,bodyY],[0,bodyY-89]]);
+ stroke('#26282d',14,[[0,bodyY-67],[low?76:48,bodyY-38]]);
+ stroke('#26282d',14,[[0,bodyY-67],[-52,bodyY-35]]);
+ g.fillStyle='#593a2c';g.beginPath();g.ellipse(0,bodyY-118,23,28,0,0,Math.PI*2);g.fill();
+ g.fillStyle='#17191d';g.fillRect(-24,bodyY-168,48,36);
+ g.fillStyle='#f3f3f3';g.fillRect(-15,bodyY-69,8,8);
+ g.restore();return true;
+}
 function drawCastState(g,p,x,y,zoom) {
+ if(p.id===22)return drawCinza(g,p,x,y,zoom);
  const upright=p.hp>0 && !p.down && !p.stun && !p.victory && (p.preview || !endWait) && p.attack==null && !p.y && !p.takeoff && !p.landing;
  if(upright && p.tumble && drawTuckedRoll(g,p,x,y,zoom))return true;
  if(upright && !p.tumble && !p.crouch && !p.block && drawHomeGinga(g,p,x,y,zoom))return true;
