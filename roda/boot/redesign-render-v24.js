@@ -28,7 +28,6 @@ function drawRedesignedAttack(p){
  }
  if(d.authored&&[4,6].includes(p.id)&&base.phases.length===3&&p.at>=base.start&&p.at<base.start+base.active&&m.key==='bencao'){row=3;frame=m.phaseFrame<m.frames*.65?4:5;}
  ctx.save();
- if(p.attack>=4){ctx.shadowColor=fighterTraits[p.id].accent;ctx.shadowBlur=22+8*Math.sin(p.at*.4);}
  drawRedesignFrame(p,row*8+frame);ctx.restore();
  if(p.attack>=4&&p.at>=base.start&&p.at<base.start+base.active){
   ctx.save();ctx.strokeStyle=fighterTraits[p.id].accent;ctx.globalAlpha=.6;ctx.lineWidth=4;

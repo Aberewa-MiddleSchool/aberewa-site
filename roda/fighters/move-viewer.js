@@ -6,8 +6,8 @@
   let playing=!matchMedia('(prefers-reduced-motion: reduce)').matches;
   const id=()=>Number(select.value);
   const move=()=>characterMoves[id()][slot];
-  for(const fighter of [...playableIds,15]){
-    select.add(new Option(profiles[fighter].name+(fighter===15?' · Boss':''),fighter));
+  for(const fighter of playableIds){
+    select.add(new Option(profiles[fighter].name,fighter));
   }
   select.value='18';
   const motion=document.createElement('select'), motionLabel=document.createElement('label');

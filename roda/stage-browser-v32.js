@@ -122,9 +122,9 @@
     b.type='button';b.dataset.stage=String(id);
     const shortName=stageList[id].split(' · ')[0];
     b.textContent=String(id+1).padStart(2,'0')+' · '+shortName;
-    if ([18,19,21].includes(id)) {
+    if ([18,19].includes(id)) {
       const small=document.createElement('small');
-      small.textContent=id===21?'ORIGINAL SKULL BOSS':'ORIGINAL PRIVATE ARENA';
+      small.textContent='ORIGINAL PRIVATE ARENA';
       b.append(small);
     }
     b.addEventListener('click',()=>chooseStage(id));

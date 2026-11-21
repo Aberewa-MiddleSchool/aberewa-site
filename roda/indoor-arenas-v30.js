@@ -29,7 +29,6 @@
     'MESTRE’S PRIVATE STUDIO · SALVADOR',
     'MEILIN’S TRAINING HALL · CURITIBA',
     'MEILIN’S CONSERVATORY · CURITIBA',
-    'THE MYSTERY MAN’S SKULL STUDIO',
     'TAINÁ’S BOATHOUSE · SALVADOR',
     'LUZIA’S REHEARSAL CINEMA · RECIFE',
     'DALVA’S ENGENHO · RECÔNCAVO DA BAHIA',
@@ -44,9 +43,8 @@
   const artRoot=new URL('arenas/',document.currentScript.src);
   const artwork=rooms.map((_,id)=>{
     if(id===18 || id===19)return privateArenaImages[id-18];
-    if(id===21)return skullStudioImage;
     const image=new Image();
-    image.src=new URL(id+'.webp',artRoot);
+    image.src=new URL((id>=21?id+1:id)+'.webp',artRoot);
     return image;
   });
   for(const image of artwork){
@@ -60,7 +58,7 @@
   }
   window.drawArena=function(){
     // Keep the original lighting and decorative animation in the private studios.
-    if([18,19,21].includes(activeStage) && artwork[activeStage].naturalWidth){
+    if([18,19].includes(activeStage) && artwork[activeStage].naturalWidth){
       oldDrawArena();return;
     }
     const room=surface(activeStage);
@@ -68,7 +66,7 @@
     else{ctx.fillStyle='#19231d';ctx.fillRect(0,0,W,H);}
   };
   window.RODAIndoorArenas=Object.freeze({
-    surface,version:'5',converted:rooms.map((_,id)=>id).filter(id=>![18,19,21].includes(id)),
-    retainedIndoor:[18,19,21],name:id=>rooms[id]||''
+    surface,version:'5',converted:rooms.map((_,id)=>id).filter(id=>![18,19].includes(id)),
+    retainedIndoor:[18,19],name:id=>rooms[id]||''
   });
 })();

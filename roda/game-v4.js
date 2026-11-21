@@ -2,11 +2,23 @@ const gingaV26={"0": {"src": "ginga-0-v26.webp", "rects": [[0, 0, 320, 320], [32
 const mysteryData={"src": "mystery-man-v26.webp", "rects": [[0, 0, 320, 320], [320, 0, 320, 320], [640, 0, 320, 320], [960, 0, 320, 320], [1280, 0, 320, 320], [1600, 0, 320, 320], [1920, 0, 320, 320], [2240, 0, 320, 320], [0, 320, 320, 320], [320, 320, 320, 320], [640, 320, 320, 320], [960, 320, 320, 320], [1280, 320, 320, 320], [1600, 320, 320, 320], [1920, 320, 320, 320], [2240, 320, 320, 320], [0, 640, 320, 320], [320, 640, 320, 320], [640, 640, 320, 320], [960, 640, 320, 320], [1280, 640, 320, 320], [1600, 640, 320, 320], [1920, 640, 320, 320], [2240, 640, 320, 320], [0, 960, 320, 320], [320, 960, 320, 320], [640, 960, 320, 320], [960, 960, 320, 320], [1280, 960, 320, 320], [1600, 960, 320, 320], [1920, 960, 320, 320], [2240, 960, 320, 320], [0, 1280, 320, 320], [320, 1280, 320, 320], [640, 1280, 320, 320], [960, 1280, 320, 320], [1280, 1280, 320, 320], [1600, 1280, 320, 320], [1920, 1280, 320, 320], [2240, 1280, 320, 320], [0, 1600, 320, 320], [320, 1600, 320, 320], [640, 1600, 320, 320], [960, 1600, 320, 320], [1280, 1600, 320, 320], [1600, 1600, 320, 320], [1920, 1600, 320, 320], [2240, 1600, 320, 320], [0, 1920, 320, 320], [320, 1920, 320, 320], [640, 1920, 320, 320], [960, 1920, 320, 320], [1280, 1920, 320, 320], [1600, 1920, 320, 320], [1920, 1920, 320, 320], [2240, 1920, 320, 320], [0, 2240, 320, 320], [320, 2240, 320, 320], [640, 2240, 320, 320], [960, 2240, 320, 320], [1280, 2240, 320, 320], [1600, 2240, 320, 320], [1920, 2240, 320, 320], [2240, 2240, 320, 320]], "referenceHeight": 135};
 
 const gingaImagesV26=Object.fromEntries(Object.entries(gingaV26).filter(([id])=>id!=="7").map(([id,d])=>{let i=new Image();i.src=d.src;return [id,i]}));
-const mysteryImage=new Image();mysteryImage.src=mysteryData.src;const skullStudioImage=new Image();skullStudioImage.src='skull-studio-v26.webp';
+const mysteryImage=new Image();const skullStudioImage=new Image();
 'use strict';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const canvas=$('#game'),W=1280,H=660;
 let ctx=canvas.getContext('2d');
+function resizeFightCanvas(){
+ const box=canvas.getBoundingClientRect();
+ if(!box.width || !box.height)return;
+ const scale=Math.min(3, Math.min(box.width/W,box.height/H)*(window.devicePixelRatio||1));
+ const width=Math.max(1,Math.round(W*scale)),height=Math.max(1,Math.round(H*scale));
+ if(canvas.width!==width || canvas.height!==height){canvas.width=width;canvas.height=height;}
+ ctx.setTransform(width/W,0,0,height/H,0,0);
+ ctx.imageSmoothingQuality='high';
+}
+new ResizeObserver(resizeFightCanvas).observe(canvas);
+window.addEventListener('resize',resizeFightCanvas);
+document.addEventListener('fullscreenchange',resizeFightCanvas);
 const roster=[['Dandara','The rhythm keeper'],['Jurema','Braided thunder'],['Celina','Silver wisdom'],['Zinga','The fearless flame'],['Lua','Moonlit malícia'],['Iara','The flowing tide'],['Nala','Quiet lightning'],['Meilin','The gilded low guard'],['Jaci','Blue horizon'],['Sol','The golden hour'],['Ayana','The white braid'],['Bento','The steady mountain'],['Caio','Young thunder'],['Nestor','The old fox'],['Mestre Maré','Final mestre • all hard kicks • +10% health']];
 const moves=[{name:'Bênção',label:'MID KICK 1',button:'A',pose:2,start:8,active:8,end:12,damage:7,range:172,level:'mid',rank:1,cost:0},{name:'Rasteira',label:'MID KICK 2',button:'B',pose:5,start:11,active:9,end:14,damage:8,range:184,level:'low',rank:1,cost:0},{name:'Meia-lua de frente',label:'HARD KICK 1',button:'X',pose:3,start:14,active:9,end:17,damage:13,range:198,level:'high',rank:2,cost:0},{name:'Meia-lua de costas',label:'HARD KICK 2',button:'Y',pose:7,start:16,active:10,end:18,damage:15,range:214,level:'high',rank:2,cost:0},{name:'Aú com chapa',label:'SPECIAL MOVE 1',button:'LB',pose:6,start:12,active:17,end:18,damage:19,range:221,level:'high',rank:3,cost:35},{name:'Giro da roda',label:'SPECIAL MOVE 2',button:'RB',pose:7,start:17,active:20,end:20,damage:23,range:245,level:'mid',rank:3,cost:50}];
 moves.forEach(m=>{m.start=Math.max(5,m.start-3);m.end=Math.max(8,m.end-5)});
@@ -26,13 +38,9 @@ let arcadeOrder=[],arcadeIndex=0,matchWinner=-1,resultTime=0,resumeScene='fight'
 function isEnforcer(id){return id>=11 && id<=13;}
 function makeArcade(){
  resetArcadeScore();
- const champion=chosen[0], visitors=[16,17,18,19,20];
- const original=Array.from({length:11},(_,id)=>id);
- const reserve=[...original,...visitors].find(id=>id!==champion);
- const opponents=[...original.slice(0,10),...visitors,original[10],11,12,13,21,15];
- arcadeOrder=isEnforcer(champion)
-   ? [...original,...visitors,...[11,12,13].filter(id=>id!==champion),2,14]
-   : opponents.map(id=>id===champion && id!==21?reserve:id);
+ const champion=chosen[0], final=champion===21?14:21;
+ const qualifiers=[0,1,2,3,4,5,6,7,8,9,16,17,18,19,20,10,14,11,12,13];
+ arcadeOrder=[...qualifiers.filter(id=>id!==champion && id!==final),final];
  arcadeIndex=0;chosen[1]=arcadeOrder[0];
 }
 
@@ -102,8 +110,8 @@ function normalizedButtons(p){let b=p.buttons.map(x=>x.pressed),config=customPad
 function openSetup(){scene='setup';setupPad=null;setupStep=-1;setupWait=true;show('setup');$('#setupstep').textContent='Press any button on the controller to configure.';$('#setupdevice').textContent='';}
 $('#padsetup').onclick=openSetup;$('#setupcancel').onclick=()=>{scene='menu';show('menu');prevPads={}};$('#setupreset').onclick=()=>{customPads={};try{localStorage.removeItem('roda-controller-map')}catch(e){}$('#setupcancel').click()};
 function calibratePads(pads){if(setupPad===null){let p=pads.find(p=>p.buttons.some(b=>b.pressed));if(!p)return;setupPad=p.index;setupStep=0;setupBindings={};setupNeutral=p.axes.slice();setupWait=true;$('#setupdevice').textContent=p.id;$('#setupstep').textContent='Release all controls…';return}let p=pads.find(p=>p.index===setupPad);if(!p){$('#setupstep').textContent='Reconnect the controller to continue.';return}let neutral=!p.buttons.some(b=>b.pressed)&&p.axes.every((v,i)=>Math.abs(v-(setupNeutral[i]||0))<.2);if(setupWait){if(neutral){setupWait=false;$('#setupstep').textContent='Press '+setupSteps[setupStep][1]}return}let bi=p.buttons.findIndex(b=>b.pressed),a=null;if(bi>=0)a={type:'button',index:bi};else{let ai=p.axes.findIndex((v,i)=>Math.abs(v-(setupNeutral[i]||0))>.45);if(ai>=0)a={type:'axis',index:ai,value:p.axes[ai],neutral:setupNeutral[ai]||0,hat:ai>3||Math.abs(setupNeutral[ai]||0)>1}}if(!a)return;setupBindings[setupSteps[setupStep][0]]=a;setupStep++;if(setupStep>=setupSteps.length){customPads[p.id]=setupBindings;try{localStorage.setItem('roda-controller-map',JSON.stringify(customPads))}catch(e){}scene='menu';show('menu');$('#padhelp').textContent='Controller mapping saved. Ready to play.';prevPads={};return}setupWait=true;$('#setupstep').textContent='Registered. Release all controls…'}
-const stageNames=['SALVADOR · BAHIA','OLINDA · PERNAMBUCO','RIO DE JANEIRO · RJ','BELÉM · PARÁ','SÃO LUÍS · MARANHÃO','RECIFE · PERNAMBUCO','MANAUS · AMAZONAS · NIGHT','FORTALEZA · CEARÁ','CACHOEIRA · BAHIA · NIGHT','SÃO PAULO · SP','OURO PRETO · MINAS GERAIS','FLORIANÓPOLIS · SANTA CATARINA','PORTO SEGURO · BAHIA · NIGHT','PARATY · RJ · NIGHT','SALVADOR HARBOR · BAHIA · NIGHT','BELO HORIZONTE · MINAS GERAIS','BRASÍLIA · DISTRITO FEDERAL','NATAL · RIO GRANDE DO NORTE','MESTRE’S STUDIO · SALVADOR','MEILIN’S TRAINING HALL · CURITIBA','MEILIN’S GARDEN · CURITIBA','THE MYSTERY MAN’S SKULL STUDIO'];
-let activeStage=0,stageChoice=0,arcadeArenaOverride=null;const arcadeStages=[0,5,8,4,3,6,2,7,1,19,22,23,24,25,26,20,27,17,10,28,21];const arenaImages=['brazil-arenas.webp','brazil-arenas-2.webp','brazil-arenas-3.webp'].map(src=>{let i=new Image();i.src=src;return i});const musicianImage=new Image();musicianImage.src='roda-musicians.webp';const crowdImage=new Image();crowdImage.src='roda-crowd-v22.webp';
+const stageNames=['SALVADOR · BAHIA','OLINDA · PERNAMBUCO','RIO DE JANEIRO · RJ','BELÉM · PARÁ','SÃO LUÍS · MARANHÃO','RECIFE · PERNAMBUCO','MANAUS · AMAZONAS · NIGHT','FORTALEZA · CEARÁ','CACHOEIRA · BAHIA · NIGHT','SÃO PAULO · SP','OURO PRETO · MINAS GERAIS','FLORIANÓPOLIS · SANTA CATARINA','PORTO SEGURO · BAHIA · NIGHT','PARATY · RJ · NIGHT','SALVADOR HARBOR · BAHIA · NIGHT','BELO HORIZONTE · MINAS GERAIS','BRASÍLIA · DISTRITO FEDERAL','NATAL · RIO GRANDE DO NORTE','MESTRE’S STUDIO · SALVADOR','MEILIN’S TRAINING HALL · CURITIBA','MEILIN’S GARDEN · CURITIBA'];
+let activeStage=0,stageChoice=0,arcadeArenaOverride=null;const arenaImages=['brazil-arenas.webp','brazil-arenas-2.webp','brazil-arenas-3.webp'].map(src=>{let i=new Image();i.src=src;return i});const musicianImage=new Image();musicianImage.src='roda-musicians.webp';const crowdImage=new Image();crowdImage.src='roda-crowd-v22.webp';
 
 let navAt=0;
 function pollPads(){lastPads=connected();if(scene==='setup'){calibratePads(lastPads);return []}let states=lastPads.map(padState);$('#connection').textContent=lastPads.length?`● ${lastPads.length} CONTROLLER${lastPads.length>1?'S':''} CONNECTED`:'● CONNECT A CONTROLLER';$('#status').textContent=mode==='watch'||arcadeAutoplay?'CPU CONTROL · NO CONTROLLER REQUIRED':lastPads.length?'CONTROLLER READY':'AWAITING CONTROLLER';if(mode!=='watch'&&!arcadeAutoplay&&(scene==='fight'||scene==='result'||scene==='story')&&(!lastPads.length||(mode==='local'&&lastPads.length<2))){togglePause('Controller disconnected. Reconnect, then press Start.');return states}let s=(scene==='select'?states[pickStage]:states[0])||states[0];if(!s)return states;
@@ -117,15 +125,14 @@ else if(scene==='pause'){if(states.some(p=>p.edge[9]))togglePause();else{if(uiTi
 else if(mode!=='watch'&&!arcadeAutoplay&&(scene==='fight'||scene==='result'||scene==='story')&&states.some(p=>p.edge[9]))togglePause();return states}
 function record(text){inputs.unshift({text,t:tick});inputs=inputs.slice(0,6)}
 function storyArena(index){
- const neutral=[17,11,9,7,16,14,1,10];
- if(!isEnforcer(chosen[0]))return arcadeStages[index];
- return index===arcadeOrder.length-1?17:neutral[index%neutral.length];
+ const opponent=arcadeOrder[index];
+ return homeArena[opponent]??0;
 }
 function beginAttack(p,n,crouched=p.crouch){p.attackCrouched=!!crouched&&p.y===0;let m=moveFor(p,n);if(p.stun>0||p.down>0||p.hp<=0||(p.y>5&&n>=4))return false;if(p.meter<m.cost&&mode!=='training'){if(p===players[0])record('NOT ENOUGH AXÉ');return false}p.meter=mode==='training'?100:p.meter-m.cost;p.attack=n;p.at=0;p.phase=-1;p.hit=false;p.confirmed=false;p.swingPlayed=false;p.block=false;p.moveText=(m.signature||m.name).toUpperCase();if(p===players[0])record(m.button+' · '+m.name);return true}
 function requestAttack(p,n,crouched=p.crouch){if(p.down>0||p.hp<=0)return;if(p.attack===null&&p.stun<=0&&p.takeoff<=0)beginAttack(p,n,crouched);else p.buffer={n,crouched:!!crouched,ttl:24}}
 function advanceAir(p,dt){if(p.y>0||p.vy){p.y+=p.vy*dt;p.vy-=(p.vy>0?.52:.76)*dt;if(p.y<=0){p.y=0;p.vy=0;p.landing=6;burst(p.x,590,'#d0b48155',5)}}}
 function updateFighter(p,opp,s,dt){if(p.fallSoundAt&&tick>=p.fallSoundAt){playSample('fall',.8);p.fallSoundAt=0}p.flash=Math.max(0,p.flash-dt);p.invuln=Math.max(0,p.invuln-dt);p.x=clamp(p.x+p.pushV*dt,100,1180);p.pushV*=Math.pow(.84,dt);if(p.down>0){p.down=Math.max(0,p.down-dt);p.attack=null;p.stun=0;p.block=false;advanceAir(p,dt);p.moveText=p.down<14?'RECOVERY':'KNOCKDOWN';if(p.down===0)p.invuln=12;return}p.comboTimer-=dt;if(p.comboTimer<=0)p.combo=0;p.meter=Math.min(100,p.meter+.045*dt);if(p.buffer){p.buffer.ttl-=dt;if(p.buffer.ttl<=0)p.buffer=null}if(p.stun>0){p.stun-=dt;p.block=p.guardStun===true;p.attack=null;p.moveText=p.guardStun?'BLOCK':'HIT';advanceAir(p,dt);return}p.guardStun=false;p.dir=opp.x>=p.x?1:-1;let up=!!s&&s.y<-.6;if(up&&!p.jumpHeld)p.jumpBuffer=9;p.jumpHeld=up;if(p.jumpBuffer>0)p.jumpBuffer-=dt;p.walk=s?.x||0;let stepStart=p.x;p.stepOffset=0;p.landing=Math.max(0,p.landing-dt);if(p.takeoff>0){p.takeoff-=dt;if(p.takeoff<=0){p.vy=14.8;p.y=1;p.crouch=false;p.block=false}}
-if(p.attack!==null){let base=moveFor(p,p.attack);p.at+=dt;let m=attackPhase(base,p.at);if(p.phase!==m.phase){p.phase=m.phase;p.hit=false;p.swingPlayed=false}let active=p.at>=m.start&&p.at<m.start+m.active;if(active&&!p.swingPlayed){p.swingPlayed=true;strikeSound(p,'swing',m)}
+if(p.attack!==null){let base=moveFor(p,p.attack);p.at+=dt;let m=attackPhase(base,p.at);if(p.phase!==m.phase){p.phase=m.phase;p.hit=false;p.swingPlayed=false}let active=p.at>=m.start&&p.at<m.start+m.active;if(active&&!p.swingPlayed&&p.id!==18){p.swingPlayed=true;strikeSound(p,'swing',m)}
 if(p.y>0&&s){p.vx+=(s.x*fighterTraits[p.id].speed-p.vx)*.16;p.x+=p.vx*dt};if(p.y===0){if(p.at<m.start)p.x+=p.dir*(base.retreat||0)*dt;else if(active)p.x+=p.dir*m.travel*dt;}
 if(active&&m.phaseFrame>=(m.contactStart||0)&&m.phaseFrame<(m.contactEnd??7)&&!p.hit&&Math.abs(opp.x-p.x)<m.range&&Math.abs(opp.y-p.y)<110&&opp.down<=0&&opp.invuln<=0){p.hit=true;let avoids=opp.crouch&&m.level==='high';if(avoids){tone(220,.06,.03)}else{p.confirmed=true;let blocked=opp.block&&(m.level!=='low'||opp.crouch);if(blocked){opp.stun=7;opp.guardStun=true;opp.meter=Math.min(100,opp.meter+5);p.meter=Math.min(100,p.meter+3);opp.moveText='BLOCK';burst((p.x+opp.x)/2,opp.crouch?505:405,'#c9f9ff',9);strikeSound(p,'block',m);rumble(players.indexOf(opp),.14,60)}else{let dmg=m.damage*Math.max(.55,1-p.combo*.1);let actualDamage=Math.min(opp.hp,dmg);opp.hp=Math.max(0,opp.hp-dmg);scoreContact(p,opp,actualDamage);opp.stun=m.rank===3?33:24;opp.guardStun=false;opp.flash=8;opp.attack=null;opp.buffer=null;p.combo++;p.comboTimer=80;p.meter=Math.min(100,p.meter+8);opp.meter=Math.min(100,opp.meter+6);opp.pushV=p.dir*m.push;opp.hitAt=tick;opp.reaction=m.level==='high'?4:1;opp.impactKind=m.level;if(m.knockdown||opp.hp<=0){opp.down=opp.hp<=0?999: m.rank===3?52:40;opp.comboTimer=0;opp.fallSoundAt=tick+8}rumble(players.indexOf(opp),m.rank===3?.55:.3,90);shake=m.rank===3?10:5;freeze=m.rank===3?4:2;burst((p.x+opp.x)/2,m.level==='low'?530:m.level==='high'?590-270*fighterTraits[opp.id].height/174:410,m.rank===3?fighterTraits[p.id].accent:'#ffe999',m.rank===3?36:18);strikeSound(p,'hit',m,opp.down>0);vocal(opp.id,opp.hp<=0?'defeat':'hit')}if(mode==='training'&&opp.hp<=1){opp.hp=opp.maxHp;opp.down=52}}}
 const lastContactFinished=m.phase===base.phases.length-1 && m.phaseFrame>=(m.contactEnd??7);
@@ -198,18 +205,8 @@ function drawFighter(p){
  ctx.fillStyle='#10190f66';ctx.beginPath();ctx.ellipse(p.x,592,Math.max(18,82*(1-p.y/420))*fighterTraits[p.id].build,Math.max(5,14-p.y*.025),0,0,Math.PI*2);ctx.fill();
  const t=fighterTraits[p.id],h=visualHeight(p.id);ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(p.id<16?h*t.build:1,p.id<16?h:1);ctx.translate(-p.x,-(590-p.y));
  if(p.flash>0)ctx.filter='brightness(1.32)';
- if((p.attack>=4||p.id===15)&&p.attack!==null){ctx.shadowColor=t.accent;ctx.shadowBlur=28;ctx.filter='brightness(1.2)';}
- // Meilin rolls; Dalva and Aisha cartwheel. Everyone else hops on its own renderer.
- const authoredTravel=[7,18,21].includes(p.id);
- const hopping=!authoredTravel&&p.hp>0&&!p.down&&!p.stun&&p.attack===null&&p.y===0&&
-   !p.crouch&&!p.takeoff&&!p.landing&&!endWait&&Math.abs(p.walk)>.05&&Math.abs(p.vx)>.1;
- if(hopping){
-   const phase=((Math.abs(p.ginga)%56)+56)%56;
-   const lift=Math.sin(Math.PI*phase/56)*19;
-   const lean=-Math.sign(p.vx)*.035;
-   ctx.save();ctx.translate(p.x,590-p.y-lift);ctx.rotate(lean);ctx.translate(-p.x,-(590-p.y));
-   drawFighterBody(p,t);ctx.restore();
- }else drawFighterBody(p,t);
+ if((p.attack>=4||p.id===15)&&p.attack!==null){ctx.filter='brightness(1.2)';}
+ drawFighterBody(p,t);
  ctx.restore();
  if(p.block&&p.attack===null&&p.stun<=0&&p.down<=0)drawGuardEffect(p);
  if(p.combo>=2&&p.comboTimer>0){text(p.combo+' HIT',p.x,205,34,'#ffdb6e','center');text('COMBINATION',p.x,225,12,'#eee6c8','center')}
@@ -325,7 +322,7 @@ const gingaImages=[1,2,3,4].map(n=>{let im=new Image();im.src='ginga-'+n+'.webp'
 const selectOrder=[...playableIds.filter(id=>id>=16),...playableIds.filter(id=>id<16)];
 buildStage();requestAnimationFrame(frame);
 
-function drawArena(){if(activeStage===21){drawSkullStudio();return}if(activeStage>=18){drawPrivateArena();return}let image=arenaImages[Math.floor(activeStage/6)],cell=activeStage%6;let camera=players.length&&scene==='fight'?clamp(((players[0].x+players[1].x)/2-640)*.025,-12,12):Math.sin(tick*.002)*4;if(image.complete&&image.naturalWidth){let aw=image.width/2,ah=image.height/3;ctx.drawImage(image,(cell%2)*aw,Math.floor(cell/2)*ah,aw,ah,-16-camera,-8,W+32,H+16)}else ctx.drawImage(stage,0,0);
+function drawArena(){if(activeStage>=18){drawPrivateArena();return}let image=arenaImages[Math.floor(activeStage/6)],cell=activeStage%6;let camera=players.length&&scene==='fight'?clamp(((players[0].x+players[1].x)/2-640)*.025,-12,12):Math.sin(tick*.002)*4;if(image.complete&&image.naturalWidth){let aw=image.width/2,ah=image.height/3;ctx.drawImage(image,(cell%2)*aw,Math.floor(cell/2)*ah,aw,ah,-16-camera,-8,W+32,H+16)}else ctx.drawImage(stage,0,0);
 ctx.save();ctx.globalAlpha=.12;for(let i=0;i<5;i++){let x=((tick*.38+i*310)%1620)-160,y=45+(i%3)*45;ctx.fillStyle='#fff0d0';ctx.beginPath();ctx.ellipse(x,y,90,18,0,0,Math.PI*2);ctx.ellipse(x+70,y+10,80,15,0,0,Math.PI*2);ctx.fill()}ctx.restore();
 if([2,3,5,6,7,11,12,14,17].includes(activeStage)){ctx.save();ctx.strokeStyle='#fff1b377';ctx.lineWidth=2;for(let i=0;i<23;i++){let x=350+(i*117%720),y=348+(i*13%72),w=9+(i*17%38);ctx.globalAlpha=.25+.2*Math.sin(tick*.035+i);ctx.beginPath();ctx.moveTo(x+Math.sin(tick*.023+i)*7,y);ctx.lineTo(x+w+Math.sin(tick*.023+i)*7,y);ctx.stroke()}ctx.restore()}
 // Foreground foliage has its own wind motion, visible below the top edge.
@@ -342,7 +339,7 @@ for(let side=0;side<2;side++){
 }
 if([4,6,8,12,13,14].includes(activeStage)){for(let i=0;i<12;i++){let x=60+i*107+Math.sin(tick*.012+i)*18,y=230+(i*47%200)+Math.sin(tick*.019+i)*12;ctx.fillStyle=`rgba(255,219,110,${.15+.3*(Math.sin(tick*.025+i)+1)/2})`;ctx.beginPath();ctx.arc(x,y,2,0,7);ctx.fill()}}
 let shade=ctx.createLinearGradient(0,0,0,H);shade.addColorStop(0,'#071611b0');shade.addColorStop(.28,'#07161100');shade.addColorStop(.8,'#07161100');shade.addColorStop(1,'#071611ba');ctx.fillStyle=shade;ctx.fillRect(0,0,W,H)}
-function drawRoda(){if(activeStage===21||activeStage===24)return;
+function drawRoda(){if(activeStage===23)return;
  ctx.save();ctx.strokeStyle='#f6e7b666';ctx.lineWidth=2;
  ctx.beginPath();ctx.ellipse(640,590,535,44,0,0,Math.PI*2);ctx.stroke();ctx.restore();
 }
@@ -408,7 +405,7 @@ function kickImpact(move, knockedDown) {
   const source = audioCtx.createBufferSource();
   source.buffer=buffer;source.connect(audioCtx.destination);source.start();
 }
-function sfx(kind,rank=1){if(!sound)return;if(kind==='hit'){playSample('strike',rank===3?.85:.7,1+(rank-2)*.035);return}initAudio();if(!audioCtx||audioCtx.state==='suspended')return;let now=audioCtx.currentTime;let length=kind==='swing'?.12:kind==='block'?.08:kind==='start'?.28:.16+rank*.025;let buf=audioCtx.createBuffer(1,Math.ceil(audioCtx.sampleRate*length),audioCtx.sampleRate),data=buf.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/data.length,kind==='swing'?1.2:3);let source=audioCtx.createBufferSource(),filter=audioCtx.createBiquadFilter(),gain=audioCtx.createGain();source.buffer=buf;filter.type=kind==='swing'?'bandpass':'lowpass';filter.frequency.setValueAtTime(kind==='swing'?1600:kind==='block'?3200:700,now);filter.frequency.exponentialRampToValueAtTime(kind==='swing'?450:160,now+length);gain.gain.setValueAtTime(kind==='swing'?.12:kind==='block'?.16:.22+rank*.035,now);source.connect(filter);filter.connect(gain);gain.connect(audioCtx.destination);source.start();if(kind==='hit')tone(95+rank*9,.15,.09,'sine');if(kind==='block')tone(510,.06,.04,'triangle');if(kind==='start'){tone(330,.2,.08,'triangle');setTimeout(()=>tone(495,.2,.08,'triangle'),130)}}
+function sfx(kind,rank=1){if(!sound)return;if(kind==='hit'){if(playSample('strike',rank===3?.85:.7,1+(rank-2)*.035))return}initAudio();if(!audioCtx||audioCtx.state==='suspended')return;let now=audioCtx.currentTime;let length=kind==='swing'?.12:kind==='block'?.08:kind==='start'?.28:.16+rank*.025;let buf=audioCtx.createBuffer(1,Math.ceil(audioCtx.sampleRate*length),audioCtx.sampleRate),data=buf.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/data.length,kind==='swing'?1.2:3);let source=audioCtx.createBufferSource(),filter=audioCtx.createBiquadFilter(),gain=audioCtx.createGain();source.buffer=buf;filter.type=kind==='swing'?'bandpass':'lowpass';filter.frequency.setValueAtTime(kind==='swing'?1600:kind==='block'?3200:700,now);filter.frequency.exponentialRampToValueAtTime(kind==='swing'?450:160,now+length);gain.gain.setValueAtTime(kind==='swing'?.12:kind==='block'?.16:.22+rank*.035,now);source.connect(filter);filter.connect(gain);gain.connect(audioCtx.destination);source.start();if(kind==='hit')tone(95+rank*9,.15,.09,'sine');if(kind==='block')tone(510,.06,.04,'triangle');if(kind==='start'){tone(330,.2,.08,'triangle');setTimeout(()=>tone(495,.2,.08,'triangle'),130)}}
 function rumble(index,strength,duration){let pad=lastPads[index];try{pad?.vibrationActuator?.playEffect('dual-rumble',{duration,strongMagnitude:strength,weakMagnitude:strength*.65}).catch(()=>{})}catch(e){}}
 let musicEnabled=true;
 function enableGameAudio(){sound=true;$('#sound').textContent='SOUND ON';initAudio();setStageMusic(['title','menu','select'].includes(scene)?-1:activeStage);$('#enableaudio').textContent='AUDIO ENABLED · PRESS START';}
@@ -460,12 +457,8 @@ function facePortrait(c,id){
 
 
 
-// Version 2.6: movement, CPU-only final boss, and auditable local arcade scoring.
-roster.push(['Mystery Man','CPU-only final boss']);
-profiles.push({name:'Mystery Man',home:'The Skull Studio',personality:'The hidden challenger.',win:'The final word is mine.',lose:'This is not over.',pitch:90});
-fighterTraits.push({height:190,build:1.08,speed:4.1,tempo:1.1,reach:1.12,power:1.15,style:'Six three-hit power combinations',signature:'The Final Threat',accent:'#e4c66a',variant:3});
-const mysteryKits=[['bencao','rasteira','costas'],['rasteira','frente','costas'],['frente','bencao','martelo'],['costas','rasteira','bencao'],['au','chapa','costas'],['rasteira','frente','bencao']];
-characterMoves[15]=mysteryKits.map((keys,n)=>{const phases=keys.map((key,i)=>({...techniqueBook[key],key,rank:3,frames:13,range:230,damage:9+i,knockdown:i===2,push:i===2?4:0,travel:.15}));return {...moves[n],...phases[0],name:keys.map(k=>techniqueBook[k].name).join(' → '),signature:'SHADOW '+(n+1),rank:3,cost:0,start:15,active:39,end:24,phases};});
+// Preserve existing numeric fighter IDs in saved records.
+roster.length=profiles.length=fighterTraits.length=characterMoves.length=16;
 // Mestre has a different three-technique chain on every attack button.
 const mestreKits=[['bencao','frente','rasteira'],['rasteira','bencao','costas'],['frente','costas','bencao'],['costas','frente','rasteira'],['frente','rasteira','costas'],['costas','bencao','frente']];
 characterMoves[14]=mestreKits.map((keys,n)=>{const old=characterMoves[14][n],phases=keys.map((key,i)=>({...techniqueBook[key],key,rank:n>=4?3:2,frames:12,range:old.range,damage:n>=4?9:6,knockdown:i===2,push:i===2?4:0}));return {...old,...phases[0],phases,start:12,active:36,end:19,authoredRow:null,name:keys.map(k=>techniqueBook[k].name).join(' → ')};});
@@ -474,8 +467,6 @@ drawRedesignedAttack=function(p){if(p.id!==14){originalRedesignedAttack(p);retur
 function drawMystery(p){let index=0;if(p.hp<=0||p.down>0){const age=Math.max(0,tick-p.hitAt);index=age<8?10:age<16?11:age<24?12:13;}else if(p.stun>0&&!p.guardStun)index=10;else if(p.y>0||p.takeoff>0)index=15;else if(p.attack!==null){const b=moveFor(p,p.attack),m=attackPhase(b,p.at);let f=p.at<b.start?0:p.at>=b.start+b.active?6:1+m.phase*2+(m.phaseFrame>=8?1:0);index=(p.attack+2)*8+f;}else if(p.crouch)index=9;else if(Math.abs(p.vx)>.25)index=Math.floor((((p.ginga%176)+176)%176)/22);drawMysteryFrame(ctx,p,index);}
 function drawMysteryFrame(c,p,index){if(!mysteryImage.complete||!mysteryImage.naturalWidth)return;const r=mysteryData.rects[index],f=295/mysteryData.referenceHeight;c.save();c.translate(p.x,590-p.y);c.scale(p.dir,1);c.drawImage(mysteryImage,...r,-160*f,-300*f,320*f,320*f);c.restore();}
 function drawSkullStudio(){if(skullStudioImage.complete&&skullStudioImage.naturalWidth)ctx.drawImage(skullStudioImage,0,0,W,H);ctx.save();ctx.fillStyle='rgba(255,205,85,'+(.025+.015*Math.sin(tick*.023))+')';ctx.fillRect(0,0,W,H);for(let i=0;i<12;i++){ctx.fillStyle='#e8c96b55';ctx.beginPath();ctx.arc((i*113+Math.sin(tick*.01+i)*9)%W,120+(i*43+tick*.13)%400,1.3,0,7);ctx.fill()}ctx.restore();}
-const finalComic=document.createElement('img');finalComic.id='finalcomic';finalComic.src='final-boss-comic-v26.webp';finalComic.alt='One final opponent remains. The mystery man says: You have defeated my fighters. Now face me. Final battle: the mystery man.';finalComic.style.cssText='width:100%;max-height:48vh;object-fit:contain;display:none';$('#story').append(finalComic);
-function configureFinalComic(final){finalComic.style.display=final?'block':'none';$('#story .comic-grid').style.display=final?'none':'';if(final){storyTime=arcadeAutoplay?420:Infinity;$('#story .story-controls span').textContent='FINAL BOSS · PRESS A WHEN READY';$('#story').insertBefore(finalComic,$('#story .story-controls'));}else $('#story .story-controls span').textContent='CONTINUES AUTOMATICALLY · START PAUSES';}
 let arcadeScore,scoreToast=null,firstHitClaimed=false,roundRewarded=false;
 let rankStore={characters:{},boards:[]};try{const saved=JSON.parse(localStorage.getItem('roda-ranks-v1')||'null');if(saved&&typeof saved.characters==='object'&&Array.isArray(saved.boards))rankStore=saved;}catch(e){}
 function resetArcadeScore(){scoreToast=null;arcadeScore={total:0,hits:0,firsts:0,combo:0,rounds:0,perfect:0,clear:0,maxCombo:0,completed:false,saved:false,rankApplied:false};}
@@ -498,7 +489,7 @@ $('#savescore').onclick=saveArcadeName;$('#watchending').onclick=()=>openComicEn
 const confirmPlayable=confirmPick;confirmPick=function(){if(!playableIds.includes(pick))return;confirmPlayable()};$('#confirm').onclick=confirmPick;
 
 const gingaStanceHeights={"0": 201, "1": 193, "2": 189, "3": 188, "4": 185, "5": 197, "6": 200, "7": 199, "8": 197, "9": 186, "10": 219, "11": 204, "12": 198, "13": 189, "14": 163};
-const combatData={"14": {"src": "mestre-complete-v27.webp", "referenceHeight": 147, "stanceHeight": 139}, "15": {"src": "mystery-complete-v27.webp", "referenceHeight": 151, "stanceHeight": 129}};
+const combatData={"14": {"src": "mestre-complete-v27.webp", "referenceHeight": 147, "stanceHeight": 139}};
 const flipData={"7": {"src": "flip-7-v27.webp", "referenceHeight": 205, "stanceHeight": 178}, "9": {"src": "flip-9-v27.webp", "referenceHeight": 212, "stanceHeight": 204}, "2": {"src": "flip-2-v27.webp", "referenceHeight": 212, "stanceHeight": 195}, "14": {"src": "flip-14-v27.webp", "referenceHeight": 226, "stanceHeight": 201}};
 // A single full-body sheet covers all Mestre and Mystery Man states.
 const combatImages=Object.fromEntries(Object.entries(combatData).map(([id,d])=>{const im=new Image();im.src=d.src;return[id,im]}));
@@ -534,6 +525,6 @@ $('#entermenu').onclick=()=>{scene='menu';show('menu');initAudio();setStageMusic
 // The school page shares this runtime, so its older shell receives current labels.
 const versionLabel=document.querySelector('.intro .eyebrow');if(versionLabel)versionLabel.textContent='LOCAL ARCADE FIGHTING / CLASSIC + SIX';
 const reviewLink=document.querySelector('.review-entry a');if(reviewLink)reviewLink.textContent='WATCH THE ACTUAL GAME ANIMATIONS · BUILD 2.7 →';
-const arenaHeading=document.querySelector('.soundtrack h3');if(arenaHeading)arenaHeading.textContent='29 ARENAS. A WORLD OF RHYTHM.';
+const arenaHeading=document.querySelector('.soundtrack h3');if(arenaHeading)arenaHeading.textContent='28 ARENAS. A WORLD OF RHYTHM.';
 const menuTag=document.querySelector('.menupanel .tag');if(menuTag)menuTag.textContent='PLAY OR WATCH';
-const mestreNote=document.querySelector('.under p.small');if(mestreNote)mestreNote.textContent='Hold away to cartwheel. Meilin rolls in either direction. Meilin and Dalva have four-kick chains. In Arcade, the studio challenges the Mystery Man. His three hired fighters face Mestre Maré.';
+const mestreNote=document.querySelector('.under p.small');if(mestreNote)mestreNote.textContent='Aisha controls the mirror that connects the two studios. Beat her in Salvador, 2323, to reopen it. Play as Aisha to challenge Mestre Maré for control of the roda.';

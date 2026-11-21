@@ -1,13 +1,13 @@
 // The boss keeps his saved ID. Display order is shared by cards and controller input.
 const playableIds = [...Array(15).keys(),16,17,18,19,20,21];
-const homeArena=[0,5,8,4,3,6,9,19,7,2,15,27,17,10,18,21,22,23,24,25,26,28];
+const homeArena=[0,5,8,4,3,6,9,19,7,2,15,26,17,10,18,0,21,22,23,24,25,27];
 const newPlayers = [
   ['Tainá Reis','Salvador, Bahia','Patient sweeping counters','#227c77','The rhythm gave me time.',.98],
   ['Luzia Santos','Recife, Pernambuco','Fast combinations from close range','#bb5438','There was my opening.',1.07],
   ['Dalva Brito','Recôncavo da Bahia, Bahia','Low entries and turning kicks','#555688','I heard the change in the beat.',1.11],
   ['Neide Cruz','Belo Horizonte, Minas Gerais','Compact footwork and quick returns','#dda436','There is always another answer.',.94],
   ['Marília Nascimento','Rio de Janeiro, Rio de Janeiro','Measured pressure and lateral kicks','#884b79','I saved that turn for the last exchange.',1.12],
-  ['Aisha','Salvador, Bahia','Sentinel of 2323 · Inverted kicks','#39d8d1','My reflection never made me work for that opening.',1.0]
+  ['Aisha','Salvador, Bahia','Keeper of the mirror · Inverted kicks','#39d8d1','My reflection never made me work for that opening.',1.0]
 ];
 const costumeRoot = new URL('.',document.currentScript.src);
 const costumes = rodaRigs.map((_,id) => {
