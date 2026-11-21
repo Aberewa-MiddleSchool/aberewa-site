@@ -199,7 +199,18 @@ function drawFighter(p){
  const t=fighterTraits[p.id],h=visualHeight(p.id);ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(p.id<16?h*t.build:1,p.id<16?h:1);ctx.translate(-p.x,-(590-p.y));
  if(p.flash>0)ctx.filter='brightness(1.32)';
  if((p.attack>=4||p.id===15)&&p.attack!==null){ctx.shadowColor=t.accent;ctx.shadowBlur=28;ctx.filter='brightness(1.2)';}
- drawFighterBody(p,t);ctx.restore();
+ // Meilin rolls; Dalva and Aisha cartwheel. Everyone else hops on its own renderer.
+ const authoredTravel=[7,18,21].includes(p.id);
+ const hopping=!authoredTravel&&p.hp>0&&!p.down&&!p.stun&&p.attack===null&&p.y===0&&
+   !p.crouch&&!p.takeoff&&!p.landing&&!endWait&&Math.abs(p.walk)>.05&&Math.abs(p.vx)>.1;
+ if(hopping){
+   const phase=((Math.abs(p.ginga)%56)+56)%56;
+   const lift=Math.sin(Math.PI*phase/56)*19;
+   const lean=-Math.sign(p.vx)*.035;
+   ctx.save();ctx.translate(p.x,590-p.y-lift);ctx.rotate(lean);ctx.translate(-p.x,-(590-p.y));
+   drawFighterBody(p,t);ctx.restore();
+ }else drawFighterBody(p,t);
+ ctx.restore();
  if(p.block&&p.attack===null&&p.stun<=0&&p.down<=0)drawGuardEffect(p);
  if(p.combo>=2&&p.comboTimer>0){text(p.combo+' HIT',p.x,205,34,'#ffdb6e','center');text('COMBINATION',p.x,225,12,'#eee6c8','center')}
 }
@@ -214,11 +225,10 @@ function drawGuardEffect(p){
 }
 function drawFighterBody(p,t){
  if(window.drawCastState && drawCastState(ctx,p,p.x,590-p.y,1))return;
- if(p.hp>0 && !p.down && !p.stun && p.attack===null && !p.y && !p.crouch &&
-    !p.takeoff && !p.landing && Math.abs(p.walk)>.05 && Math.abs(p.vx)>.1 && !endWait){
-   drawTravelStep(p);
-   return;
- }
+ // Fighters with a complete identity atlas stay on that atlas for idle,
+ // travel, attacks, blocks, reactions, jumps, and falls. This prevents a
+ // character from changing costume or proportions between render systems.
+ if(redesignData[p.id]){drawRedesignedFighter(p);return}
  if(p.id>=16){
    paintFighter(ctx,{...p,victory:p.victory || (endWait>0 && players[matchWinner]===p)},p.x,590-p.y,1.49);
    return;
@@ -227,7 +237,6 @@ function drawFighterBody(p,t){
  if(p.id===15){drawMystery(p);return}
  if(p.hp<=0){drawDefeat(p);return}
  if(p.down<=0&&p.stun<=0&&p.attack===null&&p.y===0&&!p.crouch&&!p.block&&p.takeoff<=0&&p.landing<=0){drawGinga(p);return}
- if(redesignData[p.id]){drawRedesignedFighter(p);return}
  if(p.hp<=0||p.down>0){let age=tick-p.hitAt;if(p.reaction===4&&age<10){drawHighHit(p);return}extraSprite(p,p.hp<=0?(age<8?0:2):age<8?0:p.down<14?3:2,p.x,ground);return}
  if(p.stun>0&&!p.guardStun){if(p.reaction===4)drawHighHit(p);else extraSprite(p,p.reaction,p.x,ground);return}
  if(p.attack!==null){drawAttack(p,t);return}
@@ -307,7 +316,7 @@ function drawAttack(p,t){
  ctx.stroke();ctx.restore();
 }
 
-function hud(){if(mode==='solo'){text('SCORE '+arcadeScore.total.toLocaleString(),640,26,20,'#ffdb6e','center');if(scoreToast&&tick<scoreToast.until)text(scoreToast.text,640,174,20,'#ffdb6e','center');}players.forEach((p,i)=>{let x=i?770:65;let right=i===1;text(roster[p.id][0].toUpperCase(),right?1215:65,46,30,'#fff0cc',right?'right':'left');text(i===0?'PLAYER 1':mode==='local'?'PLAYER 2':mode==='training'?'TRAINING DUMMY':`CPU · ${difficulty.toUpperCase()}`,right?1215:65,65,12,'#d3d6b5',right?'right':'left');rect(x,78,445,27,'#141f18');rect(x+3,81,439,21,'#6c392c');let w=439*p.hp/p.maxHp;rect(right?x+442-w:x+3,81,w,21,p.hp>30?'#e7c45d':'#e15d3b');for(let j=0;j<roundLimit;j++){ctx.fillStyle=j<wins[i]?'#f6d76e':'#72715a';ctx.beginPath();ctx.arc(right?1204-j*21:76+j*21,121,5,0,7);ctx.fill()}rect(x,601,445,12,'#15231c');rect(right?x+445-p.meter*4.45:x,601,p.meter*4.45,12,i?'#72bbc0':'#f1c457');text('AXÉ '+Math.floor(p.meter)+' / 100',right?1215:65,637,13,'#e5d8b0',right?'right':'left');text(p.moveText,right?1215:65,581,16,'#fff1ca',right?'right':'left')});text(mode==='training'?'∞':suddenDeath?'1 HIT':String(round),640,100,suddenDeath?36:70,'#fff0c7','center');text(mode==='training'?'PRACTICE':suddenDeath?'FINAL RODA':`BEST OF ${roundLimit}`,640,124,12,'#e4dcb5','center');text(stageNames[activeStage]+' · BRASIL',640,650,13,'#fff5dd','center');if(mode==='training'){rect(28,156,260,217,'#15251ce8');text('MOVEMENT LAB',43,181,20,'#f3cf68');characterMoves[players[0].id].forEach((m,i)=>text(m.button+'  '+(m.signature||m.name),43,208+i*25,15,'#efe9d1'));text('SIX ATTACK BUTTONS',43,380,12,'#ffe08a');text('VIEW: DUMMY '+['STAND','GUARD','LOW GUARD'][trainingDummy],43,395,14,'#ffe08a');text('LT: RESET · RT: NEXT ARENA',43,415,14,'#ffe08a');text((fighterPlans[players[0].id]||fighterTraits[players[0].id].style).toUpperCase(),640,160,16,'#ffe08a','center');if(players[0].attack!==null)text(moveFor(players[0],players[0].attack).name,640,188,17,'#fff1cc','center');inputs.forEach((h,i)=>text(h.text,1240,180+i*25,15,i===0?'#ffdc76':'#f1ead3','right'))}}
+function hud(){if(mode==='solo'){text('SCORE '+arcadeScore.total.toLocaleString(),640,26,20,'#ffdb6e','center');if(scoreToast&&tick<scoreToast.until)text(scoreToast.text,640,174,20,'#ffdb6e','center');}players.forEach((p,i)=>{let x=i?770:65;let right=i===1;text(roster[p.id][0].toUpperCase(),right?1215:65,46,30,'#fff0cc',right?'right':'left');text(i===0?'PLAYER 1':mode==='local'?'PLAYER 2':mode==='training'?'TRAINING DUMMY':`CPU · ${difficulty.toUpperCase()}`,right?1215:65,65,12,'#d3d6b5',right?'right':'left');rect(x,78,445,27,'#141f18');rect(x+3,81,439,21,'#6c392c');let w=439*p.hp/p.maxHp;rect(right?x+442-w:x+3,81,w,21,p.hp>30?'#e7c45d':'#e15d3b');for(let j=0;j<roundLimit;j++){ctx.fillStyle=j<wins[i]?'#f6d76e':'#72715a';ctx.beginPath();ctx.arc(right?1204-j*21:76+j*21,121,5,0,7);ctx.fill()}rect(x,601,445,12,'#15231c');rect(right?x+445-p.meter*4.45:x,601,p.meter*4.45,12,i?'#72bbc0':'#f1c457');text('AXÉ '+Math.floor(p.meter)+' / 100',right?1215:65,637,13,'#e5d8b0',right?'right':'left');text(p.moveText,right?1215:65,581,16,'#fff1ca',right?'right':'left')});text(mode==='training'?'∞':suddenDeath?'1 HIT':String(round),640,100,suddenDeath?36:70,'#fff0c7','center');text(mode==='training'?'PRACTICE':suddenDeath?'FINAL RODA':`BEST OF ${roundLimit}`,640,124,12,'#e4dcb5','center');text(stageNames[activeStage]+' · BRASIL',640,650,13,'#fff5dd','center');if(mode==='training'){rect(28,156,300,284,'#15251ce8');text('MOVEMENT LAB',43,181,20,'#f3cf68');characterMoves[players[0].id].forEach((m,i)=>{const compact=(m.signature||m.name).split(' → ').map(name=>name.split(' ')[0]).join(' → ');text(m.button+' · '+compact.slice(0,34),43,208+i*21,11,'#efe9d1')});text('SIX ATTACK BUTTONS',43,380,12,'#ffe08a');text('VIEW: DUMMY '+['STAND','GUARD','LOW GUARD'][trainingDummy],43,395,14,'#ffe08a');text('LT: RESET · RT: NEXT ARENA',43,415,14,'#ffe08a');if(players[0].attack!==null)text(moveFor(players[0],players[0].attack).name,640,188,17,'#fff1cc','center')}}
 function render(dt){watchExit.hidden=!['fight','pause','result','story'].includes(scene)||!(mode==='watch'||arcadeAutoplay);ctx.save();if(shake>0&&scene==='fight'){ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);shake=Math.max(0,shake-dt)}drawArena();drawRoda();if(players.length&&['fight','pause'].includes(scene)){players.forEach(drawFighter);particles=particles.filter(p=>p.life>0);for(let p of particles){if(scene==='fight'){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}ctx.globalAlpha=clamp(p.life/25,0,1);rect(p.x,p.y,5,5,p.color);ctx.globalAlpha=1}hud();if(announceTime>0){drawAnnouncement()}}ctx.restore()}
 let uiTick=0;let accumulator=0;function frame(now){if(typeof animationReview==='function'){animationReview(now);requestAnimationFrame(frame);return}let elapsed=Math.min(100,Math.max(0,now-last||16.6667));last=now;accumulator+=elapsed;while(accumulator>=16.6667){uiTick++;let states=pollPads();if(scene!=='pause'&&freeze<=0)tick++;update(1,states);accumulator-=16.6667}render(1);requestAnimationFrame(frame)}
 window.addEventListener('blur',()=>{if((scene==='fight'||scene==='result'||scene==='story'))togglePause('Game paused while the window is inactive.')});document.addEventListener('visibilitychange',()=>{if(document.hidden&&(scene==='fight'||scene==='result'||scene==='story'))togglePause('Game paused while the page is hidden.')});

@@ -36,7 +36,9 @@ updateFighter=function(p,op,input,dt){
   const available=p.hp>0 && !p.down && !p.stun && p.attack===null &&
     !p.y && !p.takeoff && !p.landing && Math.abs(input?.y||0)<.5;
   if(!available)p.tumble=null;
-  if(available && !p.tumble && Math.abs(axis)>.4 && (axis*facing<0 || p.id===18 || p.id===21)){
+  // Meilin uses her own directional rolls; Dalva and Aisha use authored
+  // cartwheels. The other fighters use the shared directional hop overlay.
+  if(available && !p.tumble && Math.abs(axis)>.4 && (p.id===18 || p.id===21)){
     p.tumble={axis:Math.sign(axis),elapsed:0,duration:30};
   }
   if(p.tumble){
@@ -97,24 +99,6 @@ function shirtFrame(p){
   return 0;
 }
 
-// Comic anticipation and recovery are cosmetic. The existing kick remains
-// visible throughout its contact window, including when a new chain starts.
-function drawShirtFighter(g,p,x,y,zoom){
-  const cell=shirtFrame(p);
-  const acting=castImage('henchmen-acting');
-  if(p.attack!=null && !p.victory && p.hp>0 && !p.down && !p.stun &&
-     !p.y && !p.attackCrouched && !(endWait>0 && players[matchWinner]===p) && acting.naturalWidth){
-    const m=moveFor(p,p.attack), recovery=p.at-m.start-m.active;
-    let pose=-1;
-    if(p.at<m.start)pose=p.at*2<m.start?0:1;
-    else if(recovery>=0)pose=recovery*2<m.end?2:3;
-    if(pose>=0){
-      studioFrame(g,'henchmen-acting',(p.id-11)*4+pose,x,y,zoom,p.dir);
-      return;
-    }
-  }
-  studioFrame(g,shirtSheets[p.id-11],cell,x,y,zoom,p.dir);
-}
 
 // The sheet and cell identify the illustrated contact for each variation.
 const mareChains=[
@@ -182,7 +166,7 @@ function drawCastState(g,p,x,y,zoom) {
   if(p.id===21){studioFrame(g,'aisha',aishaFrame(p),x,y,zoom,p.dir);return true;}
   if(p.id===7){Meilin.draw(g,p,x,y,zoom);return true;}
   const id=p.id,special=id===18;
-  if(id>=11 && id<=13){drawShirtFighter(g,p,x,y,zoom);return true;}
+  if(id>=11 && id<=13){studioFrame(g,shirtSheets[id-11],shirtFrame(p),x,y,zoom,p.dir);return true;}
   if(id===14 && mareFrame(g,p,x,y,zoom))return true;
   let name='motion-'+id, cell,cols=6,angle=0;
   const age=Math.max(0,tick-(p.hitAt??tick));
@@ -291,7 +275,7 @@ function prepareCastBout(ids){
   for(const id of ids){
     if(id===21){castImage('aisha');continue;}
     if(id===7)continue;
-    if(id>=11 && id<=13){castImage(shirtSheets[id-11]);castImage('henchmen-acting');continue;}
+    if(id>=11 && id<=13){castImage(shirtSheets[id-11]);continue;}
     if(id===14){castImage('mare0');castImage('mare1');if(window.rodaAlternateOutfit(14)){castImage('mare0-alt');castImage('mare1-alt');}}
     castImage('motion-'+id);
     if(id===18)castImage('attack-'+id);

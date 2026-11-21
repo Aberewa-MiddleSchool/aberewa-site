@@ -23,7 +23,6 @@ const storyChapters=[
 ['THE MAN BEHIND THE THREAT','The grey-and-gold skull studio','You have defeated the hired challengers. One opponent remains: the mystery man himself. Enter his grey-and-gold studio and face him inside the skull-marked roda.','“You have defeated my fighters. Now face me.” Every attack is a three-hit power combination. Defeat him to complete Arcade mode.',14,2]
 ];
 let storyTime=0,storyEnding=false;
-let sentinelPanel=0;
 const sentinelCaptions=[
   'Nestor steps aside. As the champion passes the skull-marked door, a berimbau sounds twice from the opposite wall.',
   'A turquoise line lights up the floor. Somewhere in Salvador, in 2323, Aisha hears her own two notes come back.',
@@ -33,13 +32,17 @@ const sentinelCaptions=[
   'The champion steps onto the maple floor. Aisha plants one foot behind her. “I’ve practiced with my reflection long enough. Let’s see what I miss when the other player has a mind of their own.”'
 ];
 function paintSentinelPanel(){
- const p=sentinelPanel,art=$('#sentinel-art');
- art.style.backgroundPosition=(p%3*50)+'% '+(Math.floor(p/3)*100)+'%';
- $('#sentinel-caption').textContent=(chosen[0]===21||chosen[1]===21) && p===3
-   ? 'Aisha meets her own eyes in the glass. “You crossed into 2026. I’m the reflection you used to practice with. Today I get to choose my own steps.”'
-   : sentinelCaptions[p];
- $('#storychapter').textContent='THE SENTINEL · PANEL '+(p+1)+' / 6';
- $('#storyadvance').textContent=p===5?'A · FACE AISHA':'A · NEXT PANEL';
+ const fromAisha=chosen.includes(21)&&(mode!=='solo'||arcadeIndex===0);
+ sentinelCaptions.forEach((caption,index)=>{
+   const art=$('#sentinel-art-'+(index+1));
+   art.style.backgroundPosition=`${(index%3)*50}% ${Math.floor(index/3)*100}%`;
+   const text=fromAisha&&index===3
+     ? 'Aisha meets her own eyes in the glass. “You crossed into 2026. I’m the reflection you used to practice with. Today I choose my own steps.”'
+     : caption;
+   $('#sentinel-caption-'+(index+1)).textContent=text;
+ });
+ $('#storychapter').textContent='THE SENTINEL · SIX-PANEL COMIC';
+ $('#storyadvance').textContent='A · FACE AISHA';
  $('#story .story-controls span').textContent=arcadeAutoplay?'WATCH ARCADE':'READ AT YOUR OWN PACE';
  storyTime=arcadeAutoplay?300:Infinity;
 }
@@ -110,11 +113,11 @@ function openStory(ending=false){if(ending){openComicEnding();return}storyEnding
  const sentinel=arcadeOrder[arcadeIndex]===21||(chosen.includes(21)&&(mode!=='solo'||arcadeIndex===0));
  $('#sentinel-strip').hidden=!sentinel;
  $('#story .comic-grid').style.display=sentinel?'none':'';
- if(sentinel)sentinelPanel=0;
+ $('#story').classList.toggle('sentinel-mode',sentinel);
  if(isEnforcer(chosen[0]))$('#storychapter').textContent='CONTRACT · '+(arcadeIndex+1)+' / '+arcadeOrder.length;
  $('#storyadvance').textContent=isEnforcer(chosen[0])&&arcadeIndex===arcadeOrder.length-1?'A · FACE MESTRE MARÉ':ending?'A · RETURN TO TITLE':arcadeOrder[arcadeIndex]===15?'A · FIGHT THE MYSTERY MAN':'A · ENTER THE RODA';$('#sessionlabel').textContent=ending?'THE STUDIO SURVIVES':`STORY · CHAPTER ${arcadeIndex+1} / ${arcadeOrder.length}`;setStageMusic(ending?0:activeStage);if(sentinel)paintSentinelPanel();
 }
-function advanceStory(){if(!storyEnding&&(arcadeOrder[arcadeIndex]===21||(chosen.includes(21)&&(mode!=='solo'||arcadeIndex===0)))&&sentinelPanel<5){sentinelPanel++;paintSentinelPanel();return}if(storyEnding){advanceComicEnding();return}if(meetsDalva()){openDalvaComic();return}scene='fight';show(null);roundIntro=true;introDuration=round===1?270:120;announceTime=introDuration;announcement=round===1?'ENTER THE RODA':roundLabel();}
+function advanceStory(){if(storyEnding){advanceComicEnding();return}if(meetsDalva()){openDalvaComic();return}scene='fight';show(null);roundIntro=true;introDuration=round===1?270:120;announceTime=introDuration;announcement=round===1?'ENTER THE RODA':roundLabel();}
 
 let comicPage=0;
 const endingCaptions=[
