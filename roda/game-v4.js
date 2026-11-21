@@ -66,7 +66,7 @@ function show(id){
  }
  ['title','menu','select','pause','setup','result','story','ending','score','dalvacomic','winners'].forEach(n=>$('#'+n)?.classList.toggle('hidden',n!==id))}
 let rodaGamepadError='';
-function isLogitechPad(p){return !!p&&/logitech|046d|f310|f510|f710|rumblepad|dual action|precision gamepad/i.test(p.id||'')}
+function isLogitechPad(p){if(!p)return false;const id=p.id||'';return /logitech|046d|f310|f510|f710|rumblepad|dual action|precision gamepad/i.test(id)||(/xinput|x-box|xbox|045e/i.test(id)&&p.mapping==='standard') }
 function connected(){try{rodaGamepadError='';if(typeof navigator.getGamepads!=='function'){rodaGamepadError='Gamepad API unavailable';return []}return [...(navigator.getGamepads()||[])].filter(p=>p&&p.connected!==false&&isLogitechPad(p))}catch(e){rodaGamepadError=e?.message||'Gamepad access blocked';return []}}
 window.addEventListener('gamepadconnected',e=>{if(!isLogitechPad(e.gamepad))return;prevPads={};const el=document.querySelector('#connection');if(el)el.textContent='● LOGITECH CONTROLLER CONNECTED · '+e.gamepad.id;});
 window.addEventListener('gamepaddisconnected',()=>{prevPads={};});
