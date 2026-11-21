@@ -9,25 +9,22 @@ function castImage(name) {
   }
   return castImages.get(name);
 }
-const cardUrl = id => new URL('card-' + id + '.webp', castRoot).href;
-const castKickRows = [
-  ['frente','bencao','chapa','martelo'], ['rasteira','chapa','costas','rasteira'],
-  ['frente','martelo','frente','bencao'], ['costas','rasteira','martelo','costas'],
-  ['chapa','bencao','martelo','chapa'], ['au','frente','costas','rasteira']
+const outfitKey='roda-alternate-outfits-v1';
+const alternateOutfits=(()=>{try{return new Set(JSON.parse(localStorage.getItem(outfitKey)||'[]').map(Number));}catch{return new Set();}})();
+window.rodaAlternateOutfit=id=>alternateOutfits.has(Number(id));
+const cardUrl = id => new URL('card-' + id + (window.rodaAlternateOutfit(id)?'-alt':'') + '.webp', castRoot).href;
+const dalvaChains=[
+  ['bencao','rasteira'],['frente','chapa'],['costas','bencao'],['chapa','martelo'],
+  ['au','rasteira','frente'],['costas','au','chapa']
 ];
-{
-  const id=18;
-  characterMoves[id] = characterMoves[id].map((old, slot) => {
-    const duration = 14 + slot % 3;
-    const phases = castKickRows[slot].map((key,index) => ({
-      ...techniqueBook[key],key,frames:duration,range:old.range*techniqueBook[key].reach,
-      damage:4.2*(1+slot*.08),rank:old.rank,
-      push:index===3?4:0,knockdown:index===3 && slot>=3
-    }));
-    const name=phases.map(p=>p.name).join(' → ');
-    return {...old,name,signature:name,start:9+slot,active:duration*4,end:13+slot,phases};
-  });
-}
+characterMoves[18]=characterMoves[18].map((old,slot)=>{
+  const keys=dalvaChains[slot],frames=18,total=old.phases.reduce((sum,p)=>sum+p.damage,0);
+  const phases=keys.map((key,index)=>({...techniqueBook[key],key,frames,range:old.range*techniqueBook[key].reach,
+    damage:total/keys.length,rank:old.rank,travel:0,contactStart:6,contactEnd:14,
+    push:index===keys.length-1?4:0,knockdown:index===keys.length-1&&(slot>=4||key==='rasteira')}));
+  const name=phases.map(p=>p.name).join(' → ');
+  return {...old,name,signature:name,start:9,active:frames*keys.length,end:13,phases};
+});
 
 // An aú or roll completes its travel even when the direction is tapped.
 // Hitstun, jump, crouch and a new attack may interrupt it immediately.
@@ -39,7 +36,7 @@ updateFighter=function(p,op,input,dt){
   const available=p.hp>0 && !p.down && !p.stun && p.attack===null &&
     !p.y && !p.takeoff && !p.landing && Math.abs(input?.y||0)<.5;
   if(!available)p.tumble=null;
-  if(available && !p.tumble && Math.abs(axis)>.4 && (axis*facing<0 || p.id===21)){
+  if(available && !p.tumble && Math.abs(axis)>.4 && (axis*facing<0 || p.id===18 || p.id===21)){
     p.tumble={axis:Math.sign(axis),elapsed:0,duration:30};
   }
   if(p.tumble){
@@ -83,6 +80,7 @@ function shirtFrame(p){
   const age=Math.max(0,tick-(p.hitAt??tick));
   if(p.victory||(!p.preview&&endWait>0&&players[matchWinner]===p))return 15;
   if(p.down>0||p.hp<=0)return p.hp>0&&p.down<7?3:age<6?12:age<14?13:14;
+  if(p.block)return p.crouch?3:2;
   if(p.stun>0&&!p.guardStun)return 12;
   if(p.attack!=null){
     const m=moveFor(p,p.attack);
@@ -140,8 +138,10 @@ function mareFrame(g,p,x,y,zoom){
   if(p.victory||(!p.preview&&endWait>0&&players[matchWinner]===p)||p.hp<=0||p.down>0||
      p.stun>0||p.tumble||p.takeoff>0||p.landing>0||p.y>0||p.crouch&&p.attack==null)return false;
   if(p.attack==null&&Math.abs(p.vx)>.1)return false;
-  const sheet=p.attack>=3?'mare1':'mare0';
-  let cell=3;
+  const baseSheet=p.attack>=3?'mare1':'mare0';
+  const selectedSheet=baseSheet+(window.rodaAlternateOutfit(14)?'-alt':'');
+  const sheet=castImage(selectedSheet).naturalWidth?selectedSheet:baseSheet;
+  let cell=p.block?(p.crouch?9:7):3;
   if(p.attack!=null){
     const m=moveFor(p,p.attack);
     if(p.at>=m.start&&p.at<m.start+m.active){
@@ -159,6 +159,7 @@ function aishaFrame(p){
   if(p.victory || (!p.preview && endWait>0 && players[matchWinner]===p))return 15;
   if(p.down>0 || p.hp<=0)return tick-p.hitAt<8?7:14;
   if(p.stun>0 && !p.guardStun)return 7;
+  if(p.block)return p.crouch?2:1;
   if(p.attack!=null){
     const m=moveFor(p,p.attack);
     if(p.at<m.start)return 2;
@@ -194,24 +195,30 @@ function drawCastState(g,p,x,y,zoom) {
     if(p.hp>0 && p.down<8)cell=9;
   }else if(p.stun>0 && !p.guardStun){
     cell=1;angle=(id%2?1:-1)*(.035+(id%4)*.015)*Math.sin(Math.min(1,age/18)*Math.PI);
+  }else if(p.block && special){
+    cell=p.crouch?9:0;
   }else if(p.attack!=null && special){
     const m=moveFor(p,p.attack);
-    const segments=id===18?6:4;
-    const progress=Math.max(0,Math.min(.999,(p.at-m.start)/m.active));
-    let index=id===18?Math.min(5,Math.floor(progress*6)):Math.floor(progress*4);
-    const local=progress*segments%1;
-    name='attack-'+id;cols=segments;
-    cell=p.attack*segments+index;
-    if(special && (local<.40 || p.at<m.start || p.at>=m.start+m.active))cell+=6*segments;
-    angle=.018*Math.sin(local*Math.PI*2);
+    const phase=attackPhase(m,p.at),segments=6/m.phases.length;
+    const local=Math.max(0,Math.min(.999,phase.phaseFrame/phase.frames));
+    const index=Math.min(5,phase.phase*Math.ceil(segments)+Math.floor(local*segments));
+    name='attack-'+id;cols=6;
+    cell=p.attack*6+index;
+    if(local<.28 || p.at<m.start || p.at>=m.start+m.active)cell+=36;
+    angle=.014*Math.sin(local*Math.PI*2);
   }else if(p.attack!=null){
     return false;
   }else if(p.y>0 || p.takeoff>0 || p.landing>0){
     cell=p.takeoff>0?6:p.landing>0?9:p.vy>4?7:p.vy< -4?8:4;
+  }else if(p.tumble && special){
+    const frame=Math.min(3,Math.floor(p.tumble.elapsed/p.tumble.duration*4));
+    const forward=p.tumble.axis*(p.dir||1)>0;
+    cell=(forward?[9,11,12,13]:[9,12,11,13])[frame];
   }else if(p.tumble){
     const frame=Math.min(3,Math.floor(p.tumble.elapsed/p.tumble.duration*4));
     cell=10+frame;
-
+  }else if(special){
+    cell=p.crouch?9:Math.abs(p.vx)>.1?[0,3,0,3][Math.floor(Math.abs(p.ginga)/14)%4]:0;
   }else return false;
   if(!castTile(g,name,cell,cols,x,y,zoom,p.dir,angle))castGuard(g,p,x,y,zoom);
   return true;
@@ -223,11 +230,23 @@ quickStage.onchange=()=>RODAStageBrowser.select(Number(quickStage.value));
 function refreshFighterCard(){
   const img=document.querySelector('#fullcard img'), home=profiles[pick].home;
   img.src=cardUrl(pick);img.alt=profiles[pick].name+' character portrait';
-  document.querySelector('#fullcard figcaption').textContent=profiles[pick].name+' · '+home+(pick===18?' · Born 1568':'');
+  document.querySelector('#fullcard figcaption').textContent=profiles[pick].name+' · '+home+(pick===18?' · Born 1568':'')+(window.rodaAlternateOutfit(pick)?' · Alternate outfit':'');
+  const wardrobe=document.getElementById('altcostume');
+  wardrobe.hidden=pick!==7&&pick!==14;
+  wardrobe.textContent=window.rodaAlternateOutfit(pick)?'OUTFIT: ALTERNATE · SWITCH (X)':'OUTFIT: ORIGINAL · SWITCH (X)';
+  document.querySelectorAll('.fightercard[data-fighter="7"] img,.fightercard[data-fighter="14"] img').forEach(image=>{
+    const id=Number(image.closest('.fightercard').dataset.fighter);image.src=cardUrl(id);
+  });
   quickStage.value=String(stageChoice);
   quickStage.parentElement.hidden=!['cpu','watch','local','training'].includes(mode);
 }
 refreshFighterCard();
+document.getElementById('altcostume').onclick=()=>{
+  if(pick!==7&&pick!==14)return;
+  if(alternateOutfits.has(pick))alternateOutfits.delete(pick);else alternateOutfits.add(pick);
+  try{localStorage.setItem(outfitKey,JSON.stringify([...alternateOutfits]));}catch{}
+  refreshFighterCard();
+};
 const winsByFighter=(()=>{
   try{return JSON.parse(localStorage.getItem('roda-winner-counts')||'{}')||{};}
   catch{return {};}
@@ -273,7 +292,7 @@ function prepareCastBout(ids){
     if(id===21){castImage('aisha');continue;}
     if(id===7)continue;
     if(id>=11 && id<=13){castImage(shirtSheets[id-11]);castImage('henchmen-acting');continue;}
-    if(id===14){castImage('mare0');castImage('mare1');}
+    if(id===14){castImage('mare0');castImage('mare1');if(window.rodaAlternateOutfit(14)){castImage('mare0-alt');castImage('mare1-alt');}}
     castImage('motion-'+id);
     if(id===18)castImage('attack-'+id);
   }

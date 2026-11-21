@@ -6,9 +6,10 @@ const Meilin = (() => {
     image.src=new URL(name+'.webp',root);
     return image;
   }
-  const movement=load('ginga-roll');
+  const movement=load('ginga-roll'),movementAlt=load('ginga-roll-alt');
   const pairs=['sole-sweep','crescent-hook','turn-ground'].map(load);
-  const spritesReady=Promise.allSettled([movement,...pairs].map(image=>image.decode()));
+  const pairsAlt=['sole-sweep','crescent-hook','turn-ground'].map(name=>load(name+'-alt'));
+  const spritesReady=Promise.allSettled([movement,movementAlt,...pairs,...pairsAlt].map(image=>image.decode()));
   const ease=t=>t*t*(3-2*t);
   const families=[
     [['bencao','Bênção baixa'],['bencao','Bênção curta'],['bencao','Bênção em avanço'],['bencao','Bênção longa']],
@@ -61,7 +62,8 @@ const Meilin = (() => {
   function draw(g,p,x,y,zoom){
     const won=p.victory || (!p.preview && endWait>0 && players[matchWinner]===p);
     const age=Math.max(0,tick-(p.hitAt??tick));
-    let sheet=movement,row=0,frame=0;
+    const alt=window.rodaAlternateOutfit?.(7)===true;
+    let sheet=alt&&movementAlt.naturalWidth?movementAlt:movement,row=0,frame=0;
     if(won){frame=3;}
     else if(p.down>0 || p.hp<=0){
       row=3;frame=p.hp>0 && p.down<9?1:Math.min(3,Math.floor(age/6));
@@ -76,12 +78,14 @@ const Meilin = (() => {
         const phase=attackPhase(move,p.at);
         const extended=phase.phaseFrame>=phase.contactStart && phase.phaseFrame<phase.contactEnd;
         const family=Math.floor(phase.pose/4);
-        const pair=pairs[Math.floor(family/2)];
+        const familyIndex=Math.floor(family/2);
+        const pair=alt&&pairsAlt[familyIndex].naturalWidth?pairsAlt[familyIndex]:pairs[familyIndex];
         if(pair.naturalWidth){
           sheet=pair;row=phase.pose%4;frame=(family%2)*2+Number(extended);
         }else frame=2;
       }
-    }else if(p.takeoff>0 || p.landing>0 || p.y>0){
+    }else if(p.block){frame=p.crouch?2:1;}
+    else if(p.takeoff>0 || p.landing>0 || p.y>0){
       row=2;frame=p.takeoff>0?0:p.landing>0?3:p.vy>4?1:2;
     }else if(p.tumble){
       row=1;frame=Math.min(3,Math.floor(4*p.tumble.elapsed/p.tumble.duration));
@@ -89,7 +93,9 @@ const Meilin = (() => {
     }else if(p.crouch){frame=2;}
     if(!sheet.naturalWidth)return;
     const scale=zoom*1.40;
-    g.save();g.translate(x,y);g.scale((p.dir||1)*scale,scale);
+    const breathing=!won&&p.attack==null&&!p.block&&!p.tumble&&!p.crouch&&p.hp>0&&p.down<=0
+      ?Math.sin(tick*.075)*1.2:0;
+    g.save();g.translate(x,y+breathing);g.scale((p.dir||1)*scale,scale);
     g.drawImage(sheet,256*frame,256*row,256,256,-128,-244,256,256);
     g.restore();
   }

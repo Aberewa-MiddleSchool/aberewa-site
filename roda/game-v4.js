@@ -64,7 +64,7 @@ function updatePick(){if(window.refreshFighterCard)refreshFighterCard();$('#aren
 function confirmPick(){let pads=connected();if(!pads.length&&mode!=='watch'&&!arcadeAutoplay){$('#picklabel').textContent='CONNECT A CONTROLLER • PRESS A BUTTON TO ACTIVATE';return}if(mode==='local'&&pads.length<2){$('#picklabel').textContent='LOCAL VERSUS REQUIRES TWO CONNECTED CONTROLLERS';return}chosen[pickStage]=pick;if(['local','cpu','watch'].includes(mode)&&pickStage===0){pickStage=1;pick=chosen[1];updatePick();return}if(mode==='solo')makeArcade();else if(mode==='training')chosen[1]=playableIds[(playableIds.indexOf(chosen[0])+5)%playableIds.length];wins=[0,0];round=1;suddenDeath=false;startBout(mode==='solo')}
 function fighter(id,x,dir){return{id,x,dir,y:0,vy:0,hp:id===15?140:id===14?110:100,maxHp:id===15?140:id===14?110:100,meter:100,attack:null,at:0,hit:false,stun:0,block:false,crouch:false,buffer:null,combo:0,comboTimer:0,flash:0,aiWait:60,moveText:'GINGA',walk:0,ginga:0,stepOffset:0,jumpHeld:false,jumpBuffer:0,takeoff:0,landing:0,vx:0,down:0,invuln:0,hitAt:-100,reaction:0,pushV:0,impactKind:'mid'}}
 function meetsDalva(){
- return chosen[1]===18 || (['local','watch'].includes(mode) && chosen[0]===18);
+ return chosen[1]===18 || (chosen[0]===18&&(mode!=='solo'||arcadeIndex===0));
 }
 function openDalvaComic(){
  scene='dalvacomic';
@@ -82,6 +82,7 @@ function startBout(withChapter){
  startRound();
  if(withChapter)openStory();
  else if(meetsDalva())openDalvaComic();
+ else if(chosen.some(id=>[11,12,13,21].includes(id)))openStory();
 }
 function startRound(){window.prepareCastBout?.(chosen);firstHitClaimed=false;roundRewarded=false;roundIntro=true;stopResultSound();if(typeof localMusic!=='undefined'&&localMusic)localMusic.volume=.32;$('#restart').textContent=mode==='solo'?'RESTART ARCADE RUN':'RESTART MATCH';$('#resume').classList.remove('hidden');activeStage=mode==='solo'?(arcadeArenaOverride??storyArena(arcadeIndex)):stageChoice;setStageMusic(activeStage);players=[fighter(chosen[0],390,1),fighter(chosen[1],890,-1)];if(suddenDeath)players.forEach(p=>{p.hp=1;p.maxHp=1});timer=Infinity;endWait=0;matchWinner=-1;matchOver=false;freeze=0;particles=[];inputs=[];scene='fight';show(null);announcement=mode==='training'?'TRAINING ROOM':round===1?'ENTER THE RODA':roundLabel();introDuration=mode==='training'?60:round===1?270:120;announceTime=introDuration;$('#sessionlabel').textContent=mode==='training'?'TRAINING • MOVEMENT LAB':`${mode==='local'?'LOCAL VERSUS':mode==='watch'?'CPU VS CPU / '+difficulty.toUpperCase():mode==='cpu'?'VS CPU / '+difficulty.toUpperCase():'ARCADE '+(arcadeIndex+1)+'/'+arcadeOrder.length+' / '+difficulty.toUpperCase()} • ${stageNames[activeStage]}`}
 function togglePause(reason){if(scene==='fight'||scene==='result'||scene==='story'){resumeScene=scene;scene='pause';pauseFocus=0;$('#pausetitle').textContent='PAUSED';$('#pausereason').textContent=reason||'Start to resume';show('pause');paintPause()}else if(scene==='pause'){if(!connected().length||(mode==='local'&&connected().length<2)){ $('#pausereason').textContent='Reconnect the required controller(s) to resume';return}scene=resumeScene;show(scene==='result'?'result':scene==='story'?(storyEnding?'ending':'story'):null)}}
@@ -107,7 +108,7 @@ let activeStage=0,stageChoice=0,arcadeArenaOverride=null;const arcadeStages=[0,5
 let navAt=0;
 function pollPads(){lastPads=connected();if(scene==='setup'){calibratePads(lastPads);return []}let states=lastPads.map(padState);$('#connection').textContent=lastPads.length?`● ${lastPads.length} CONTROLLER${lastPads.length>1?'S':''} CONNECTED`:'● CONNECT A CONTROLLER';$('#status').textContent=mode==='watch'||arcadeAutoplay?'CPU CONTROL · NO CONTROLLER REQUIRED':lastPads.length?'CONTROLLER READY':'AWAITING CONTROLLER';if(mode!=='watch'&&!arcadeAutoplay&&(scene==='fight'||scene==='result'||scene==='story')&&(!lastPads.length||(mode==='local'&&lastPads.length<2))){togglePause('Controller disconnected. Reconnect, then press Start.');return states}let s=(scene==='select'?states[pickStage]:states[0])||states[0];if(!s)return states;
 if(scene==='title'){if(s.edge[9]||s.edge[0]){scene='menu';show('menu');initAudio();setStageMusic(-1);sfx('start',2)}}else if(scene==='menu'){if(s.edge[11]){document.getElementById('open-winners')?.click();return states}if(uiTick>navAt&&(Math.abs(s.y)>.5||Math.abs(s.x)>.5)){if(Math.abs(s.y)>.5)setMode(['solo','local','training','cpu','watch','watcharcade'][(menuMode+(s.y>0?1:5))%6]);else setDifficulty(difficulty==='easy'?'normal':'easy');navAt=uiTick+15}if(s.edge[2])setDifficulty(difficulty==='easy'?'normal':'easy');if(s.edge[4])setRounds(roundChoices()[(roundChoices().indexOf(roundLimit)+roundChoices().length-1)%roundChoices().length]);if(s.edge[5])setRounds(roundChoices()[(roundChoices().indexOf(roundLimit)+1)%roundChoices().length]);if(s.edge[8])openSetup();else if(s.edge[0]||s.edge[9])choose()}
-else if(scene==='select'){if(mode!=='solo'&&(s.edge[6]||s.edge[7])){stageChoice=(stageChoice+(s.edge[7]?1:stageNames.length-1))%stageNames.length;activeStage=stageChoice;updatePick()}if(uiTick>navAt&&(Math.abs(s.x)>.5||Math.abs(s.y)>.5)){pick=selectOrder[(selectOrder.indexOf(pick)+(Math.abs(s.x)>.5?Math.sign(s.x):5*Math.sign(s.y))+selectOrder.length)%selectOrder.length];updatePick();navAt=uiTick+13}if(s.edge[0])confirmPick();if(s.edge[1]){if(pickStage){pickStage=0;pick=chosen[0];updatePick()}else{scene='menu';show('menu')}}}
+else if(scene==='select'){if(mode!=='solo'&&(s.edge[6]||s.edge[7])){stageChoice=(stageChoice+(s.edge[7]?1:stageNames.length-1))%stageNames.length;activeStage=stageChoice;updatePick()}if(uiTick>navAt&&(Math.abs(s.x)>.5||Math.abs(s.y)>.5)){pick=selectOrder[(selectOrder.indexOf(pick)+(Math.abs(s.x)>.5?Math.sign(s.x):5*Math.sign(s.y))+selectOrder.length)%selectOrder.length];updatePick();navAt=uiTick+13}if(s.edge[2]&&(pick===7||pick===14))document.getElementById('altcostume')?.click();if(s.edge[0])confirmPick();if(s.edge[1]){if(pickStage){pickStage=0;pick=chosen[0];updatePick()}else{scene='menu';show('menu')}}}
 else if(scene==='score'){if(s.edge[0])saveArcadeName();if(s.edge[1])openComicEnding();}
 else if(scene==='winners'){if(s.edge[1]||s.edge[9])returnToMenu()}
 else if(scene==='dalvacomic'){if(s.edge[0])finishDalvaComic()}
@@ -199,7 +200,17 @@ function drawFighter(p){
  if(p.flash>0)ctx.filter='brightness(1.32)';
  if((p.attack>=4||p.id===15)&&p.attack!==null){ctx.shadowColor=t.accent;ctx.shadowBlur=28;ctx.filter='brightness(1.2)';}
  drawFighterBody(p,t);ctx.restore();
+ if(p.block&&p.attack===null&&p.stun<=0&&p.down<=0)drawGuardEffect(p);
  if(p.combo>=2&&p.comboTimer>0){text(p.combo+' HIT',p.x,205,34,'#ffdb6e','center');text('COMBINATION',p.x,225,12,'#eee6c8','center')}
+}
+function drawGuardEffect(p){
+ const facing=p.dir||1,low=p.crouch,cx=p.x+facing*(low?18:28),cy=590-p.y-(low?77:184);
+ const radius=low?45:62,pulse=(Math.sin(tick*.34)+1)/2,start=facing>0?-1.18:Math.PI-1.18;
+ ctx.save();ctx.lineCap='round';ctx.globalAlpha=.34+pulse*.48;
+ ctx.strokeStyle='#92f2f5';ctx.lineWidth=5+pulse*2;ctx.beginPath();ctx.arc(cx,cy,radius,start,start+2.36);ctx.stroke();
+ ctx.globalAlpha=.55;ctx.strokeStyle='#fff2b6';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,radius-8,start+.08,start+2.22);ctx.stroke();
+ const angle=start+((tick%24)/24)*2.36;ctx.fillStyle='#eafcff';ctx.shadowColor='#8eefff';ctx.shadowBlur=15;ctx.beginPath();ctx.arc(cx+Math.cos(angle)*radius,cy+Math.sin(angle)*radius,4,0,Math.PI*2);ctx.fill();
+ ctx.restore();text(low?'LOW GUARD':'GUARD',p.x,cy-radius-12,12,'#c8fbff','center');
 }
 function drawFighterBody(p,t){
  if(window.drawCastState && drawCastState(ctx,p,p.x,590-p.y,1))return;
@@ -215,7 +226,7 @@ function drawFighterBody(p,t){
  let ground=590-p.y;if(flipData[p.id]&&p.attack===5&&!p.attackCrouched){drawVeteranFlip(p);return;}if(combatData[p.id]){drawCompleteFighter(p);return;}
  if(p.id===15){drawMystery(p);return}
  if(p.hp<=0){drawDefeat(p);return}
- if(p.down<=0&&p.stun<=0&&p.attack===null&&p.y===0&&!p.crouch&&p.takeoff<=0&&p.landing<=0){drawGinga(p);return}
+ if(p.down<=0&&p.stun<=0&&p.attack===null&&p.y===0&&!p.crouch&&!p.block&&p.takeoff<=0&&p.landing<=0){drawGinga(p);return}
  if(redesignData[p.id]){drawRedesignedFighter(p);return}
  if(p.hp<=0||p.down>0){let age=tick-p.hitAt;if(p.reaction===4&&age<10){drawHighHit(p);return}extraSprite(p,p.hp<=0?(age<8?0:2):age<8?0:p.down<14?3:2,p.x,ground);return}
  if(p.stun>0&&!p.guardStun){if(p.reaction===4)drawHighHit(p);else extraSprite(p,p.reaction,p.x,ground);return}

@@ -35,7 +35,7 @@ const sentinelCaptions=[
 function paintSentinelPanel(){
  const p=sentinelPanel,art=$('#sentinel-art');
  art.style.backgroundPosition=(p%3*50)+'% '+(Math.floor(p/3)*100)+'%';
- $('#sentinel-caption').textContent=chosen[0]===21 && p===3
+ $('#sentinel-caption').textContent=(chosen[0]===21||chosen[1]===21) && p===3
    ? 'Aisha meets her own eyes in the glass. “You crossed into 2026. I’m the reflection you used to practice with. Today I get to choose my own steps.”'
    : sentinelCaptions[p];
  $('#storychapter').textContent='THE SENTINEL · PANEL '+(p+1)+' / 6';
@@ -71,6 +71,10 @@ const guardEndings={
 };
 function guardChapter(){
  const id=chosen[0], opponent=arcadeOrder[arcadeIndex],name=profiles[id].name;
+ if(mode!=='solo'){
+   const hired=[chosen[1],chosen[0]].find(isEnforcer);
+   if(hired!=null)return storyChapters[16+hired-11];
+ }
  if(arcadeIndex===arcadeOrder.length-1)return ['THE FINAL CONTRACT','Natal · Municipal tournament arena',
    name+' has won the right to face Mestre Maré. The Mystery Man watches from his warehouse. His hired fighter must earn the final decision alone.',
    'Maré sets his feet. “Your employer has had his say. Now, let me see your game.”',11,2];
@@ -83,7 +87,9 @@ function guardChapter(){
    'The ring officials call both players. The result will go on the public tournament record.',id+1,8];
 }
 function openStory(ending=false){if(ending){openComicEnding();return}storyEnding=ending;scene='story';show('story');storyTime=ending?1500:1080;
- const chapter=ending?['THE DOORS STAY OPEN','Salvador · A new morning','Before the witnesses, the final result voids the stranger’s claim. His threat has failed. No fighter saved this place alone.','Mestre opens the doors. The women, their neighbours, and a new generation enter together. The unknown man vanishes—but the roda remains.',15,2]:isEnforcer(chosen[0])?guardChapter():storyChapters[arcadeIndex];
+ const hiredSelection=mode!=='solo'&&chosen.some(isEnforcer);
+ const sentinelSelection=mode!=='solo'&&chosen.includes(21);
+ const chapter=ending?['THE DOORS STAY OPEN','Salvador · A new morning','Before the witnesses, the final result voids the stranger’s claim. His threat has failed. No fighter saved this place alone.','Mestre opens the doors. The women, their neighbours, and a new generation enter together. The unknown man vanishes—but the roda remains.',15,2]:hiredSelection?guardChapter():sentinelSelection?storyChapters[19]:isEnforcer(chosen[0])?guardChapter():storyChapters[arcadeIndex];
  $('#storychapter').textContent=ending?'EPILOGUE · THE STUDIO SURVIVES':`CHAPTER ${arcadeIndex+1} / ${arcadeOrder.length} · ${arcadeIndex<16?'THE QUALIFIERS':arcadeIndex<arcadeOrder.length-1?'THE HIRED CHALLENGERS':'THE FINAL BOSS'}`;
  $('#storytitle').textContent=chapter[0];$('#storyplace').textContent=chapter[1];$('#storycopy1').textContent=chapter[2];$('#storycopy2').textContent=chapter[3];
  const cells=[chapter[4],chapter[5]];
@@ -96,17 +102,18 @@ function openStory(ending=false){if(ending){openComicEnding();return}storyEnding
  }else for(const art of [$('#storyart1'),$('#storyart2')]){
    art.style.backgroundImage='url("'+new URL('cast/chapters.webp',costumeRoot).href+'")';art.style.backgroundSize='400% 400%';
  }
- const opp=ending?chosen[0]:arcadeOrder[arcadeIndex];const canvas=$('#storyportrait');let card=$('#story-opponent-card');if(!card){card=new Image();card.id='story-opponent-card';canvas.after(card)}canvas.hidden=true;card.src=cardUrl(opp);card.alt=profiles[opp].name;$('#storyopponent').textContent=ending?profiles[chosen[0]].name+' · STUDIO CHAMPION':profiles[opp].name+' · NEXT OPPONENT';
+ const opp=ending?chosen[0]:mode==='solo'?arcadeOrder[arcadeIndex]:chosen[1];const canvas=$('#storyportrait');let card=$('#story-opponent-card');if(!card){card=new Image();card.id='story-opponent-card';canvas.after(card)}canvas.hidden=true;card.src=cardUrl(opp);card.alt=profiles[opp].name;$('#storyopponent').textContent=ending?profiles[chosen[0]].name+' · STUDIO CHAMPION':profiles[opp].name+' · NEXT OPPONENT';
  $('#storyrole').textContent=ending?'The victory belongs to the whole circle.':profiles[opp].home+' · '+fighterTraits[opp].style;
  if(!ending&&chosen[0]>=11 && chosen[0]<=14){$('#storyrole').textContent+=isEnforcer(chosen[0])?' · The hired fighter’s route':' · Mestre’s route';}
  configureFinalComic(!ending&&arcadeOrder[arcadeIndex]===15);
- const sentinel=arcadeOrder[arcadeIndex]===21;
+ const sentinel=arcadeOrder[arcadeIndex]===21||chosen[0]===21||chosen[1]===21;
  $('#sentinel-strip').hidden=!sentinel;
- if(sentinel){$('#story .comic-grid').style.display='none';sentinelPanel=0;}
+ $('#story .comic-grid').style.display=sentinel?'none':'';
+ if(sentinel)sentinelPanel=0;
  if(isEnforcer(chosen[0]))$('#storychapter').textContent='CONTRACT · '+(arcadeIndex+1)+' / '+arcadeOrder.length;
  $('#storyadvance').textContent=isEnforcer(chosen[0])&&arcadeIndex===arcadeOrder.length-1?'A · FACE MESTRE MARÉ':ending?'A · RETURN TO TITLE':arcadeOrder[arcadeIndex]===15?'A · FIGHT THE MYSTERY MAN':'A · ENTER THE RODA';$('#sessionlabel').textContent=ending?'THE STUDIO SURVIVES':`STORY · CHAPTER ${arcadeIndex+1} / ${arcadeOrder.length}`;setStageMusic(ending?0:activeStage);if(sentinel)paintSentinelPanel();
 }
-function advanceStory(){if(!storyEnding && arcadeOrder[arcadeIndex]===21 && sentinelPanel<5){sentinelPanel++;paintSentinelPanel();return}if(storyEnding){advanceComicEnding();return}if(meetsDalva()){openDalvaComic();return}scene='fight';show(null);roundIntro=true;introDuration=round===1?270:120;announceTime=introDuration;announcement=round===1?'ENTER THE RODA':roundLabel();}
+function advanceStory(){if(!storyEnding && (arcadeOrder[arcadeIndex]===21||chosen[0]===21||chosen[1]===21) && sentinelPanel<5){sentinelPanel++;paintSentinelPanel();return}if(storyEnding){advanceComicEnding();return}if(meetsDalva()){openDalvaComic();return}scene='fight';show(null);roundIntro=true;introDuration=round===1?270:120;announceTime=introDuration;announcement=round===1?'ENTER THE RODA':roundLabel();}
 
 let comicPage=0;
 const endingCaptions=[
