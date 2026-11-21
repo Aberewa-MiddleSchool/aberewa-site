@@ -66,21 +66,22 @@ function show(id){
  }
  ['title','menu','select','pause','setup','result','story','ending','score','dalvacomic','winners'].forEach(n=>$('#'+n)?.classList.toggle('hidden',n!==id))}
 let rodaGamepadError='';
-function connected(){try{rodaGamepadError='';return [...(navigator.getGamepads?.()||[])].filter(p=>p&&p.connected!==false)}catch(e){rodaGamepadError=e?.message||'Gamepad access blocked';return []}}
-window.addEventListener('gamepadconnected',e=>{prevPads={};document.querySelector('#connection').textContent='● LOGITECH CONTROLLER CONNECTED · '+e.gamepad.id;});
+function isLogitechPad(p){return !!p&&/logitech|046d|f310|f510|f710|rumblepad|dual action|precision gamepad/i.test(p.id||'')}
+function connected(){try{rodaGamepadError='';if(typeof navigator.getGamepads!=='function'){rodaGamepadError='Gamepad API unavailable';return []}return [...(navigator.getGamepads()||[])].filter(p=>p&&p.connected!==false&&isLogitechPad(p))}catch(e){rodaGamepadError=e?.message||'Gamepad access blocked';return []}}
+window.addEventListener('gamepadconnected',e=>{if(!isLogitechPad(e.gamepad))return;prevPads={};const el=document.querySelector('#connection');if(el)el.textContent='● LOGITECH CONTROLLER CONNECTED · '+e.gamepad.id;});
 window.addEventListener('gamepaddisconnected',()=>{prevPads={};});
-const xboxHelp=document.createElement('div');
-xboxHelp.id='logitech-diagnostics';xboxHelp.setAttribute('role','status');
-xboxHelp.style.cssText='font:600 13px system-ui,sans-serif;color:#f1d898;padding:8px 12px;text-align:center;max-width:760px;margin:6px auto';
-xboxHelp.textContent='Logitech controller: connect by USB, press a button, and use Controller Setup if button positions differ.';
-document.querySelector('#cabinet')?.after(xboxHelp);
+const logitechHelp=document.createElement('div');
+logitechHelp.id='logitech-diagnostics';logitechHelp.setAttribute('role','status');
+logitechHelp.style.cssText='font:600 13px system-ui,sans-serif;color:#f1d898;padding:8px 12px;text-align:center;max-width:760px;margin:6px auto';
+logitechHelp.textContent='Logitech controller: connect by USB, press a button, and use Controller Setup if button positions differ.';
+document.querySelector('#cabinet')?.after(logitechHelp);
 window.addEventListener('pointerdown',()=>{connected();},{passive:true});
 function updateLogitechDiagnostics(pads){
- if(!xboxHelp)return;
- if(rodaGamepadError){xboxHelp.textContent='Gamepad access blocked: '+rodaGamepadError;return;}
- if(!pads.length){xboxHelp.textContent='No controller detected by this browser. Connect your Logitech controller, press a button, then refresh. The browser must support the Gamepad API.';return;}
+ if(!logitechHelp)return;
+ if(rodaGamepadError){logitechHelp.textContent='Gamepad access blocked: '+rodaGamepadError;return;}
+ if(!pads.length){logitechHelp.textContent='Logitech controller required. Connect an F310/F710, press a button, then refresh. Other brands are not supported.';return;}
  const pad=pads[0],pressed=pad.buttons.findIndex(b=>b.pressed||b.value>.5);
- xboxHelp.textContent='Controller detected: '+pad.id+' · '+(pad.mapping==='standard'?'Standard gamepad mapping':'Nonstandard mapping')+' · '+(pressed>=0?'Button '+pressed+' pressed':'Press A or Start to test input');
+ logitechHelp.textContent='Controller detected: '+pad.id+' · '+(pad.mapping==='standard'?'Standard gamepad mapping':'Nonstandard mapping')+' · '+(pressed>=0?'Button '+pressed+' pressed':'Press A or Start to test input');
 }
 
 function choose(){stopResultSound();if(mode==='watcharcade'){mode='solo';arcadeAutoplay=true;}scene='select';pickStage=0;pick=chosen[0];show('select');updatePick()}
@@ -131,7 +132,7 @@ const stageNames=['SALVADOR · BAHIA','OLINDA · PERNAMBUCO','RIO DE JANEIRO · 
 let activeStage=0,stageChoice=0,arcadeArenaOverride=null;const arenaImages=['brazil-arenas.webp','brazil-arenas-2.webp','brazil-arenas-3.webp'].map(src=>{let i=new Image();i.src=src;return i});const musicianImage=new Image();musicianImage.src='roda-musicians.webp';const crowdImage=new Image();crowdImage.src='roda-crowd-v22.webp';
 
 let navAt=0;
-function pollPads(){lastPads=connected();if(uiTick%12===0)updateLogitechDiagnostics(lastPads);if(scene==='setup'){calibratePads(lastPads);return []}let states=lastPads.map(padState);$('#connection').textContent=lastPads.length?`● ${lastPads.length} CONTROLLER${lastPads.length>1?'S':''} CONNECTED`:'● CONNECT A CONTROLLER';$('#status').textContent=mode==='watch'||arcadeAutoplay?'CPU CONTROL · NO CONTROLLER REQUIRED':lastPads.length?'CONTROLLER READY':'AWAITING CONTROLLER';/* Controller enumeration may be temporarily empty. */let s=(scene==='select'?states[pickStage]:states[0])||states[0];if(!s)return states;
+function pollPads(){lastPads=connected();if(uiTick%12===0)updateLogitechDiagnostics(lastPads);if(scene==='setup'){calibratePads(lastPads);return []}let states=lastPads.map(padState);$('#connection').textContent=lastPads.length?`● ${lastPads.length} CONTROLLER${lastPads.length>1?'S':''} CONNECTED`:'● CONNECT A LOGITECH CONTROLLER';$('#status').textContent=mode==='watch'||arcadeAutoplay?'CPU CONTROL · NO CONTROLLER REQUIRED':lastPads.length?'CONTROLLER READY':'AWAITING LOGITECH CONTROLLER';/* Controller enumeration may be temporarily empty. */let s=(scene==='select'?states[pickStage]:states[0])||states[0];if(!s)return states;
 if(scene==='title'){if(s.edge[9]||s.edge[0]){scene='menu';show('menu');initAudio();setStageMusic(-1);sfx('start',2)}}else if(scene==='menu'){if(s.edge[11]){document.getElementById('open-winners')?.click();return states}if(uiTick>navAt&&(Math.abs(s.y)>.5||Math.abs(s.x)>.5)){if(Math.abs(s.y)>.5)setMode(['solo','local','training','cpu','watch','watcharcade'][(menuMode+(s.y>0?1:5))%6]);else setDifficulty(difficulty==='easy'?'normal':'easy');navAt=uiTick+15}if(s.edge[2])setDifficulty(difficulty==='easy'?'normal':'easy');if(s.edge[4])setRounds(roundChoices()[(roundChoices().indexOf(roundLimit)+roundChoices().length-1)%roundChoices().length]);if(s.edge[5])setRounds(roundChoices()[(roundChoices().indexOf(roundLimit)+1)%roundChoices().length]);if(s.edge[8])openSetup();else if(s.edge[0]||s.edge[9])choose()}
 else if(scene==='select'){if(mode!=='solo'&&(s.edge[6]||s.edge[7])){stageChoice=(stageChoice+(s.edge[7]?1:stageNames.length-1))%stageNames.length;activeStage=stageChoice;updatePick()}if(uiTick>navAt&&(Math.abs(s.x)>.5||Math.abs(s.y)>.5)){pick=selectOrder[(selectOrder.indexOf(pick)+(Math.abs(s.x)>.5?Math.sign(s.x):5*Math.sign(s.y))+selectOrder.length)%selectOrder.length];updatePick();navAt=uiTick+13}if(s.edge[2]&&(pick===7||pick===14))document.getElementById('altcostume')?.click();if(s.edge[0])confirmPick();if(s.edge[1]){if(pickStage){pickStage=0;pick=chosen[0];updatePick()}else{scene='menu';show('menu')}}}
 else if(scene==='score'){if(s.edge[0])saveArcadeName();if(s.edge[1])openComicEnding();}
