@@ -519,7 +519,7 @@ installFighterKits();
 // Expansion profiles must exist before their selection cards are built.
 selectOrder.forEach(i=>{
  if(i===selectOrder[0]||i===0){const title=document.createElement('h3');title.textContent=i===0?'Classic fighters':'New fighters';$('#roster').append(title);}
- const f=roster[i];let b=document.createElement('button');b.className='fightercard';b.dataset.fighter=i;b.setAttribute('aria-label',f[0]);const picture=new Image();picture.src=new URL('cast/card-'+i+'.webp',costumeRoot);picture.alt='';b.append(picture);let span=document.createElement('span');span.textContent=f[0].toUpperCase();b.append(span);const home=document.createElement('small');home.textContent=profiles[i].home;b.append(home);if(i===18){const birth=document.createElement('small');birth.textContent='Born 1568';b.append(birth)}b.onclick=()=>{pick=i;updatePick()};$('#roster').append(b)});
+ const f=roster[i];let b=document.createElement('button');b.className='fightercard';b.dataset.fighter=i;b.setAttribute('aria-label',f[0]);const picture=new Image();picture.src=i===22?cinzaPortrait:new URL('cast/card-'+i+'.webp',costumeRoot);picture.alt='';b.append(picture);let span=document.createElement('span');span.textContent=f[0].toUpperCase();b.append(span);const home=document.createElement('small');home.textContent=profiles[i].home;b.append(home);if(i===18){const birth=document.createElement('small');birth.textContent='Born 1568';b.append(birth)}b.onclick=()=>{pick=i;updatePick()};$('#roster').append(b)});
 
 $('#entermenu').onclick=()=>{scene='menu';show('menu');initAudio();setStageMusic(-1);};
 // The school page shares this runtime, so its older shell receives current labels.
