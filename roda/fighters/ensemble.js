@@ -1,3 +1,4 @@
+const cinzaPortrait='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 420"><rect width="320" height="420" fill="#22272a"/><circle cx="160" cy="177" r="68" fill="#604130"/><path d="M93 161V82H227V161H210V113H110V161Z" fill="#111418"/><path d="M35 420Q45 268 160 270Q275 268 285 420" fill="#14171b"/><path d="M133 220Q160 238 187 220" fill="none" stroke="#33231e" stroke-width="5"/><text x="160" y="394" fill="#ddd" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="bold">GAROTO CINZA</text></svg>');
 // The boss keeps his saved ID. Display order is shared by cards and controller input.
 const playableIds = [...Array(15).keys(),16,17,18,19,20,21,22];
 const homeArena=[0,5,8,4,3,6,9,19,7,2,15,26,17,10,18,0,21,22,23,24,25,27,9];
