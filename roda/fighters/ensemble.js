@@ -90,6 +90,7 @@ const kickHolds=[
   [5,9],[8,13],[8,15],[3,8],[6,13],[4,8],[7,11]
 ];
 function paintFighter(g,p,x,y,zoom=1,card=false) {
+  if(p.id===22)return drawCinza(g,{...p,attack:null,ginga:0},x,y,zoom*.7);
   if(!card && window.drawCastState && drawCastState(g,p,x,y,zoom*.68))return;
   if(p.id<16 && !card){
     const prior=ctx;ctx=g;g.save();
