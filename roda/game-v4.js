@@ -540,6 +540,28 @@ selectOrder.forEach(i=>{
  const f=roster[i];let b=document.createElement('button');b.className='fightercard';b.dataset.fighter=i;b.setAttribute('aria-label',f[0]);const picture=new Image();picture.src=i===22?cinzaPortrait:new URL('cast/card-'+i+'.webp',costumeRoot);picture.alt='';b.append(picture);let span=document.createElement('span');span.textContent=f[0].toUpperCase();b.append(span);const home=document.createElement('small');home.textContent=profiles[i].home;b.append(home);if(i===18){const birth=document.createElement('small');birth.textContent='Born 1568';b.append(birth)}b.onclick=()=>{pick=i;updatePick()};$('#roster').append(b)});
 
 $('#entermenu').onclick=()=>{scene='menu';show('menu');initAudio();setStageMusic(-1);};
+// Temporary F310 input diagnostics: independent of the gameplay animation loop.
+(function(){
+ const panel=document.createElement('div');
+ panel.id='roda-f310-live';
+ panel.setAttribute('role','status');
+ panel.style.cssText='position:fixed;bottom:12px;left:12px;z-index:2147483647;background:#111e;color:#ffe29b;border:1px solid #bda35b;border-radius:7px;padding:8px 12px;font:600 12px system-ui,sans-serif;pointer-events:none;max-width:90vw';
+ document.body.appendChild(panel);
+ let lastError='';
+ window.addEventListener('error',e=>{lastError=(e.message||'Unknown JavaScript error').slice(0,110)});
+ window.addEventListener('unhandledrejection',e=>{lastError=String(e.reason||'Rejected promise').slice(0,110)});
+ let lastTick=uiTick,lastChange=performance.now();
+ function inspect(now){
+  try{
+   const pads=Array.from(navigator.getGamepads?.()||[]).filter(p=>p&&p.connected!==false);
+   const p=pads[0],a=!!p?.buttons?.[0]?.pressed,start=!!p?.buttons?.[9]?.pressed;
+   if(uiTick!==lastTick){lastTick=uiTick;lastChange=now}
+   panel.textContent='F310 LIVE | '+(p?'A: '+(a?'PRESSED':'released')+' | START: '+(start?'PRESSED':'released'):'NO GAMEPAD')+' | scene: '+scene+' | game loop: '+(now-lastChange<700?'RUNNING':'STOPPED')+(lastError?' | JS ERROR: '+lastError:'');
+  }catch(e){panel.textContent='F310 DIAGNOSTIC ERROR: '+e.message}
+  requestAnimationFrame(inspect);
+ }
+ requestAnimationFrame(inspect);
+})();
 // The school page shares this runtime, so its older shell receives current labels.
 const versionLabel=document.querySelector('.intro .eyebrow');if(versionLabel)versionLabel.textContent='LOCAL ARCADE FIGHTING / CLASSIC + SIX';
 const reviewLink=document.querySelector('.review-entry a');if(reviewLink)reviewLink.textContent='WATCH THE ACTUAL GAME ANIMATIONS · BUILD 2.7 →';
