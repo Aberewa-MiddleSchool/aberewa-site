@@ -39,7 +39,7 @@ function isEnforcer(id){return id>=11 && id<=13;}
 function makeArcade(){
  resetArcadeScore();
  const champion=chosen[0], final=champion===21?14:21;
- const qualifiers=[0,1,2,3,4,5,6,7,8,9,16,17,18,19,20,10,14,11,12,13];
+ const qualifiers=[22,0,1,2,3,4,5,6,7,8,9,16,17,18,19,20,10,14,11,12,13];
  arcadeOrder=[...qualifiers.filter(id=>id!==champion && id!==final),final];
  arcadeIndex=0;chosen[1]=arcadeOrder[0];
 }
