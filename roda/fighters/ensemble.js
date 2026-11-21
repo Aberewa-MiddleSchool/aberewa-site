@@ -1,13 +1,14 @@
 // The boss keeps his saved ID. Display order is shared by cards and controller input.
-const playableIds = [...Array(15).keys(),16,17,18,19,20,21];
-const homeArena=[0,5,8,4,3,6,9,19,7,2,15,26,17,10,18,0,21,22,23,24,25,27];
+const playableIds = [...Array(15).keys(),16,17,18,19,20,21,22];
+const homeArena=[0,5,8,4,3,6,9,19,7,2,15,26,17,10,18,0,21,22,23,24,25,27,9];
 const newPlayers = [
   ['Tainá Reis','Salvador, Bahia','Patient sweeping counters','#227c77','The rhythm gave me time.',.98],
   ['Luzia Santos','Recife, Pernambuco','Fast combinations from close range','#bb5438','There was my opening.',1.07],
   ['Dalva Brito','Recôncavo da Bahia, Bahia','Low entries and turning kicks','#555688','I heard the change in the beat.',1.11],
   ['Neide Cruz','Belo Horizonte, Minas Gerais','Compact footwork and quick returns','#dda436','There is always another answer.',.94],
   ['Marília Nascimento','Rio de Janeiro, Rio de Janeiro','Measured pressure and lateral kicks','#884b79','I saved that turn for the last exchange.',1.12],
-  ['Aisha','Salvador, Bahia','Keeper of the mirror · Inverted kicks','#39d8d1','My reflection never made me work for that opening.',1.0]
+  ['Aisha','Salvador, Bahia','Keeper of the mirror · Inverted kicks','#39d8d1','My reflection never made me work for that opening.',1.0],
+  ['Garoto Cinza','São Paulo, São Paulo','Mestre Maré school · three-hit chains','#a9a9a9','A roda speaks through movement.',1.0]
 ];
 const costumeRoot = new URL('.',document.currentScript.src);
 const costumes = rodaRigs.map((_,id) => {
@@ -24,6 +25,9 @@ function installFighterKits() {
     characterMoves.push(moves.map(m=>({...m,phases:[m]})));
   });
   fighterTraits[14].build = .76;
+  const cinza=characterMoves[22];
+  const cinzaKeys=[['bencao','frente','chapa'],['rasteira','chapa','rasteira'],['frente','armada','costas'],['chapa','costas','armada'],['au','chapa','rasteira'],['costas','armada','frente']];
+  cinza.forEach((m,n)=>{const keys=cinzaKeys[n],damage=m.damage;const phases=keys.map((key,i)=>({...techniqueBook[key],key,frames:14,range:m.range*techniqueBook[key].reach,damage:Math.max(1,Math.round(damage/3)),push:i===2?3:0,knockdown:i===2&&n>=4}));cinza[n]={...m,...phases[0],phases,start:9,active:42,end:12,cost:0,rank:n>=4?2:m.rank,name:keys.map(k=>techniqueBook[k].name).join(' → '),signature:null};});
   const chains = [
     ['bencao','frente','rasteira'], ['rasteira','bencao','costas'],
     ['frente','chapa','bencao'], ['costas','frente','rasteira'],
@@ -34,7 +38,7 @@ function installFighterKits() {
     ['frente','martelo','bencao'], ['chapa','costas','martelo'],
     ['au','costas','frente'], ['rasteira','au','chapa']
   ];
-  for (const kit of characterMoves.slice(16)) {
+  for (const kit of characterMoves.slice(16,22)) {
     const sentinel=kit===characterMoves[21];
     kit.forEach((base,button) => {
       const chain=(sentinel?sentinelChains:chains)[button], frames=16;
