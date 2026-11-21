@@ -12,7 +12,8 @@ function castImage(name) {
 const outfitKey='roda-alternate-outfits-v1';
 const alternateOutfits=(()=>{try{return new Set(JSON.parse(localStorage.getItem(outfitKey)||'[]').map(Number));}catch{return new Set();}})();
 window.rodaAlternateOutfit=id=>alternateOutfits.has(Number(id));
-const cardUrl = id => new URL('card-' + id + (window.rodaAlternateOutfit(id)?'-alt':'') + '.webp', castRoot).href;
+const cinzaPortrait='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 420"><rect width="320" height="420" fill="#22272a"/><circle cx="160" cy="177" r="68" fill="#604130"/><path d="M93 161V82H227V161H210V113H110V161Z" fill="#111418"/><path d="M35 420Q45 268 160 270Q275 268 285 420" fill="#14171b"/><path d="M133 220Q160 238 187 220" fill="none" stroke="#33231e" stroke-width="5"/><text x="160" y="394" fill="#ddd" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="bold">GAROTO CINZA</text></svg>');
+const cardUrl = id => id===22?cinzaPortrait:new URL('card-' + id + (window.rodaAlternateOutfit(id)?'-alt':'') + '.webp', castRoot).href;
 const dalvaChains=[
   ['bencao','rasteira'],['frente','chapa'],['costas','bencao'],['chapa','martelo'],
   ['au','rasteira','frente'],['costas','au','chapa']
