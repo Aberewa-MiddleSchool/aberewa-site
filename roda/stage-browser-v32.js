@@ -1,6 +1,6 @@
 /*
  * RODA v3.2 — stage browser and exact in-game stage preview.
- * Includes all 22 stage IDs without replacing special Meilin or boss art.
+ * Includes all 21 surviving stages without replacing private arena art.
  * Arcade keeps story-selected stages; other modes can choose any stage.
  */
 (() => {
@@ -11,9 +11,15 @@
     console.warn('[RODA stage browser] Game UI not ready; keeping existing stage controls.');
     return;
   }
-  const selected = id => ((Number(id) % stageList.length) + stageList.length) % stageList.length;
+  const count = Math.min(21, stageList.length);
+  if (!count) return;
+  const defaultStage = Math.min(20, count - 1);
+  const selected = id => Number.isFinite(Number(id))
+    ? ((Math.trunc(Number(id)) % count) + count) % count : defaultStage;
   const story = () => mode === 'solo' || mode === 'watcharcade' || !!arcadeAutoplay;
-  const current = () => story() ? (arcadeStages[Number(arcadeIndex) || 0] ?? 0) : stageChoice;
+  const current = () => story()
+    ? (['menu','select'].includes(scene) ? defaultStage : (arcadeStages[Number(arcadeIndex) || 0] ?? defaultStage))
+    : stageChoice;
   const gameCanvas = q('#game');
   const css = document.createElement('style');
   css.textContent = `
@@ -45,7 +51,7 @@
   const menu = create('roda-menu-stages','roda-menu-stages');
   menu.innerHTML = '<h3>CHOOSE AN ARENA</h3><canvas class="roda-stage-visual" width="640" height="330" aria-label="Actual playable arena preview"></canvas><p class="roda-stage-label"></p><div class="roda-stage-action-row"><button type="button" data-prev>← PREVIOUS</button><button type="button" data-next>NEXT →</button></div>';
   const choose = create('roda-choose-stages','roda-choose-stages');
-  choose.innerHTML = '<p class="roda-stage-label"></p><canvas class="roda-stage-visual" width="640" height="330" aria-label="Actual playable arena preview"></canvas><div class="roda-stage-action-row"><button type="button" data-prev>← PREVIOUS</button><button type="button" data-next>NEXT →</button><button type="button" data-audition>HEAR THIS STAGE BEAT</button></div><div class="roda-stage-grid" aria-label="Choose from all 22 playable stages"></div>';
+  choose.innerHTML = '<p class="roda-stage-label"></p><canvas class="roda-stage-visual" width="640" height="330" aria-label="Actual playable arena preview"></canvas><div class="roda-stage-action-row"><button type="button" data-prev>← PREVIOUS</button><button type="button" data-next>NEXT →</button><button type="button" data-audition>HEAR THIS STAGE BEAT</button></div><div class="roda-stage-grid" aria-label="Choose from the 21 playable stages"></div>';
   const chooseBtn = q('#choose');
   q('#menu .menupanel').insertBefore(menu, chooseBtn);
   q('#select .arena-selector').append(choose);
@@ -74,7 +80,7 @@
   function sync() {
     const id = selected(current());
     const locked = story();
-    const label = (id + 1) + ' / ' + stageList.length + ' — ' + stageList[id];
+    const label = (id + 1) + ' / ' + count + ' — ' + stageList[id];
     for (const view of views) {
       const text = view.querySelector('.roda-stage-label');
       text.textContent = label + (locked ? ' · ARCADE STORY STAGE (AUTOMATIC)' : ' · SELECTABLE');
@@ -105,14 +111,14 @@
     view.querySelector('[data-next]').addEventListener('click',()=>chooseStage(stageChoice+1));
   }
   const grid = choose.querySelector('.roda-stage-grid');
-  for (let id=0; id<stageList.length; id++) {
+  for (let id=0; id<count; id++) {
     const b=document.createElement('button');
     b.type='button';b.dataset.stage=String(id);
     const shortName=stageList[id].split(' · ')[0];
     b.textContent=String(id+1).padStart(2,'0')+' · '+shortName;
     if (id>=18) {
       const small=document.createElement('small');
-      small.textContent=id===21?'ORIGINAL SKULL BOSS':'ORIGINAL PRIVATE ARENA';
+      small.textContent=id===20?'MEILIN’S GARDEN · DEFAULT':'ORIGINAL PRIVATE ARENA';
       b.append(small);
     }
     b.addEventListener('click',()=>chooseStage(id));
@@ -141,7 +147,7 @@
     }
   });
   const head=q('#menu .menu-title p:last-child');
-  if (head) head.textContent='D-PAD: MODE / DIFFICULTY · LB / RB: ROUNDS · A: CHOOSE · STAGES: BUTTONS BELOW';
+  if (head) head.textContent='D-PAD: MODE / DIFFICULTY · A: CHOOSE · FIRST TO 3 · 99 SECONDS';
   sync();
-  window.RODAStageBrowser=Object.freeze({version:'3.2',select:chooseStage,refresh:sync,count:stageList.length});
+  window.RODAStageBrowser=Object.freeze({version:'3.4',select:chooseStage,refresh:sync,count});
 })();

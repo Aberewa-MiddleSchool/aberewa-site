@@ -1,8 +1,8 @@
 /*
  * RODA v3.0 — indoor venues throughout the Brazilian stage circuit.
  * The original fighter/KO/round logic and private interior artworks are unchanged.
- * Stages 0–17 use indoor arena art. Private stages 18, 19, 20 and 21,
- * including Meilin and the skull-themed boss, retain their original artwork.
+ * Stages 0–17 use indoor arena art. Private stages 18, 19 and 20,
+ * including Meilin’s garden, retain their original artwork.
  * Pre-rendered room backgrounds avoid repeated geometry cost during fights.
  */
 (() => {
@@ -35,8 +35,7 @@
     'NATAL INDOOR ATRIUM · RIO GRANDE DO NORTE',
     'MESTRE’S PRIVATE STUDIO · SALVADOR',
     'MEILIN’S TRAINING HALL · CURITIBA',
-    'MEILIN’S GARDEN · CURITIBA',
-    'THE MYSTERY MAN’S SKULL STUDIO'
+    'MEILIN’S GARDEN · CURITIBA'
   ];
   // Mutate the shared array so the original arcade sequence, selection menus,
   // stage captions and story still use the same indexes and stay synchronized.
@@ -216,7 +215,7 @@
 
   window.drawArena = function indoorRodaArena(...args){
     const id=Number(activeStage);
-    if (id===18 || id===19 || id===20 || id===21 || id<0 || id>20) {
+    if (id===18 || id===19 || id===20 || !Number.isInteger(id) || id<0 || id>20) {
       return oldDrawArena.apply(this,args);
     }
     if (!cache.has(id)) cache.set(id,paint(id));
@@ -224,7 +223,7 @@
   };
 
   window.RODAIndoorArenas=Object.freeze({
-    version:'3.2',converted:[...Array(18).keys()],
-    retainedIndoor:[18,19,20,21],name:(index)=>rooms[index]||''
+    version:'3.4',converted:[...Array(18).keys()],
+    retainedIndoor:[18,19,20],name:(index)=>rooms[index]||''
   });
 })();

@@ -13,8 +13,8 @@
     return;
   }
   // Each scene has a dedicated speed, string tuning and interlocking pulse.
-  const tempi=[68,76,82,70,78,74,66,84,72,86,64,80,73,69,88,75,79,71,67,83,77,61];
-  const tunings=[106,123,131,110,147,119,98,137,113,154,104,127,116,109,144,121,135,112,99,143,152,92];
+  const tempi=[68,76,82,70,78,74,66,84,72,86,64,80,73,69,88,75,79,71,67,83,77];
+  const tunings=[106,123,131,110,147,119,98,137,113,154,104,127,116,109,144,121,135,112,99,143,152];
   const patterns=[
     'x--o--x-xx-o-x--','x-o-x---x--o-xx-','x-xx--o-x-o--x-x',
     'x--o-x-x--o-xx--','x-x-o---xx-o--x-','x--o-xx-x--o-xx-',
@@ -22,8 +22,7 @@
     'xx-o-x---x--ox-x','x---x-o-x--ox---','x-o-xx--x-o--x-x',
     'x-xx-o--x---x-ox','x---ox-x-x--o-x-','xx-o--x--x-ox-x-',
     'x-o---xx-x-o-x--','x--o-x--xx-o-x-x','x-x--ox-x--o--xx',
-    'x---o-x-xx--ox--','x-o-xx-x---o-x--','x-ox--x-xx--o-x-',
-    'x---o--x--xx-o--'
+    'x---o-x-xx--ox--','x-o-xx-x---o-x--','x-ox--x-xx--o-x-'
   ];
   let currentStage=-1, timer=null, context=null, noise=null, nextTime=0, step=0;
   const READAHEAD=.3, LOOKAHEAD_MS=85;
@@ -125,8 +124,10 @@
     schedule();
   }
   window.setStageMusic=function stageSpecificMusic(stage){
-    const result=originalMusic.apply(this,arguments);
-    start(stage,false);
+    const number=Number(stage);
+    const id=Number.isFinite(number)?Math.max(-1,Math.min(20,Math.trunc(number))):20;
+    const result=originalMusic.call(this,id);
+    start(id,false);
     return result;
   };
   function audition(id){
@@ -139,7 +140,7 @@
   }
   document.addEventListener('visibilitychange',()=>{if(document.hidden)nextTime=0;});
   window.RODAStageRhythms=Object.freeze({
-    version:'3.2',stageCount:tempi.length,tempi:[...tempi],
+    version:'3.4',stageCount:tempi.length,tempi:[...tempi],
     audition, stop:()=>start(-1), get currentStage(){return currentStage;}
   });
 })();

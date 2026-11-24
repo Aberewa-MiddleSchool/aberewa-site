@@ -13,16 +13,16 @@
     console.warn('[RODA victory] Fighter animation renderer unavailable.');
     return;
   }
-  // Each of the sixteen fighters, including the hidden boss, has a
+  // Each of the fifteen playable fighters has a
   // fighter-specific finish based on a different authored kick/flip/salute.
-  const slots=[4,1,3,2,0,5,1,5,3,5,4,2,0,1,5,4];
+  const slots=[4,1,3,2,0,5,1,5,3,5,4,2,0,1,5];
   const labels=[
     'THE RHYTHM SALUTE','THE LOW-GUARD BOW','THE HIGH ARC',
     'THE SPINNING CELEBRATION','THE CRESCENT SALUTE','THE GINGA FINALE',
     'THE RODA TRIUMPH','THE JADE INVERSION','THE RIVER SALUTE',
     'THE SOLAR ARC','THE AXÉ SALUTE','THE IRON GUARD',
     'THE BACKSTEP VICTORY','THE WHEELING SALUTE',
-    'THE MARÉ INVERSION','THE LAST THREAT'
+    'THE MARÉ INVERSION'
   ];
   const card=document.querySelector('#result .winner-card');
   const caption=document.createElement('div');
@@ -80,7 +80,7 @@
     return output;
   };
   window.RODAVictoryStances=Object.freeze({
-    version:'3.2',fighterCount:slots.length,
+    version:'3.4',fighterCount:slots.length,
     names:[...labels],artSource:'existing fighter-specific animation sheets'
   });
 })();
