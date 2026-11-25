@@ -1,0 +1,959 @@
+{
+  "schema": "roda-femur-assets-v1",
+  "id": "femur",
+  "name": "Femur",
+  "continuity": "RODA only; independent character incarnation, no TFW lore or game code",
+  "source_sha256": "226f3c6b9df01a6d6b03e0f0acb8d2e43e293de7bcb6b01062653ec46c688699",
+  "frame": {
+    "width": 512,
+    "height": 448,
+    "anchorX": 256,
+    "anchorY": 390,
+    "nativeFacing": "right",
+    "scalePolicy": "fixed world scale for every pose; preserve low silhouettes; mirror horizontally only for opponent facing"
+  },
+  "clips": {
+    "ginga": {
+      "file": "ginga.webp",
+      "count": 22,
+      "columns": 6,
+      "frameMs": 90,
+      "loop": true,
+      "sourcePoses": [
+        "0:0",
+        "0:1",
+        "0:2",
+        "0:3",
+        "0:4",
+        "0:5",
+        "0:6",
+        "0:7",
+        "0:8",
+        "0:9",
+        "0:10",
+        "0:11",
+        "0:12",
+        "0:13",
+        "0:14",
+        "0:15",
+        "0:16",
+        "0:17",
+        "0:18",
+        "0:19",
+        "0:20",
+        "0:21"
+      ]
+    },
+    "advance": {
+      "file": "advance.webp",
+      "count": 12,
+      "columns": 6,
+      "frameMs": 72,
+      "loop": true,
+      "sourcePoses": [
+        "1:0",
+        "1:1",
+        "1:2",
+        "1:3",
+        "1:4",
+        "1:5",
+        "1:6",
+        "1:7",
+        "1:8",
+        "1:9",
+        "1:10",
+        "1:11"
+      ]
+    },
+    "retreat": {
+      "file": "retreat.webp",
+      "count": 10,
+      "columns": 6,
+      "frameMs": 80,
+      "loop": true,
+      "sourcePoses": [
+        "1:16",
+        "1:15",
+        "1:14",
+        "1:13",
+        "1:12",
+        "1:11",
+        "1:10",
+        "1:9",
+        "1:8",
+        "1:7"
+      ]
+    },
+    "roll_forward": {
+      "file": "roll_forward.webp",
+      "count": 17,
+      "columns": 6,
+      "frameMs": 65,
+      "loop": false,
+      "sourcePoses": [
+        "0:0",
+        "3:0",
+        "3:1",
+        "3:2",
+        "3:3",
+        "3:4",
+        "3:5",
+        "3:6",
+        "3:7",
+        "3:8",
+        "3:9",
+        "3:10",
+        "3:11",
+        "3:12",
+        "3:13",
+        "3:14",
+        "0:0"
+      ]
+    },
+    "roll_backward": {
+      "file": "roll_backward.webp",
+      "count": 17,
+      "columns": 6,
+      "frameMs": 65,
+      "loop": false,
+      "sourcePoses": [
+        "0:0",
+        "3:14",
+        "3:13",
+        "3:12",
+        "3:11",
+        "3:10",
+        "3:9",
+        "3:8",
+        "3:7",
+        "3:6",
+        "3:5",
+        "3:4",
+        "3:3",
+        "3:2",
+        "3:1",
+        "3:0",
+        "0:0"
+      ]
+    },
+    "guard": {
+      "file": "guard.webp",
+      "count": 4,
+      "columns": 4,
+      "frameMs": 100,
+      "loop": true,
+      "sourcePoses": [
+        "9:0",
+        "9:1",
+        "9:2",
+        "9:3"
+      ]
+    },
+    "crouch": {
+      "file": "crouch.webp",
+      "count": 3,
+      "columns": 3,
+      "frameMs": 85,
+      "loop": false,
+      "sourcePoses": [
+        "2:0",
+        "2:1",
+        "2:2"
+      ]
+    },
+    "low_guard": {
+      "file": "low_guard.webp",
+      "count": 4,
+      "columns": 4,
+      "frameMs": 95,
+      "loop": true,
+      "sourcePoses": [
+        "2:0",
+        "2:1",
+        "2:2",
+        "2:1"
+      ]
+    },
+    "jump": {
+      "file": "jump.webp",
+      "count": 8,
+      "columns": 6,
+      "frameMs": 75,
+      "loop": false,
+      "sourcePoses": [
+        "7:2",
+        "7:3",
+        "7:4",
+        "7:5",
+        "7:6",
+        "7:5",
+        "7:3",
+        "7:2"
+      ]
+    },
+    "hit": {
+      "file": "hit.webp",
+      "count": 4,
+      "columns": 4,
+      "frameMs": 70,
+      "loop": false,
+      "sourcePoses": [
+        "7:0",
+        "7:1",
+        "7:2",
+        "7:0"
+      ]
+    },
+    "fall": {
+      "file": "fall.webp",
+      "count": 7,
+      "columns": 6,
+      "frameMs": 80,
+      "loop": false,
+      "sourcePoses": [
+        "8:0",
+        "8:1",
+        "8:2",
+        "8:3",
+        "8:4",
+        "8:5",
+        "8:6"
+      ]
+    },
+    "recover": {
+      "file": "recover.webp",
+      "count": 9,
+      "columns": 6,
+      "frameMs": 80,
+      "loop": false,
+      "sourcePoses": [
+        "8:6",
+        "8:7",
+        "8:8",
+        "8:9",
+        "8:10",
+        "8:11",
+        "8:12",
+        "8:13",
+        "0:0"
+      ]
+    },
+    "defeat": {
+      "file": "defeat.webp",
+      "count": 9,
+      "columns": 6,
+      "frameMs": 100,
+      "loop": false,
+      "sourcePoses": [
+        "9:12",
+        "9:13",
+        "9:14",
+        "9:15",
+        "9:16",
+        "9:17",
+        "9:18",
+        "9:19",
+        "9:20"
+      ]
+    },
+    "round_win": {
+      "file": "round_win.webp",
+      "count": 22,
+      "columns": 6,
+      "frameMs": 90,
+      "loop": true,
+      "sourcePoses": [
+        "0:0",
+        "0:1",
+        "0:2",
+        "0:3",
+        "0:4",
+        "0:5",
+        "0:6",
+        "0:7",
+        "0:8",
+        "0:9",
+        "0:10",
+        "0:11",
+        "0:12",
+        "0:13",
+        "0:14",
+        "0:15",
+        "0:16",
+        "0:17",
+        "0:18",
+        "0:19",
+        "0:20",
+        "0:21"
+      ]
+    },
+    "kick_bencao": {
+      "file": "kick_bencao.webp",
+      "count": 12,
+      "columns": 6,
+      "frameMs": 67,
+      "loop": false,
+      "sourcePoses": [
+        "4:0",
+        "4:1",
+        "4:2",
+        "4:3",
+        "4:4",
+        "4:5",
+        "4:6",
+        "4:7",
+        "4:8",
+        "4:9",
+        "4:10",
+        "4:11"
+      ]
+    },
+    "kick_crescent": {
+      "file": "kick_crescent.webp",
+      "count": 12,
+      "columns": 6,
+      "frameMs": 67,
+      "loop": false,
+      "sourcePoses": [
+        "4:13",
+        "4:14",
+        "4:15",
+        "4:16",
+        "4:17",
+        "4:18",
+        "4:19",
+        "4:20",
+        "4:21",
+        "4:22",
+        "4:23",
+        "4:13"
+      ]
+    },
+    "kick_chapa": {
+      "file": "kick_chapa.webp",
+      "count": 9,
+      "columns": 6,
+      "frameMs": 67,
+      "loop": false,
+      "sourcePoses": [
+        "6:0",
+        "6:1",
+        "6:2",
+        "6:3",
+        "6:4",
+        "6:5",
+        "6:2",
+        "6:1",
+        "6:0"
+      ]
+    },
+    "kick_queixada": {
+      "file": "kick_queixada.webp",
+      "count": 11,
+      "columns": 6,
+      "frameMs": 67,
+      "loop": false,
+      "sourcePoses": [
+        "6:0",
+        "6:1",
+        "6:2",
+        "6:5",
+        "6:6",
+        "6:7",
+        "6:8",
+        "6:5",
+        "6:2",
+        "6:1",
+        "6:0"
+      ]
+    },
+    "kick_martelo": {
+      "file": "kick_martelo.webp",
+      "count": 8,
+      "columns": 6,
+      "frameMs": 67,
+      "loop": false,
+      "sourcePoses": [
+        "6:10",
+        "6:12",
+        "6:13",
+        "6:14",
+        "6:15",
+        "6:16",
+        "6:17",
+        "6:18"
+      ]
+    },
+    "kick_rasteira": {
+      "file": "kick_rasteira.webp",
+      "count": 7,
+      "columns": 6,
+      "frameMs": 67,
+      "loop": false,
+      "sourcePoses": [
+        "2:8",
+        "2:9",
+        "2:10",
+        "2:11",
+        "2:12",
+        "2:13",
+        "2:0"
+      ]
+    },
+    "kick_compasso": {
+      "file": "kick_compasso.webp",
+      "count": 10,
+      "columns": 6,
+      "frameMs": 67,
+      "loop": false,
+      "sourcePoses": [
+        "5:11",
+        "5:12",
+        "5:13",
+        "5:14",
+        "5:15",
+        "5:16",
+        "5:17",
+        "5:18",
+        "5:19",
+        "5:20"
+      ]
+    },
+    "kick_low_chapa": {
+      "file": "kick_low_chapa.webp",
+      "count": 8,
+      "columns": 6,
+      "frameMs": 67,
+      "loop": false,
+      "sourcePoses": [
+        "5:0",
+        "5:1",
+        "5:2",
+        "5:3",
+        "5:4",
+        "5:5",
+        "5:6",
+        "5:0"
+      ]
+    },
+    "combo_a": {
+      "file": "combo_a.webp",
+      "count": 29,
+      "columns": 6,
+      "frameMs": 58,
+      "loop": false,
+      "sourcePoses": [
+        "4:0",
+        "4:1",
+        "4:2",
+        "4:3",
+        "4:4",
+        "4:5",
+        "4:6",
+        "4:7",
+        "4:8",
+        "4:9",
+        "4:10",
+        "4:11",
+        "6:0",
+        "6:1",
+        "6:2",
+        "6:3",
+        "6:4",
+        "6:5",
+        "6:2",
+        "6:1",
+        "6:0",
+        "6:10",
+        "6:12",
+        "6:13",
+        "6:14",
+        "6:15",
+        "6:16",
+        "6:17",
+        "6:18"
+      ]
+    },
+    "combo_b": {
+      "file": "combo_b.webp",
+      "count": 24,
+      "columns": 6,
+      "frameMs": 58,
+      "loop": false,
+      "sourcePoses": [
+        "5:0",
+        "5:1",
+        "5:2",
+        "5:3",
+        "5:4",
+        "5:5",
+        "5:6",
+        "5:0",
+        "2:8",
+        "2:9",
+        "2:10",
+        "2:11",
+        "2:12",
+        "2:13",
+        "2:0",
+        "6:0",
+        "6:1",
+        "6:2",
+        "6:3",
+        "6:4",
+        "6:5",
+        "6:2",
+        "6:1",
+        "6:0"
+      ]
+    },
+    "combo_x": {
+      "file": "combo_x.webp",
+      "count": 35,
+      "columns": 6,
+      "frameMs": 58,
+      "loop": false,
+      "sourcePoses": [
+        "4:13",
+        "4:14",
+        "4:15",
+        "4:16",
+        "4:17",
+        "4:18",
+        "4:19",
+        "4:20",
+        "4:21",
+        "4:22",
+        "4:23",
+        "4:13",
+        "6:0",
+        "6:1",
+        "6:2",
+        "6:5",
+        "6:6",
+        "6:7",
+        "6:8",
+        "6:5",
+        "6:2",
+        "6:1",
+        "6:0",
+        "4:0",
+        "4:1",
+        "4:2",
+        "4:3",
+        "4:4",
+        "4:5",
+        "4:6",
+        "4:7",
+        "4:8",
+        "4:9",
+        "4:10",
+        "4:11"
+      ]
+    },
+    "combo_y": {
+      "file": "combo_y.webp",
+      "count": 33,
+      "columns": 6,
+      "frameMs": 58,
+      "loop": false,
+      "sourcePoses": [
+        "6:0",
+        "6:1",
+        "6:2",
+        "6:5",
+        "6:6",
+        "6:7",
+        "6:8",
+        "6:5",
+        "6:2",
+        "6:1",
+        "6:0",
+        "5:11",
+        "5:12",
+        "5:13",
+        "5:14",
+        "5:15",
+        "5:16",
+        "5:17",
+        "5:18",
+        "5:19",
+        "5:20",
+        "4:13",
+        "4:14",
+        "4:15",
+        "4:16",
+        "4:17",
+        "4:18",
+        "4:19",
+        "4:20",
+        "4:21",
+        "4:22",
+        "4:23",
+        "4:13"
+      ]
+    },
+    "combo_lb": {
+      "file": "combo_lb.webp",
+      "count": 26,
+      "columns": 6,
+      "frameMs": 58,
+      "loop": false,
+      "sourcePoses": [
+        "5:11",
+        "5:12",
+        "5:13",
+        "5:14",
+        "5:15",
+        "5:16",
+        "5:17",
+        "5:18",
+        "5:19",
+        "5:20",
+        "5:0",
+        "5:1",
+        "5:2",
+        "5:3",
+        "5:4",
+        "5:5",
+        "5:6",
+        "5:0",
+        "6:10",
+        "6:12",
+        "6:13",
+        "6:14",
+        "6:15",
+        "6:16",
+        "6:17",
+        "6:18"
+      ]
+    },
+    "combo_rb": {
+      "file": "combo_rb.webp",
+      "count": 27,
+      "columns": 6,
+      "frameMs": 58,
+      "loop": false,
+      "sourcePoses": [
+        "2:8",
+        "2:9",
+        "2:10",
+        "2:11",
+        "2:12",
+        "2:13",
+        "2:0",
+        "6:0",
+        "6:1",
+        "6:2",
+        "6:3",
+        "6:4",
+        "6:5",
+        "6:2",
+        "6:1",
+        "6:0",
+        "6:0",
+        "6:1",
+        "6:2",
+        "6:5",
+        "6:6",
+        "6:7",
+        "6:8",
+        "6:5",
+        "6:2",
+        "6:1",
+        "6:0"
+      ]
+    }
+  },
+  "buttons": {
+    "A": {
+      "clip": "combo_a",
+      "cost": 0,
+      "contactFrames": [
+        7,
+        15,
+        24
+      ],
+      "phases": [
+        {
+          "technique": "bencao",
+          "name": "Ben\u00e7\u00e3o",
+          "level": "mid",
+          "firstFrame": 0,
+          "lastFrame": 11,
+          "contactFrame": 7
+        },
+        {
+          "technique": "chapa",
+          "name": "Chapa",
+          "level": "mid",
+          "firstFrame": 12,
+          "lastFrame": 20,
+          "contactFrame": 15
+        },
+        {
+          "technique": "martelo",
+          "name": "Martelo",
+          "level": "mid",
+          "firstFrame": 21,
+          "lastFrame": 28,
+          "contactFrame": 24
+        }
+      ]
+    },
+    "B": {
+      "clip": "combo_b",
+      "cost": 0,
+      "contactFrames": [
+        2,
+        11,
+        18
+      ],
+      "phases": [
+        {
+          "technique": "low_chapa",
+          "name": "Chapa baixa",
+          "level": "low",
+          "firstFrame": 0,
+          "lastFrame": 7,
+          "contactFrame": 2
+        },
+        {
+          "technique": "rasteira",
+          "name": "Rasteira",
+          "level": "low",
+          "firstFrame": 8,
+          "lastFrame": 14,
+          "contactFrame": 11
+        },
+        {
+          "technique": "chapa",
+          "name": "Chapa",
+          "level": "mid",
+          "firstFrame": 15,
+          "lastFrame": 23,
+          "contactFrame": 18
+        }
+      ]
+    },
+    "X": {
+      "clip": "combo_x",
+      "cost": 0,
+      "contactFrames": [
+        7,
+        17,
+        30
+      ],
+      "phases": [
+        {
+          "technique": "crescent",
+          "name": "Meia-lua alta",
+          "level": "high",
+          "firstFrame": 0,
+          "lastFrame": 11,
+          "contactFrame": 7
+        },
+        {
+          "technique": "queixada",
+          "name": "Queixada",
+          "level": "high",
+          "firstFrame": 12,
+          "lastFrame": 22,
+          "contactFrame": 17
+        },
+        {
+          "technique": "bencao",
+          "name": "Ben\u00e7\u00e3o",
+          "level": "mid",
+          "firstFrame": 23,
+          "lastFrame": 34,
+          "contactFrame": 30
+        }
+      ]
+    },
+    "Y": {
+      "clip": "combo_y",
+      "cost": 0,
+      "contactFrames": [
+        5,
+        13,
+        28
+      ],
+      "phases": [
+        {
+          "technique": "queixada",
+          "name": "Queixada",
+          "level": "high",
+          "firstFrame": 0,
+          "lastFrame": 10,
+          "contactFrame": 5
+        },
+        {
+          "technique": "compasso",
+          "name": "Meia-lua de compasso",
+          "level": "mid",
+          "firstFrame": 11,
+          "lastFrame": 20,
+          "contactFrame": 13
+        },
+        {
+          "technique": "crescent",
+          "name": "Meia-lua alta",
+          "level": "high",
+          "firstFrame": 21,
+          "lastFrame": 32,
+          "contactFrame": 28
+        }
+      ]
+    },
+    "LB": {
+      "clip": "combo_lb",
+      "cost": 0,
+      "contactFrames": [
+        2,
+        12,
+        21
+      ],
+      "phases": [
+        {
+          "technique": "compasso",
+          "name": "Meia-lua de compasso",
+          "level": "mid",
+          "firstFrame": 0,
+          "lastFrame": 9,
+          "contactFrame": 2
+        },
+        {
+          "technique": "low_chapa",
+          "name": "Chapa baixa",
+          "level": "low",
+          "firstFrame": 10,
+          "lastFrame": 17,
+          "contactFrame": 12
+        },
+        {
+          "technique": "martelo",
+          "name": "Martelo",
+          "level": "mid",
+          "firstFrame": 18,
+          "lastFrame": 25,
+          "contactFrame": 21
+        }
+      ]
+    },
+    "RB": {
+      "clip": "combo_rb",
+      "cost": 0,
+      "contactFrames": [
+        3,
+        10,
+        21
+      ],
+      "phases": [
+        {
+          "technique": "rasteira",
+          "name": "Rasteira",
+          "level": "low",
+          "firstFrame": 0,
+          "lastFrame": 6,
+          "contactFrame": 3
+        },
+        {
+          "technique": "chapa",
+          "name": "Chapa",
+          "level": "mid",
+          "firstFrame": 7,
+          "lastFrame": 15,
+          "contactFrame": 10
+        },
+        {
+          "technique": "queixada",
+          "name": "Queixada",
+          "level": "high",
+          "firstFrame": 16,
+          "lastFrame": 26,
+          "contactFrame": 21
+        }
+      ]
+    }
+  },
+  "techniques": {
+    "bencao": {
+      "name": "Ben\u00e7\u00e3o",
+      "level": "mid",
+      "clip": "kick_bencao",
+      "contactFrame": 7
+    },
+    "crescent": {
+      "name": "Meia-lua alta",
+      "level": "high",
+      "clip": "kick_crescent",
+      "contactFrame": 7
+    },
+    "chapa": {
+      "name": "Chapa",
+      "level": "mid",
+      "clip": "kick_chapa",
+      "contactFrame": 3
+    },
+    "queixada": {
+      "name": "Queixada",
+      "level": "high",
+      "clip": "kick_queixada",
+      "contactFrame": 5
+    },
+    "martelo": {
+      "name": "Martelo",
+      "level": "mid",
+      "clip": "kick_martelo",
+      "contactFrame": 3
+    },
+    "rasteira": {
+      "name": "Rasteira",
+      "level": "low",
+      "clip": "kick_rasteira",
+      "contactFrame": 3
+    },
+    "compasso": {
+      "name": "Meia-lua de compasso",
+      "level": "mid",
+      "clip": "kick_compasso",
+      "contactFrame": 2
+    },
+    "low_chapa": {
+      "name": "Chapa baixa",
+      "level": "low",
+      "clip": "kick_low_chapa",
+      "contactFrame": 2
+    }
+  },
+  "integration": {
+    "proposedHeightCm": 170,
+    "homeStage": "reuse an existing RODA arena until an original home stage is approved",
+    "cost": 0,
+    "airborneAttacks": false,
+    "victory": "return to ginga",
+    "roll": "hand-supported low role (ground turn); the source has no complete over-the-head somersault",
+    "profile": "Antagonist of every student of Mestre Mare and both male protagonists; separate RODA continuity.",
+    "role": "Rival antagonist; retain existing final boss",
+    "opponents": [
+      "all students of Mestre Mar\u00e9",
+      "both male protagonists"
+    ],
+    "selectability": "Proposed selectable antagonist; creator has not explicitly approved selectable status",
+    "runtimeAdapter": "femur-runtime.js"
+  },
+  "route_revision": "Femur selectable, first Celina; suppress Celina inserts in Femur route; after Aisha in ordinary Arcade; after all androids in Aisha route",
+  "stage_manifest": "arenas/manifest.json",
+  "comic_scripts": "comic-scripts.json",
+  "reward": {
+    "key": "femurAlternateAngola",
+    "trigger": "Femur completes her full route with a match victory",
+    "art_status": "new alternate costume artwork required; not included",
+    "persist": true
+  },
+  "reaction_atlas": "reactions-femur.json",
+  "comic_pages": "comics/manifest.json",
+  "design_reference": "reference/Femur_Exact_User_Design.webp (package-root relative)",
+  "no_cords": true
+}

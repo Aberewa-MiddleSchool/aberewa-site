@@ -1,0 +1,74 @@
+{
+  "schema": "femur-reactions-v1",
+  "file": "reactions-femur.webp",
+  "frame": {
+    "width": 512,
+    "height": 448,
+    "anchorX": 256,
+    "anchorY": 390,
+    "nativeFacing": "right",
+    "scalePolicy": "fixed world scale for every pose; preserve low silhouettes; mirror horizontally only for opponent facing"
+  },
+  "columns": 6,
+  "count": 29,
+  "clips": {
+    "hit": {
+      "start": 0,
+      "count": 4,
+      "frameMs": 70,
+      "sourcePoses": [
+        "7:0",
+        "7:1",
+        "7:2",
+        "7:0"
+      ]
+    },
+    "fall": {
+      "start": 4,
+      "count": 7,
+      "frameMs": 80,
+      "sourcePoses": [
+        "8:0",
+        "8:1",
+        "8:2",
+        "8:3",
+        "8:4",
+        "8:5",
+        "8:6"
+      ]
+    },
+    "recover": {
+      "start": 11,
+      "count": 9,
+      "frameMs": 80,
+      "sourcePoses": [
+        "8:6",
+        "8:7",
+        "8:8",
+        "8:9",
+        "8:10",
+        "8:11",
+        "8:12",
+        "8:13",
+        "0:0"
+      ]
+    },
+    "defeat": {
+      "start": 20,
+      "count": 9,
+      "frameMs": 100,
+      "sourcePoses": [
+        "9:12",
+        "9:13",
+        "9:14",
+        "9:15",
+        "9:16",
+        "9:17",
+        "9:18",
+        "9:19",
+        "9:20"
+      ]
+    }
+  },
+  "note": "Repacked from existing Femur-specific clips. No borrowed fighter art. Four hit frames use three distinct source poses; this is not a newly authored high/mid/low reaction set. Bind this atlas to Femur only; do not assume the global engine atlas index or filename format."
+}

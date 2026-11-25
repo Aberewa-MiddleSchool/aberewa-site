@@ -173,7 +173,7 @@ if (typeof ResizeObserver === 'function') {
  window.addEventListener('resize', fitCanvas);
  fitCanvas();
 }
-const roster=[['Dandara','The rhythm keeper'],['Jurema','Braided thunder'],['Celina','Forty years of Capoeira Angola'],['Zinga','The fearless flame'],['Lua','Moonlit malícia'],['Iara','The flowing tide'],['Nala','Quiet lightning'],['Meilin','The gilded low guard'],['Jaci','Blue horizon'],['Sol','The golden hour'],['Ayana','The white braid'],['Bento','The steady mountain'],,['Nestor','The old fox'],['Mestre Maré','Mestre • all hard kicks • +10% health'],['Aisha','Sentinel of 2323'],['Heather','Oakland to Bahia']];
+const roster=[['Dandara','The rhythm keeper'],['Jurema','Braided thunder'],['Celina','Forty years of Capoeira Angola'],['Zinga','The fearless flame'],['Lua','Moonlit malícia'],['Iara','The flowing tide'],['Nala','Quiet lightning'],['Meilin','The gilded low guard'],['Jaci','Blue horizon'],['Sol','The golden hour'],['Ayana','The white braid'],['Bento','The steady mountain'],,['Nestor','The old fox'],['Mestre Maré','Mestre • all hard kicks • +10% health'],['Aisha','Sentinel of 2323'],['Heather','Oakland to Bahia'],['Femur','The rival from another roda']];
 // Sprite sheets and saved ranks use stable fighter IDs.
 const playableIds=Object.freeze(roster.flatMap((fighter,id)=>fighter?[id]:[]));
 function nextFighter(id,offset){
@@ -212,14 +212,21 @@ let arcadeOrder=[],arcadeIndex=0,matchWinner=-1,resultTime=0,resumeScene='fight'
 function arcadeOpponents(playerId){
  return playableIds.filter(id=>id!==CELINA_ID&&(id!==playerId||id===HEATHER_ID));
 }
+const FEMUR_ID=17;
 function buildCelinaArcadeOrder(player,rotate=true){
+ // Femur: Celina opens her route, and she answers every ordinary route after Aisha.
+ if(player===FEMUR_ID){
+  const rest=arcadeOpponents(player).filter(id=>id!==CELINA_ID);
+  return [CELINA_ID,...rest];
+ }
  const final=player===AISHA_ID?14:AISHA_ID;
  const closing=[11,13].filter(id=>id!==player);
  const early=arcadeOpponents(player).filter(id=>id!==final&&!closing.includes(id));
  const start=rotate?Math.floor(Math.random()*early.length):0;
  const regular=early.slice(start).concat(early.slice(0,start),closing);
  const route=[];regular.forEach((id,i)=>{route.push(id);if(player!==CELINA_ID&&(i+1)%2===0)route.push(CELINA_ID);});
- route.push(final);return route;
+ route.push(final);
+ return route;
 }
 function makeArcade(){
  resetArcadeScore();
