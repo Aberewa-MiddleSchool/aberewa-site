@@ -1,0 +1,107 @@
+{
+  "schema": "roda-femur-comic-pages-v1",
+  "format": "sprite-composited four-panel story pages; existing authored Femur art and arena backgrounds; unknown opponents remain off-panel; not newly drawn character-specific illustrations",
+  "rule": "Show these pages only through the Femur-specific story key. Suppress normal Celina interludes during Femur-selected routes. Render the actual speaker name for OPPONENT / PLAYER in the UI if supported. No cords, belts, or rank cords.",
+  "pages": {
+    "femur_opening_celina": {
+      "file": "femur_opening_celina.webp",
+      "title": "An Uninvited Challenger",
+      "panels": 4,
+      "width": 1600,
+      "height": 1000,
+      "when": "Femur selected: before first fight, against Celina",
+      "arena": "moonlit-colonnade",
+      "speakerPolicy": "Femur original poses only; other named speakers off-panel. Text tokens in runtime script remain available."
+    },
+    "femur_student": {
+      "file": "femur_student.webp",
+      "title": "The School Answers",
+      "panels": 4,
+      "width": 1600,
+      "height": 1000,
+      "when": "Femur selected: before any verified student opponent other than Celina",
+      "arena": "ivory-arches",
+      "speakerPolicy": "Femur original poses only; other named speakers off-panel. Text tokens in runtime script remain available."
+    },
+    "femur_protagonist": {
+      "file": "femur_protagonist.webp",
+      "title": "No Exceptions",
+      "panels": 4,
+      "width": 1600,
+      "height": 1000,
+      "when": "Femur selected: before either verified male protagonist",
+      "arena": "moonlit-colonnade",
+      "speakerPolicy": "Femur original poses only; other named speakers off-panel. Text tokens in runtime script remain available."
+    },
+    "femur_other": {
+      "file": "femur_other.webp",
+      "title": "Another Roda",
+      "panels": 4,
+      "width": 1600,
+      "height": 1000,
+      "when": "Femur selected: before any remaining non-student, non-protagonist opponent, including Aisha where applicable",
+      "arena": "obsidian-crystal-shrine",
+      "speakerPolicy": "Femur original poses only; other named speakers off-panel. Text tokens in runtime script remain available."
+    },
+    "challenge_femur": {
+      "file": "challenge_femur.webp",
+      "title": "One More Rival",
+      "panels": 4,
+      "width": 1600,
+      "height": 1000,
+      "when": "Ordinary Arcade: after Aisha has been defeated, before opponent Femur",
+      "arena": "sealed-serpent-gate",
+      "speakerPolicy": "Femur original poses only; other named speakers off-panel. Text tokens in runtime script remain available."
+    },
+    "aisha_challenge_femur": {
+      "file": "aisha_challenge_femur.webp",
+      "title": "Beyond the Androids",
+      "panels": 4,
+      "width": 1600,
+      "height": 1000,
+      "when": "Aisha special route: after every android fight, before Femur",
+      "arena": "indigo-hound-sanctuary",
+      "speakerPolicy": "Femur original poses only; other named speakers off-panel. Text tokens in runtime script remain available."
+    },
+    "femur_victory": {
+      "file": "femur_victory.webp",
+      "title": "A Rival Stands",
+      "panels": 4,
+      "width": 1600,
+      "height": 1000,
+      "when": "Femur selected: final full-route victory only",
+      "arena": "ivory-arches",
+      "speakerPolicy": "Femur original poses only; other named speakers off-panel. Text tokens in runtime script remain available."
+    },
+    "femur_defeat": {
+      "file": "femur_defeat.webp",
+      "title": "Not Finished",
+      "panels": 4,
+      "width": 1600,
+      "height": 1000,
+      "when": "Femur selected: match loss that ends the route",
+      "arena": "moonlit-colonnade",
+      "speakerPolicy": "Femur original poses only; other named speakers off-panel. Text tokens in runtime script remain available."
+    },
+    "player_defeats_femur": {
+      "file": "player_defeats_femur.webp",
+      "title": "The Answer",
+      "panels": 4,
+      "width": 1600,
+      "height": 1000,
+      "when": "Any other player, including Aisha, defeats Femur in the concluding match",
+      "arena": "obsidian-crystal-shrine",
+      "speakerPolicy": "Femur original poses only; other named speakers off-panel. Text tokens in runtime script remain available."
+    },
+    "player_loses_to_femur": {
+      "file": "player_loses_to_femur.webp",
+      "title": "The Rival Remains",
+      "panels": 4,
+      "width": 1600,
+      "height": 1000,
+      "when": "Any other player loses the concluding match against Femur",
+      "arena": "sealed-serpent-gate",
+      "speakerPolicy": "Femur original poses only; other named speakers off-panel. Text tokens in runtime script remain available."
+    }
+  }
+}

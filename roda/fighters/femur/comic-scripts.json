@@ -1,0 +1,262 @@
+{
+  "status": "Original draft scripts for review and illustration; not finished comic art",
+  "rules": "Four distinct illustrated panels per comic. OPponent/PLAYER tokens resolve to the exact selected fighter. No TFW crossover, deity dialogue, magic, or recycled Celina inserts. Preserve existing character designs. Do not render scripts as completed artwork.",
+  "comics": {
+    "femur_opening_celina": {
+      "title": "An Uninvited Challenger",
+      "when": "Femur selected: before first fight, against Celina",
+      "panels": [
+        {
+          "shot": "Femur enters the Moonlit Colonnade, her boots planted on the stone. Celina stands waiting in ginga.",
+          "speaker": "FEMUR",
+          "dialogue": "I came for your school. Every student. Every champion."
+        },
+        {
+          "shot": "Celina faces Femur without moving from her stance.",
+          "speaker": "CELINA",
+          "dialogue": "Then you can start with me."
+        },
+        {
+          "shot": "Close on Femur, relaxed shoulders, eyes fixed on Celina.",
+          "speaker": "FEMUR",
+          "dialogue": "Good. I want them to know who challenged them first."
+        },
+        {
+          "shot": "Wide shot of both combatants taking their places in the roda.",
+          "speaker": "CELINA",
+          "dialogue": "The roda will answer you."
+        }
+      ]
+    },
+    "femur_student": {
+      "title": "The School Answers",
+      "when": "Femur selected: before any verified student opponent other than Celina",
+      "panels": [
+        {
+          "shot": "The next student arrives in one of Femur's five arenas.",
+          "speaker": "FEMUR",
+          "dialogue": "Another student of Mestre Mare."
+        },
+        {
+          "shot": "The student calmly assumes their own original ginga.",
+          "speaker": "OPPONENT",
+          "dialogue": "I speak for myself."
+        },
+        {
+          "shot": "Femur raises her guard and steps into range.",
+          "speaker": "FEMUR",
+          "dialogue": "Then show me what you have learned."
+        },
+        {
+          "shot": "Both fighters face one another.",
+          "speaker": "OPPONENT",
+          "dialogue": "Watch my feet."
+        }
+      ]
+    },
+    "femur_protagonist": {
+      "title": "No Exceptions",
+      "when": "Femur selected: before either verified male protagonist",
+      "panels": [
+        {
+          "shot": "The selected male protagonist faces Femur in the arena.",
+          "speaker": "FEMUR",
+          "dialogue": "I have a challenge for you, too."
+        },
+        {
+          "shot": "The protagonist holds his guard, unarmed.",
+          "speaker": "OPPONENT",
+          "dialogue": "You are determined to fight everyone."
+        },
+        {
+          "shot": "Femur settles into her planted ginga.",
+          "speaker": "FEMUR",
+          "dialogue": "I am not leaving anyone out."
+        },
+        {
+          "shot": "A wide face-off on a clear fighting floor.",
+          "speaker": "OPPONENT",
+          "dialogue": "Then let us play."
+        }
+      ]
+    },
+    "femur_other": {
+      "title": "Another Roda",
+      "when": "Femur selected: before any remaining non-student, non-protagonist opponent, including Aisha where applicable",
+      "panels": [
+        {
+          "shot": "The opponent enters an arena.",
+          "speaker": "OPPONENT",
+          "dialogue": "You have come a long way."
+        },
+        {
+          "shot": "Femur studies the opponent without changing stance.",
+          "speaker": "FEMUR",
+          "dialogue": "And I have not finished."
+        },
+        {
+          "shot": "Both fighters take their places.",
+          "speaker": "OPPONENT",
+          "dialogue": "You will have to earn the next step."
+        },
+        {
+          "shot": "Femur raises her guard.",
+          "speaker": "FEMUR",
+          "dialogue": "I intend to."
+        }
+      ]
+    },
+    "challenge_femur": {
+      "title": "One More Rival",
+      "when": "Ordinary Arcade: after Aisha has been defeated, before opponent Femur",
+      "panels": [
+        {
+          "shot": "The victorious player enters Femur's arena. Femur is already waiting.",
+          "speaker": "FEMUR",
+          "dialogue": "You have finished your fight with Aisha. Not with me."
+        },
+        {
+          "shot": "The player turns toward Femur.",
+          "speaker": "PLAYER",
+          "dialogue": "What do you want?"
+        },
+        {
+          "shot": "Femur moves into her guard.",
+          "speaker": "FEMUR",
+          "dialogue": "One more answer. From your feet, not your words."
+        },
+        {
+          "shot": "Wide face-off, both in original Capoeira stances.",
+          "speaker": "PLAYER",
+          "dialogue": "Then enter the roda."
+        }
+      ]
+    },
+    "aisha_challenge_femur": {
+      "title": "Beyond the Androids",
+      "when": "Aisha special route: after every android fight, before Femur",
+      "panels": [
+        {
+          "shot": "Aisha stands after completing the android encounters. Femur enters the arena.",
+          "speaker": "FEMUR",
+          "dialogue": "You have finished fighting the androids."
+        },
+        {
+          "shot": "Aisha studies her new opponent.",
+          "speaker": "AISHA",
+          "dialogue": "And you are not one of them."
+        },
+        {
+          "shot": "Femur takes a grounded ginga stance.",
+          "speaker": "FEMUR",
+          "dialogue": "No. I fight with what I have learned."
+        },
+        {
+          "shot": "Both combatants face each other.",
+          "speaker": "AISHA",
+          "dialogue": "Then show me."
+        }
+      ]
+    },
+    "femur_victory": {
+      "title": "A Rival Stands",
+      "when": "Femur selected: final full-route victory only",
+      "panels": [
+        {
+          "shot": "Femur returns to ginga as the final opponent recovers.",
+          "speaker": "FEMUR",
+          "dialogue": "I have faced them all."
+        },
+        {
+          "shot": "Femur looks across the empty fighting floor.",
+          "speaker": "FEMUR",
+          "dialogue": "But a victory is not the end of my training."
+        },
+        {
+          "shot": "A quiet dressing room; her earned alternate Capoeira Angola uniform is ready.",
+          "speaker": "FEMUR",
+          "dialogue": "A new uniform. The same discipline."
+        },
+        {
+          "shot": "Femur wearing her approved alternate original Angola costume; show her full body and stable proportions.",
+          "caption": "FEMUR — ALTERNATE COSTUME UNLOCKED"
+        }
+      ]
+    },
+    "femur_defeat": {
+      "title": "Not Finished",
+      "when": "Femur selected: match loss that ends the route",
+      "panels": [
+        {
+          "shot": "Femur lies in her real defeat pose; opponent lowers their guard.",
+          "speaker": "OPPONENT",
+          "dialogue": "The match is over."
+        },
+        {
+          "shot": "Femur rises using her recovery poses.",
+          "speaker": "FEMUR",
+          "dialogue": "I know."
+        },
+        {
+          "shot": "Close on Femur as she straightens her headdress.",
+          "speaker": "FEMUR",
+          "dialogue": "I will study what I missed."
+        },
+        {
+          "shot": "Femur leaves the arena on foot.",
+          "caption": "THE RIVAL WILL RETURN."
+        }
+      ]
+    },
+    "player_defeats_femur": {
+      "title": "The Answer",
+      "when": "Any other player, including Aisha, defeats Femur in the concluding match",
+      "panels": [
+        {
+          "shot": "Femur falls and the player returns to their stance.",
+          "speaker": "PLAYER",
+          "dialogue": "That is my answer."
+        },
+        {
+          "shot": "Femur gets up without changing outfit or proportions.",
+          "speaker": "FEMUR",
+          "dialogue": "I heard it."
+        },
+        {
+          "shot": "Both face one another with hands lowered.",
+          "speaker": "FEMUR",
+          "dialogue": "I have more to learn."
+        },
+        {
+          "shot": "The player leaves as Femur returns to ginga.",
+          "caption": "RODA — THE CHALLENGE IS COMPLETE."
+        }
+      ]
+    },
+    "player_loses_to_femur": {
+      "title": "The Rival Remains",
+      "when": "Any other player loses the concluding match against Femur",
+      "panels": [
+        {
+          "shot": "The player is knocked down. Femur returns to ginga.",
+          "speaker": "FEMUR",
+          "dialogue": "That is not the answer I was looking for."
+        },
+        {
+          "shot": "The player recovers.",
+          "speaker": "PLAYER",
+          "dialogue": "This is not our last roda."
+        },
+        {
+          "shot": "Femur gives a small, restrained nod.",
+          "speaker": "FEMUR",
+          "dialogue": "I will be here."
+        },
+        {
+          "shot": "Femur remains in her stance on the arena floor.",
+          "caption": "RETURN AND TRY AGAIN."
+        }
+      ]
+    }
+  }
+}

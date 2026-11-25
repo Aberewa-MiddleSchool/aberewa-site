@@ -1,0 +1,57 @@
+{
+  "owner": "femur",
+  "continuity": "RODA",
+  "source": "Five selected Gula-inspired arena artworks, copied locally for Femur by creator request. No shared game runtime or story.",
+  "stages": [
+    {
+      "key": "moonlit-colonnade",
+      "name": "Moonlit Colonnade",
+      "file": "arenas/moonlit-colonnade.webp",
+      "width": 1920,
+      "height": 1080,
+      "owner": "femur",
+      "static": true,
+      "sha256": "3d598dcabca66e8d5e8c789f42f8fe594124591ae10d73eac52242f73088b9b4"
+    },
+    {
+      "key": "ivory-arches",
+      "name": "Hall of the Ivory Arches",
+      "file": "arenas/ivory-arches.webp",
+      "width": 1920,
+      "height": 1080,
+      "owner": "femur",
+      "static": true,
+      "sha256": "c7f7794fbfc4b8a1aa2e91112b986396af4585400c4b4a2712a806282dda897f"
+    },
+    {
+      "key": "obsidian-crystal-shrine",
+      "name": "Obsidian Crystal Shrine",
+      "file": "arenas/obsidian-crystal-shrine.webp",
+      "width": 1920,
+      "height": 1080,
+      "owner": "femur",
+      "static": true,
+      "sha256": "e768629091e8f20fe68f0db5533d162d76a9f01d83d486c8b056f6b09ddd67d1"
+    },
+    {
+      "key": "indigo-hound-sanctuary",
+      "name": "Indigo Hound Sanctuary",
+      "file": "arenas/indigo-hound-sanctuary.webp",
+      "width": 1920,
+      "height": 1080,
+      "owner": "femur",
+      "static": true,
+      "sha256": "aa322b2a0d31e62a5264cc2846a0f85d5c23fe45dd8a9fe92319f25a9af11f44"
+    },
+    {
+      "key": "sealed-serpent-gate",
+      "name": "The Sealed Serpent Gate",
+      "file": "arenas/sealed-serpent-gate.webp",
+      "width": 1920,
+      "height": 1080,
+      "owner": "femur",
+      "static": true,
+      "sha256": "f23618446bd3ae1f2d90833c7232809b4a3a990cfa867b7222b5339633b2ff16"
+    }
+  ]
+}
