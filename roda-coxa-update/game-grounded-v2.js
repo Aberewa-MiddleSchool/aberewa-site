@@ -298,7 +298,10 @@ function inJump(p){return p.takeoff>0||p.y>0||p.vy!==0}
 function requestAttack(p,n,crouched=p.crouch){if(p.id===COXA_ID&&!coxaCanAttack(n,crouched))return;if(inJump(p)||p.rollTime>0||p.down>0||p.hp<=0)return;if(p.attack===null&&p.stun<=0&&p.takeoff<=0)beginAttack(p,n,crouched);else p.buffer={n,crouched:!!crouched,ttl:24}}
 function advanceAir(p,dt){if(p.y>0||p.vy){p.y+=p.vy*dt;p.vy-=(p.vy>0?.52:.76)*dt;if(p.y<=0){p.y=0;p.vy=0;p.landing=6;burst(p.x,590,'#d0b48155',5)}}}
 function updateRoll(p,input,dt){
- const direction=Math.abs(input?.x||0)>((p.id===COXA_ID||p.id===14)?.35:.6)?Math.sign(input.x):0;
+ // Celina's CPU inputs are .60 on Easy and .85 on Normal; human D-pad is 1.
+ // Training guard dummies must stay planted, not roll away.
+ const celinaCpu=p.id===CELINA_ID&&(arcadeAutoplay||p===players[1]);
+ const direction=celinaCpu&&mode==='training'?0:Math.abs(input?.x||0)>((p.id===COXA_ID||p.id===14||celinaCpu)?.35:.6)?Math.sign(input.x):0;
  if(p.stun>0||p.down>0||p.hp<=0){p.rollTime=0;p.tapWindow=0;}
  const ready=!inJump(p)&&p.attack===null&&p.stun<=0&&p.down<=0&&p.hp>0;
  // Celina and Coxa begin a complete grounded roll on held horizontal input.
@@ -309,7 +312,7 @@ function updateRoll(p,input,dt){
   if(p.id===COXA_ID){p.coxaRollFacing=p.dir;p.tapWindow=0;p.travelDirection=0;p.travelDistance=0;}
   if(p.id===14){p.mareRollFacing=p.dir;p.tapWindow=0;p.travelDirection=0;p.travelDistance=0;}
  }
- if(p.id!==COXA_ID&&p.id!==14&&ready&&direction&&direction!==p.previousDirection&&!(p.rollTime>0)){
+ if(p.id!==CELINA_ID&&p.id!==COXA_ID&&p.id!==14&&ready&&direction&&direction!==p.previousDirection&&!(p.rollTime>0)){
   if(p.tapDirection===direction&&p.tapWindow>0){
    p.rollTime=24;p.rollDirection=direction;p.tapWindow=0;p.buffer=null;p.jumpBuffer=0;
   }else{p.tapDirection=direction;p.tapWindow=14;}
@@ -423,7 +426,7 @@ if(p.y>0&&s){p.vx+=(s.x*fighterTraits[p.id].speed-p.vx)*.16;p.x+=p.vx*dt};if(p.y
 if(active&&!p.hit&&strikeInReach(p,opp,m)&&Math.abs(opp.y-p.y)<110&&opp.down<=0&&opp.invuln<=0){p.hit=true;let avoids=opp.crouch&&m.level==='high';if(avoids){tone(220,.06,.03)}else{p.confirmed=true;let blocked=opp.block&&(m.level!=='low'||opp.crouch);if(blocked){opp.stun=7;opp.guardStun=true;opp.meter=Math.min(100,opp.meter+5);p.meter=Math.min(100,p.meter+3);opp.moveText='BLOCK';burst((p.x+opp.x)/2,opp.crouch?505:405,'#c9f9ff',9);sfx('block',m.rank);rumble(players.indexOf(opp),.14,60)}else{let dmg=p.id===14?opp.maxHp*.075:p.id===COXA_ID?coxaDamagePercent(opp.maxHp,m):p.id===CELINA_ID&&m.powerKick?opp.maxHp*.25:m.damage*Math.max(.55,1-p.combo*.1);let actualDamage=Math.min(opp.hp,dmg);opp.hp=Math.max(0,opp.hp-dmg);scoreContact(p,opp,actualDamage);opp.stun=m.rank===3?33:24;opp.guardStun=false;opp.flash=8;opp.attack=null;opp.buffer=null;p.combo++;p.comboTimer=80;p.meter=Math.min(100,p.meter+8);opp.meter=Math.min(100,opp.meter+6);opp.pushV=p.dir*m.push;opp.hitAt=tick;opp.reaction=m.level==='high'?4:1;opp.impactKind=m.level;if(m.knockdown||opp.hp<=0){opp.down=opp.hp<=0?999: m.rank===3?52:40;opp.comboTimer=0;opp.fallSoundAt=tick+8}rumble(players.indexOf(opp),m.rank===3?.55:.3,90);shake=m.rank===3?10:5;freeze=m.rank===3?4:2;burst((p.x+opp.x)/2,m.level==='low'?530:m.level==='high'?590-270*fighterTraits[opp.id].height/174:410,m.rank===3?fighterTraits[p.id].accent:'#ffe999',m.rank===3?36:18);sfx('hit',m.rank);vocal(opp.id,opp.hp<=0?'defeat':'hit')}}}
 let cancel=p.id!==14&&p.id!==COXA_ID&&p.id!==CELINA_ID&&p.id!==HEATHER_ID&&(p.confirmed||p.at>=m.start+m.active+2)&&p.at>=m.start+Math.max(2,m.active*.3)&&p.buffer&&(moveFor(p,p.buffer.n).rank>m.rank||(p.combo<3&&p.buffer.n!==p.attack&&moveFor(p,p.buffer.n).rank===m.rank));
 if(cancel||p.at>=m.start+m.active+m.end){p.attack=null;if(p.buffer){let queued=p.buffer;p.buffer=null;beginAttack(p,queued.n,queued.crouched)}}
-}else{p.crouch=p.y<=0&&s?.y>.5;p.block=!!s&&(s.guard===true||s.x*p.dir<-.35)&&p.y<=0;if(p.crouch)p.vx=0;if(!p.crouch&&s){let target=s.x*(p.block&&opp.attack!==null?2.7:fighterTraits[p.id].speed);if((p.id===COXA_ID||p.id===14)&&p.y===0){target=0;p.vx=0;}p.vx+=(target-p.vx)*(p.y>0?.16:.62);if((!s.x&&!inJump(p))||Math.abs(p.vx)<.03)p.vx=0;p.x+=p.vx*dt}if(p.jumpBuffer>0&&p.y<=0&&p.takeoff<=0){p.buffer=null;p.takeoff=3;p.jumpBuffer=0;p.crouch=false;p.block=false}p.moveText=p.crouch?(p.block?'LOW GUARD':'ESQUIVA'):p.block?'GUARD':'GINGA';if(p.buffer){let queued=p.buffer;p.buffer=null;beginAttack(p,queued.n,queued.crouched)}}
+}else{p.crouch=p.y<=0&&s?.y>.5;p.block=!!s&&(s.guard===true||s.x*p.dir<-.35)&&p.y<=0;if(p.crouch)p.vx=0;if(!p.crouch&&s){let target=s.x*(p.block&&opp.attack!==null?2.7:fighterTraits[p.id].speed);if((p.id===COXA_ID||p.id===14||p.id===CELINA_ID)&&p.y===0){target=0;p.vx=0;}p.vx+=(target-p.vx)*(p.y>0?.16:.62);if((!s.x&&!inJump(p))||Math.abs(p.vx)<.03)p.vx=0;p.x+=p.vx*dt}if(p.jumpBuffer>0&&p.y<=0&&p.takeoff<=0){p.buffer=null;p.takeoff=3;p.jumpBuffer=0;p.crouch=false;p.block=false}p.moveText=p.crouch?(p.block?'LOW GUARD':'ESQUIVA'):p.block?'GUARD':'GINGA';if(p.buffer){let queued=p.buffer;p.buffer=null;beginAttack(p,queued.n,queued.crouched)}}
 advanceAir(p,dt);p.x=clamp(p.x,100,1180);
 {
  const moving=p.y===0&&p.attack===null&&!p.crouch&&Math.abs(p.vx)>.25;
