@@ -173,7 +173,7 @@ if (typeof ResizeObserver === 'function') {
  window.addEventListener('resize', fitCanvas);
  fitCanvas();
 }
-const roster=[['Dandara','The rhythm keeper'],['Jurema','Braided thunder'],['Celina','Forty years of Capoeira Angola'],['Zinga','The fearless flame'],['Lua','Moonlit malícia'],['Iara','The flowing tide'],['Nala','Quiet lightning'],['Meilin','The gilded low guard'],['Jaci','Blue horizon'],['Sol','The golden hour'],['Ayana','The white braid'],['Bento','The steady mountain'],,['Nestor','The old fox'],['Mestre Maré','Mestre • all hard kicks • +10% health'],['Aisha','Sentinel of 2323'],['Heather','Oakland to Bahia'],['Coxa','Capoeira Angola novice']];
+const roster=[['Dandara','The rhythm keeper'],['Jurema','Braided thunder'],['Celina','Forty years of Capoeira Angola'],['Zinga','The fearless flame'],['Lua','Moonlit malícia'],['Iara','The flowing tide'],['Nala','Quiet lightning'],['Meilin','The gilded low guard'],['Jaci','Blue horizon'],['Sol','The golden hour'],['Ayana','The white braid'],['Bento','The steady mountain'],,['Nestor','The old fox'],['Mestre Maré','Two-hit combinations • 15% per full combo • no power moves'],['Aisha','Sentinel of 2323'],['Heather','Oakland to Bahia'],['Coxa','Capoeira Angola novice']];
 // Sprite sheets and saved ranks use stable fighter IDs.
 const playableIds=roster.flatMap((fighter,id)=>fighter?[id]:[]); // Freeze after the optional Coxa artwork preflight.
 function nextFighter(id,offset){
@@ -233,7 +233,7 @@ function makeArcade(){
 
 const redesignImages=Object.fromEntries(Object.entries(redesignData).map(([id,d])=>{const im=new Image();im.src=d.src;return [id,im]}));
 const privateArenaImages=['studio-v24.webp','meilin-hall-v24.webp','meilin-garden-v24.webp'].map(src=>{const im=new Image();im.src=src;return im});
-const bossImage=new Image();bossImage.src='mestre-mare-clean.webp';
+const bossImage=mareAtlas;
 const atlases=[1,2,3].map(n=>{let i=new Image();i.src=`fighters-${n}.webp`+(n===3?"?v=3.4.2":"");return i});
 let arcadeAutoplay=false;let roundIntro=false;let loaded=false,scene='title',mode='solo',difficulty='easy',menuMode=0,pick=0,pickStage=0,chosen=[0,5],players=[],round=1,wins=[0,0],timer=99,tick=0,last=0,freeze=0,shake=0,announcement='',announceTime=0,endWait=0,matchOver=false,pauseFocus=0,prevPads={},inputs=[],particles=[],sound=true,audioCtx,beat=0,lastPads=[],trainingDummy=0,rosterBuilt=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -434,17 +434,18 @@ function inJump(p){return p.takeoff>0||p.y>0||p.vy!==0}
 function requestAttack(p,n,crouched=p.crouch){if(p.id===COXA_ID&&!coxaCanAttack(n,crouched))return;if(inJump(p)||p.rollTime>0||p.down>0||p.hp<=0)return;if(p.attack===null&&p.stun<=0&&p.takeoff<=0)beginAttack(p,n,crouched);else p.buffer={n,crouched:!!crouched,ttl:24}}
 function advanceAir(p,dt){if(p.y>0||p.vy){p.y+=p.vy*dt;p.vy-=(p.vy>0?.52:.76)*dt;if(p.y<=0){p.y=0;p.vy=0;p.landing=6;burst(p.x,590,'#d0b48155',5)}}}
 function updateRoll(p,input,dt){
- const direction=Math.abs(input?.x||0)>(p.id===COXA_ID?.35:.6)?Math.sign(input.x):0;
+ const direction=Math.abs(input?.x||0)>((p.id===COXA_ID||p.id===14)?.35:.6)?Math.sign(input.x):0;
  if(p.stun>0||p.down>0||p.hp<=0){p.rollTime=0;p.tapWindow=0;}
  const ready=!inJump(p)&&p.attack===null&&p.stun<=0&&p.down<=0&&p.hp>0;
  // Celina and Coxa begin a complete grounded roll on held horizontal input.
  // Down + away and holding away against an incoming attack retain guard.
- if((p.id===CELINA_ID||p.id===COXA_ID)&&ready&&direction&&!(p.rollTime>0)&&!(input.y>.5)&&!(input.y<-.5)
+ if((p.id===CELINA_ID||p.id===COXA_ID||p.id===14)&&ready&&direction&&!(p.rollTime>0)&&!(input.y>.5)&&!(input.y<-.5)
     &&!(direction===-p.dir&&players.find(other=>other!==p)?.attack!=null)){
   p.rollTime=24;p.rollDirection=direction;p.buffer=null;p.jumpBuffer=0;
   if(p.id===COXA_ID){p.coxaRollFacing=p.dir;p.tapWindow=0;p.travelDirection=0;p.travelDistance=0;}
+  if(p.id===14){p.mareRollFacing=p.dir;p.tapWindow=0;p.travelDirection=0;p.travelDistance=0;}
  }
- if(p.id!==COXA_ID&&ready&&direction&&direction!==p.previousDirection&&!(p.rollTime>0)){
+ if(p.id!==COXA_ID&&p.id!==14&&ready&&direction&&direction!==p.previousDirection&&!(p.rollTime>0)){
   if(p.tapDirection===direction&&p.tapWindow>0){
    p.rollTime=24;p.rollDirection=direction;p.tapWindow=0;p.buffer=null;p.jumpBuffer=0;
   }else{p.tapDirection=direction;p.tapWindow=14;}
@@ -452,10 +453,11 @@ function updateRoll(p,input,dt){
  p.previousDirection=direction;p.tapWindow=Math.max(0,(p.tapWindow||0)-dt);
  if(!(p.rollTime>0))return false;
  p.x=clamp(p.x+p.rollDirection*5*dt,100,1180);p.vx=0;p.crouch=true;p.block=false;
- p.moveText=p.dir===p.rollDirection?'FORWARD ROLL':'BACKWARD ROLL';
+ p.moveText=(p.id===14?(p.mareRollFacing??p.dir):p.dir)===p.rollDirection?'FORWARD ROLL':'BACKWARD ROLL';
  p.rollTime=Math.max(0,p.rollTime-dt);
- if((p.id===CELINA_ID||p.id===COXA_ID)&&!p.rollTime)p.crouch=false;
+ if((p.id===CELINA_ID||p.id===COXA_ID||p.id===14)&&!p.rollTime)p.crouch=false;
  if(p.id===COXA_ID&&!p.rollTime)p.coxaRollFacing=null;
+ if(p.id===14&&!p.rollTime)p.mareRollFacing=null;
  return true;
 }
 // Source-head scale in each eight-frame row, measured against the upright
@@ -486,6 +488,7 @@ function legacyModelScale(id,source){return legacyModelScales[id]?.[source]??1;}
 const retreatArt=new Image();retreatArt.src='handspring-retreat.webp';
 const meilinRetreatArt=new Image();meilinRetreatArt.src='meilin-handspring.webp';
 function drawHandspring(p){
+ if(p.id===14){drawMare(p);return;}
  const age=32-p.rollTime;
  if(age<5||age>=27){drawFighterBody({...p,rollTime:0,crouch:true},fighterTraits[p.id]);return}
  const cell=age<12?0:age<21?1:2;
@@ -508,6 +511,7 @@ groundRollArt.src='ground-rolls.webp';
 // The height calibration is measured once against each fighter’s standing sprite.
 const groundRollTucks={"0": [0, 0.9189], "1": [1, 1.0041], "3": [2, 0.9486], "4": [3, 0.8164], "5": [4, 0.8736], "6": [5, 0.8616], "8": [6, 0.8265], "9": [7, 0.8679], "10": [8, 0.8921], "11": [9, 0.8719], "13": [10, 0.8044], "14": [11, 0.9692]};
 function drawGroundRoll(p){
+ if(p.id===14){drawMare(p);return;}
  const age=24-p.rollTime;
  if(age<4||age>20){drawFighterBody({...p,rollTime:0,crouch:true},fighterTraits[p.id]);return}
  const poseIndex=age<9?0:age<16?1:2;
@@ -546,7 +550,7 @@ function drawGroundRoll(p){
 function strikeInReach(p,opp,m){
  let reach=m.range;
  let open=p.id===AISHA_ID?2:0,close=7;
- if(p.id===CELINA_ID&&m.art){open=m.contact*m.frames/m.art.length;close=(m.contact+1)*m.frames/m.art.length;}
+ if((p.id===CELINA_ID||p.id===14)&&m.art){open=m.contact*m.frames/m.art.length;close=(m.contact+1)*m.frames/m.art.length;}
  if(opp.android && p.id===AISHA_ID){
   // The unit's front hurtbox extends beyond its ground anchor. Match the
   // contact window to the painted kick, and keep the normal close-range reach.
@@ -559,10 +563,10 @@ function strikeInReach(p,opp,m){
 function updateFighter(p,opp,s,dt){if(updateRoll(p,s,dt))return;if(p.fallSoundAt&&tick>=p.fallSoundAt){playSample('fall',.8);p.fallSoundAt=0}p.flash=Math.max(0,p.flash-dt);p.invuln=Math.max(0,p.invuln-dt);p.x=clamp(p.x+p.pushV*dt,100,1180);p.pushV*=Math.pow(.84,dt);if(p.down>0){p.down=Math.max(0,p.down-dt);p.attack=null;p.stun=0;p.block=false;advanceAir(p,dt);p.moveText=p.down<14?'RECOVERY':'KNOCKDOWN';if(p.down===0)p.invuln=12;return}p.comboTimer-=dt;if(p.comboTimer<=0)p.combo=0;p.meter=Math.min(100,p.meter+.045*dt);if(p.buffer){p.buffer.ttl-=dt;if(p.buffer.ttl<=0)p.buffer=null}if(p.stun>0){p.stun-=dt;p.block=p.guardStun===true;p.attack=null;p.moveText=p.guardStun?'BLOCK':'HIT';advanceAir(p,dt);return}p.guardStun=false;p.dir=opp.x>=p.x?1:-1;let up=!!s&&s.y<-.6;if(up&&!p.jumpHeld)p.jumpBuffer=9;p.jumpHeld=up;if(p.jumpBuffer>0)p.jumpBuffer-=dt;p.walk=s?.x||0;let stepStart=p.x;p.stepOffset=0;p.landing=Math.max(0,p.landing-dt);if(p.takeoff>0){p.takeoff-=dt;if(p.takeoff<=0){p.vy=14.8;p.y=1;p.crouch=false;p.block=false}}
 if(p.attack!==null){let base=moveFor(p,p.attack);p.at+=dt;let m=attackPhase(base,p.at);if(p.phase!==m.phase){p.phase=m.phase;p.hit=false;p.swingPlayed=false}let active=p.at>=m.start&&p.at<m.start+m.active;if(active&&!p.swingPlayed){p.swingPlayed=true;sfx('swing',m.rank)}
 if(p.y>0&&s){p.vx+=(s.x*fighterTraits[p.id].speed-p.vx)*.16;p.x+=p.vx*dt};if(p.y===0){if(p.at<m.start)p.x+=p.dir*(base.retreat||0)*dt;else if(active)p.x+=p.dir*m.travel*dt;}
-if(active&&!p.hit&&strikeInReach(p,opp,m)&&Math.abs(opp.y-p.y)<110&&opp.down<=0&&opp.invuln<=0){p.hit=true;let avoids=opp.crouch&&m.level==='high';if(avoids){tone(220,.06,.03)}else{p.confirmed=true;let blocked=opp.block&&(m.level!=='low'||opp.crouch);if(blocked){opp.stun=7;opp.guardStun=true;opp.meter=Math.min(100,opp.meter+5);p.meter=Math.min(100,p.meter+3);opp.moveText='BLOCK';burst((p.x+opp.x)/2,opp.crouch?505:405,'#c9f9ff',9);sfx('block',m.rank);rumble(players.indexOf(opp),.14,60)}else{let dmg=p.id===COXA_ID?coxaDamagePercent(opp.maxHp,m):p.id===CELINA_ID&&m.powerKick?opp.maxHp*.25:p.id===AISHA_ID?opp.maxHp*(p.android ? .01 : .02):m.damage*Math.max(.55,1-p.combo*.1);if(p.android)dmg*=1+p.strengthBonus/100;let actualDamage=Math.min(opp.hp,dmg);opp.hp=Math.max(0,opp.hp-dmg);scoreContact(p,opp,actualDamage);opp.stun=m.rank===3?33:24;opp.guardStun=false;opp.flash=8;opp.attack=null;opp.buffer=null;p.combo++;p.comboTimer=80;p.meter=Math.min(100,p.meter+8);opp.meter=Math.min(100,opp.meter+6);opp.pushV=p.dir*m.push;opp.hitAt=tick;opp.reaction=m.level==='high'?4:1;opp.impactKind=m.level;if(m.knockdown||opp.hp<=0){opp.down=opp.hp<=0?999: m.rank===3?52:40;opp.comboTimer=0;opp.fallSoundAt=tick+8}rumble(players.indexOf(opp),m.rank===3?.55:.3,90);if(mode!=='aisha'||m.phase===base.phases.length-1)shake=m.rank===3?10:5;freeze=m.rank===3?4:2;burst((p.x+opp.x)/2,m.level==='low'?530:m.level==='high'?590-270*fighterTraits[opp.id].height/174:410,m.rank===3?fighterTraits[p.id].accent:'#ffe999',m.rank===3?36:18);sfx('hit',m.rank);vocal(opp.id,opp.hp<=0?'defeat':'hit')}}}
-let cancel=p.id!==COXA_ID&&p.id!==CELINA_ID&&p.id!==HEATHER_ID&&p.id!==AISHA_ID&&(p.confirmed||p.at>=m.start+m.active+2)&&p.at>=m.start+Math.max(2,m.active*.3)&&p.buffer&&(moveFor(p,p.buffer.n).rank>m.rank||(p.combo<3&&p.buffer.n!==p.attack&&moveFor(p,p.buffer.n).rank===m.rank));
+if(active&&!p.hit&&strikeInReach(p,opp,m)&&Math.abs(opp.y-p.y)<110&&opp.down<=0&&opp.invuln<=0){p.hit=true;let avoids=opp.crouch&&m.level==='high';if(avoids){tone(220,.06,.03)}else{p.confirmed=true;let blocked=opp.block&&(m.level!=='low'||opp.crouch);if(blocked){opp.stun=7;opp.guardStun=true;opp.meter=Math.min(100,opp.meter+5);p.meter=Math.min(100,p.meter+3);opp.moveText='BLOCK';burst((p.x+opp.x)/2,opp.crouch?505:405,'#c9f9ff',9);sfx('block',m.rank);rumble(players.indexOf(opp),.14,60)}else{let dmg=p.id===14?opp.maxHp*.075:p.id===COXA_ID?coxaDamagePercent(opp.maxHp,m):p.id===CELINA_ID&&m.powerKick?opp.maxHp*.25:p.id===AISHA_ID?opp.maxHp*(p.android ? .01 : .02):m.damage*Math.max(.55,1-p.combo*.1);if(p.android)dmg*=1+p.strengthBonus/100;let actualDamage=Math.min(opp.hp,dmg);opp.hp=Math.max(0,opp.hp-dmg);scoreContact(p,opp,actualDamage);opp.stun=m.rank===3?33:24;opp.guardStun=false;opp.flash=8;opp.attack=null;opp.buffer=null;p.combo++;p.comboTimer=80;p.meter=Math.min(100,p.meter+8);opp.meter=Math.min(100,opp.meter+6);opp.pushV=p.dir*m.push;opp.hitAt=tick;opp.reaction=m.level==='high'?4:1;opp.impactKind=m.level;if(m.knockdown||opp.hp<=0){opp.down=opp.hp<=0?999: m.rank===3?52:40;opp.comboTimer=0;opp.fallSoundAt=tick+8}rumble(players.indexOf(opp),m.rank===3?.55:.3,90);if(mode!=='aisha'||m.phase===base.phases.length-1)shake=m.rank===3?10:5;freeze=m.rank===3?4:2;burst((p.x+opp.x)/2,m.level==='low'?530:m.level==='high'?590-270*fighterTraits[opp.id].height/174:410,m.rank===3?fighterTraits[p.id].accent:'#ffe999',m.rank===3?36:18);sfx('hit',m.rank);vocal(opp.id,opp.hp<=0?'defeat':'hit')}}}
+let cancel=p.id!==14&&p.id!==COXA_ID&&p.id!==CELINA_ID&&p.id!==HEATHER_ID&&p.id!==AISHA_ID&&(p.confirmed||p.at>=m.start+m.active+2)&&p.at>=m.start+Math.max(2,m.active*.3)&&p.buffer&&(moveFor(p,p.buffer.n).rank>m.rank||(p.combo<3&&p.buffer.n!==p.attack&&moveFor(p,p.buffer.n).rank===m.rank));
 if(cancel||p.at>=m.start+m.active+m.end){p.attack=null;if(p.buffer){let queued=p.buffer;p.buffer=null;beginAttack(p,queued.n,queued.crouched)}}
-}else{p.crouch=p.y<=0&&s?.y>.5;p.block=!!s&&(s.guard===true||s.x*p.dir<-.35)&&p.y<=0;if(p.crouch)p.vx=0;if(!p.crouch&&s){let target=s.x*(p.block&&opp.attack!==null?2.7:fighterTraits[p.id].speed);if(p.id===COXA_ID&&p.y===0){target=0;p.vx=0;}p.vx+=(target-p.vx)*(p.y>0?.16:.62);if((!s.x&&!inJump(p))||Math.abs(p.vx)<.03)p.vx=0;p.x+=p.vx*dt}if(p.jumpBuffer>0&&p.y<=0&&p.takeoff<=0){p.buffer=null;p.takeoff=3;p.jumpBuffer=0;p.crouch=false;p.block=false}p.moveText=p.crouch?(p.block?'LOW GUARD':'ESQUIVA'):p.block?'GUARD':'GINGA';if(p.buffer){let queued=p.buffer;p.buffer=null;beginAttack(p,queued.n,queued.crouched)}}
+}else{p.crouch=p.y<=0&&s?.y>.5;p.block=!!s&&(s.guard===true||s.x*p.dir<-.35)&&p.y<=0;if(p.crouch)p.vx=0;if(!p.crouch&&s){let target=s.x*(p.block&&opp.attack!==null?2.7:fighterTraits[p.id].speed);if((p.id===COXA_ID||p.id===14)&&p.y===0){target=0;p.vx=0;}p.vx+=(target-p.vx)*(p.y>0?.16:.62);if((!s.x&&!inJump(p))||Math.abs(p.vx)<.03)p.vx=0;p.x+=p.vx*dt}if(p.jumpBuffer>0&&p.y<=0&&p.takeoff<=0){p.buffer=null;p.takeoff=3;p.jumpBuffer=0;p.crouch=false;p.block=false}p.moveText=p.crouch?(p.block?'LOW GUARD':'ESQUIVA'):p.block?'GUARD':'GINGA';if(p.buffer){let queued=p.buffer;p.buffer=null;beginAttack(p,queued.n,queued.crouched)}}
 advanceAir(p,dt);p.x=clamp(p.x,100,1180);
 {
  const moving=p.y===0&&p.attack===null&&!p.crouch&&Math.abs(p.vx)>.25;
@@ -594,7 +598,7 @@ function androidInput(p,opp,dt){
  }
  return {x:0,y:0};
 }
-function ai(p,opp,dt){if(p.android)return androidInput(p,opp,dt);if(mode==='training'){if(trainingDummy===1)return{x:-p.dir,y:0};if(trainingDummy===2)return{x:-p.dir,y:1};return{x:0,y:0}}p.aiWait-=dt;let dist=Math.abs(p.x-opp.x),normal=difficulty==='normal';let s={x:dist>155?p.dir*(normal?.85:.6):0,y:0};if(opp.attack!==null&&dist<250&&normal&&p.aiWait<20){s.x=-p.dir;s.y=moveFor(opp,opp.attack).level==='low'?1:0}if(p.aiWait<=0){p.aiWait=normal?24+Math.random()*26:55+Math.random()*65;if(dist<255&&Math.random()<(normal?.9:.65)){let n=p.id===CELINA_ID?Math.floor(Math.random()*(p.meter>=50?8:6)):Math.floor(Math.random()*(p.id===7||p.meter>=50?6:4));requestAttack(p,n,(p.id===CELINA_ID&&n<6&&Math.random()<.3)||(p.id===COXA_ID&&n===1&&Math.random()<.35))}else if(dist<160)s.x=-p.dir}return s}
+function ai(p,opp,dt){if(p.android)return androidInput(p,opp,dt);if(mode==='training'){if(trainingDummy===1)return{x:-p.dir,y:0};if(trainingDummy===2)return{x:-p.dir,y:1};return{x:0,y:0}}p.aiWait-=dt;let dist=Math.abs(p.x-opp.x),normal=difficulty==='normal';let s={x:dist>155?p.dir*(normal?.85:.6):0,y:0};if(opp.attack!==null&&dist<250&&normal&&p.aiWait<20){s.x=-p.dir;s.y=moveFor(opp,opp.attack).level==='low'?1:0}if(p.aiWait<=0){p.aiWait=normal?24+Math.random()*26:55+Math.random()*65;if(dist<255&&Math.random()<(normal?.9:.65)){let n=p.id===14?Math.floor(Math.random()*8):p.id===CELINA_ID?Math.floor(Math.random()*(p.meter>=50?8:6)):Math.floor(Math.random()*(p.id===7||p.meter>=50?6:4));requestAttack(p,n,(p.id===CELINA_ID&&n<6&&Math.random()<.3)||(p.id===COXA_ID&&n===1&&Math.random()<.35))}else if(dist<160)s.x=-p.dir}return s}
 function finishRound(){
  const health=players.map(p=>p.hp/p.maxHp);
  const win=Math.abs(health[0]-health[1])<1e-9?-1:health[0]>health[1]?0:1;
@@ -668,23 +672,16 @@ const reactionImages=[1,2,3].map(n=>{let i=new Image();i.src=`reactions-${n}.web
 const transitionImages=[1,2,3].map(n=>{let i=new Image();i.src=`transitions-${n}.webp`+(n===3?"?v=3.4.2":"");return i});
 const normalSequenceImages=['normal-sequences-v22.webp?v=3.5','normal-sequences-v23-2.webp','normal-sequences-v23-3.webp'].map(src=>{const im=new Image();im.src=src;return im});
 const specialImages=Array.from({length:6},(_,n)=>{let i=new Image();i.src='special-'+(Math.floor(n/2)+1)+'-'+(n%2)+'.webp';return i});
-const leanMestreImages=Object.fromEntries(['base','extra','ginga','cycles'].map(k=>{let i=new Image();i.src='mestre-lean-'+k+'.webp';return [k,i]}));
+const leanMestreImages=Object.fromEntries(['base','extra','ginga','cycles'].map(k=>[k,mareAtlas]));
 const bencaoImages=[1,2,3,4,5].map(n=>{let i=new Image();i.src='bencao-'+n+'.webp'+(n===4?'?v=3.5':n===1||n===5?'?v=3.4.2':'');return i});
 const turnImages=[1,2,3].map(n=>{let i=new Image();i.src='turn-cycle-'+n+'.webp'+(n===3?'?v=3.5':'');return i});
 const highHitImage=new Image();highHitImage.src='high-hit.webp?v=3.4.2';
-const bossExtra=new Image();bossExtra.src='mestre-extra.webp';
+const bossExtra=mareAtlas;
 const reactionRects=[[[9, 7, 233, 283], [299, 40, 180, 250], [515, 178, 320, 115], [876, 66, 213, 223]], [[10, 299, 246, 273], [299, 322, 192, 248], [491, 460, 346, 115], [878, 346, 223, 226]], [[10, 579, 240, 263], [298, 606, 162, 235], [516, 730, 320, 115], [874, 624, 224, 219]], [[11, 850, 241, 282], [300, 878, 172, 247], [509, 1010, 328, 118], [874, 896, 227, 229]], [[9, 1132, 246, 266], [299, 1147, 175, 251], [514, 1279, 323, 121], [874, 1172, 227, 228]], [[11, 18, 253, 262], [334, 57, 157, 223], [515, 163, 328, 118], [880, 87, 220, 194]], [[29, 289, 237, 275], [323, 321, 157, 243], [517, 448, 326, 118], [880, 349, 220, 217]], [[9, 572, 256, 278], [325, 609, 179, 241], [504, 725, 340, 126], [878, 644, 223, 207]], [[28, 859, 240, 270], [319, 900, 159, 229], [511, 1010, 333, 119], [877, 918, 224, 212]], [[14, 1139, 255, 258], [327, 1171, 177, 226], [504, 1272, 340, 124], [876, 1196, 225, 201]], [[59, 5, 212, 240], [431, 30, 136, 216], [689, 146, 317, 103], [1103, 66, 197, 182]], [[45, 249, 234, 235], [422, 286, 147, 197], [707, 249, 303, 236], [1094, 310, 209, 175]], [[57, 485, 224, 232], [417, 518, 144, 198], [704, 485, 307, 236], [1093, 536, 210, 184]], [[42, 722, 242, 226], [417, 752, 144, 196], [704, 721, 303, 230], [1093, 774, 209, 176]], [[59, 952, 217, 193], [429, 971, 132, 174], [680, 1050, 322, 95], [1096, 990, 200, 155]]];
 function extraSprite(p,frame,x,y,isTransition=false,scale=1.4){if(p.id===14){drawLeanMestre(ctx,'extra',isTransition?4+frame:frame,x,y,p.dir);return}let im=p.id===14?bossExtra:(isTransition?transitionImages:reactionImages)[Math.floor(p.id/5)];if(!im.complete||!im.naturalWidth){sprite(ctx,p.id,p.down?4:1,x,y,scale,p.dir);return}if(!isTransition&&p.id!==14){let r=reactionRects[p.id][frame],factor=legacyModelScale(p.id,'reaction')*205*scale/reactionRects[p.id][0][3];ctx.save();ctx.translate(x,y);ctx.scale(p.dir,1);ctx.drawImage(im,...r,-r[2]*factor/2,-r[3]*factor,r[2]*factor,r[3]*factor);ctx.restore();return}let key=p.id===14?'mestre-extra.webp':'transitions-'+(Math.floor(p.id/5)+1)+'.webp';let index=p.id===14?(isTransition?4+frame:frame):(p.id%5)*8+frame;
  let r=spriteBounds[key][index],factor=legacyModelScale(p.id,'transition')*205*scale/(im.height/(p.id===14?3:5));ctx.save();ctx.translate(x,y);ctx.scale(p.dir,1);ctx.drawImage(im,...r,-r[2]*factor/2,-r[3]*factor,r[2]*factor,r[3]*factor);ctx.restore()}
 
-function drawLeanMestre(c,kind,frame,x,y,dir=1,opacity=1){
- const data=leanMestreData[kind],im=leanMestreImages[kind];if(!im.complete||!im.naturalWidth)return;
- const r=data.rects[frame];let reference=kind==='base'?data.rects[2][3]:kind==='extra'?data.rects[6][3]:kind==='ginga'?Math.max(...data.rects.map(r=>r[3])):data.rects[0][3];
- let factor=305/reference;
-
-
- c.save();c.globalAlpha*=opacity;c.translate(x,y);c.scale(dir,1);c.drawImage(im,...r,(r[0]-data.anchors[frame])*factor,-r[3]*factor,r[2]*factor,r[3]*factor);c.restore();
-}
+function drawLeanMestre(c,kind,frame,x,y,dir=1,opacity=1){drawMareAt(c,mareLegacyPose(kind,frame),x,y,dir,opacity);}
 function drawMotion(p,f,x=p.x,y=590-p.y,opacity=1){if(p.id===14){drawLeanMestre(ctx,'cycles',16+f,x,y,p.dir,opacity);return}let im=motionImages[Math.floor(p.id/5)];if(!im.complete||!im.naturalWidth)return;let r=motionRects[p.id][f],reference=motionRects[p.id][4][3],factor=legacyModelScale(p.id,'motion')*305/reference;// Tucked legs shorten the silhouette; do not raise the entire body again.
 let lift=0;ctx.save();ctx.globalAlpha*=opacity;ctx.translate(x,y-lift);ctx.scale(p.dir,1);ctx.drawImage(im,...r,-r[2]*factor/2,-r[3]*factor,r[2]*factor,r[3]*factor);ctx.restore()}
 function drawExclusiveSpecial(p,base,m,wind,recover){
@@ -709,6 +706,7 @@ function drawHighHit(p){if(p.id===14){drawLeanMestre(ctx,'extra',0,p.x,590-p.y,p
 // Use a document-qualified fragment because the school page has an external base URL.
 const fighterInkFilter = 'url("' + location.href.split('#')[0] + '#roda-fighter-ink")';
 function drawFighter(p){
+ if(p.id===14){drawMareFighter(p);return;}
  ctx.fillStyle='#10190f66';ctx.beginPath();ctx.ellipse(p.x,592,Math.max(18,82*(1-p.y/420))*fighterTraits[p.id].build,Math.max(5,14-p.y*.025),0,0,Math.PI*2);ctx.fill();
  const t=fighterTraits[p.id],h=visualHeight(p.id);ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(h*t.build,h);ctx.translate(-p.x,-(590-p.y));
  if(p.id!==COXA_ID&&p.id!==CELINA_ID&&!p.android){
@@ -727,7 +725,7 @@ function drawFighter(p){
  ctx.restore();
  if(p.combo>=2&&p.comboTimer>0){text(p.combo+' HIT',p.x,205,34,'#ffdb6e','center');text('COMBINATION',p.x,225,12,'#eee6c8','center')}
 }
-function drawFighterBody(p,t){let ground=590-p.y;if(combatData[p.id]){drawCompleteFighter(p);return;}
+function drawFighterBody(p,t){if(p.id===14){drawMare(p);return;}let ground=590-p.y;if(combatData[p.id]){drawCompleteFighter(p);return;}
  if(identityRowScale[p.id]){drawRedesignedFighter(p);return}
  if(p.hp<=0){drawDefeat(p);return}
  if(p.down<=0&&p.stun<=0&&p.attack===null&&p.y===0&&!p.crouch&&p.takeoff<=0&&p.landing<=0){drawGinga(p);return}
@@ -763,6 +761,7 @@ function drawSpecialFrame(p,slot,frame){
 }
 
 function drawAttack(p,t){
+ if(p.id===14){drawMare(p);return;}
  if(redesignData[p.id]){drawRedesignedAttack(p);return}
  let base=moveFor(p,p.attack),m=attackPhase(base,p.at),wind=p.at<base.start,recover=p.at>=base.start+base.active;
  if(base.exclusiveSlot!==undefined&&!base.crouching){drawExclusiveSpecial(p,base,m,wind,recover);return}
@@ -811,7 +810,7 @@ function drawAttack(p,t){
  ctx.stroke();ctx.restore();
 }
 
-function hud(){if(mode==='solo'||mode==='aisha'||mode==='coxa'){text('SCORE '+arcadeScore.total.toLocaleString(),640,26,20,'#ffdb6e','center');if(scoreToast&&tick<scoreToast.until)text(scoreToast.text,640,174,20,'#ffdb6e','center');}players.forEach((p,i)=>{let x=i?770:65;let right=i===1;text(p.android?androidLabel():roster[p.id][0].toUpperCase(),right?1215:65,46,30,'#fff0cc',right?'right':'left');text(i===0?(arcadeAutoplay?'CPU · WATCH ARCADE':'YOU'):p.android?`HIT STRENGTH ${100+p.strengthBonus}%`:mode==='training'?'TRAINING DUMMY':`CPU · ${difficulty.toUpperCase()}`,right?1215:65,65,12,'#d3d6b5',right?'right':'left');rect(x,78,445,27,'#141f18');rect(x+3,81,439,21,'#6c392c');let w=439*p.hp/p.maxHp;rect(right?x+442-w:x+3,81,w,21,p.hp>30?'#e7c45d':'#e15d3b');for(let j=0;j<winsNeeded();j++){ctx.fillStyle=j<wins[i]?'#f6d76e':'#72715a';ctx.beginPath();ctx.arc(right?1204-j*21:76+j*21,121,5,0,7);ctx.fill()}if(p.id!==AISHA_ID&&!isProtagonist(p.id)){rect(x,601,445,12,'#15231c');rect(right?x+445-p.meter*4.45:x,601,p.meter*4.45,12,i?'#72bbc0':'#f1c457');text('AXÉ '+Math.floor(p.meter)+' / 100',right?1215:65,637,13,'#e5d8b0',right?'right':'left');}text(p.moveText,right?1215:65,581,16,'#fff1ca',right?'right':'left')});text(String(Math.ceil(timer)),640,100,70,'#fff0c7','center');text(mode==='coxa'?'STAGE '+coxaRun.stage+'/20 · ROUND '+round:mode==='aisha'?roundLabel():roundLimit===1?formatLabel():`ROUND ${round} · BEST OF 5`,640,124,12,'#e4dcb5','center');text(stageNames[activeStage]+' · BRASIL',640,650,13,'#fff5dd','center');if(mode==='training'){rect(28,156,260,217,'#15251ce8');text('MOVEMENT LAB',43,181,20,'#f3cf68');characterMoves[players[0].id].forEach((m,i)=>text(m.button+'  '+(m.signature||m.name),43,208+i*(players[0].id===14?20:25),15,'#efe9d1'));text(players[0].id===COXA_ID?'DOWN + B ONLY: TWO-LEG LOW KICK':players[0].id===AISHA_ID?'HOLD DOWN: SIX CROUCHING RELAYS':'DOWN + A/B/X/Y: LOW KICKS',43,380,12,'#ffe08a');text('VIEW: DUMMY '+['STAND','GUARD','LOW GUARD'][trainingDummy],43,395,14,'#ffe08a');text(players[0].id===14?'HOLD VIEW + LT: RESET · RT: ARENA':'LT: RESET · RT: NEXT ARENA',43,415,14,'#ffe08a');text(fighterPlans[players[0].id].toUpperCase(),640,160,16,'#ffe08a','center');if(players[0].attack!==null)text(moveFor(players[0],players[0].attack).name,640,188,17,'#fff1cc','center');inputs.forEach((h,i)=>text(h.text,1240,180+i*25,15,i===0?'#ffdc76':'#f1ead3','right'))}}
+function hud(){if(mode==='solo'||mode==='aisha'||mode==='coxa'){text('SCORE '+arcadeScore.total.toLocaleString(),640,26,20,'#ffdb6e','center');if(scoreToast&&tick<scoreToast.until)text(scoreToast.text,640,174,20,'#ffdb6e','center');}players.forEach((p,i)=>{let x=i?770:65;let right=i===1;text(p.android?androidLabel():roster[p.id][0].toUpperCase(),right?1215:65,46,30,'#fff0cc',right?'right':'left');text(i===0?(arcadeAutoplay?'CPU · WATCH ARCADE':'YOU'):p.android?`HIT STRENGTH ${100+p.strengthBonus}%`:mode==='training'?'TRAINING DUMMY':`CPU · ${difficulty.toUpperCase()}`,right?1215:65,65,12,'#d3d6b5',right?'right':'left');rect(x,78,445,27,'#141f18');rect(x+3,81,439,21,'#6c392c');let w=439*p.hp/p.maxHp;rect(right?x+442-w:x+3,81,w,21,p.hp>30?'#e7c45d':'#e15d3b');for(let j=0;j<winsNeeded();j++){ctx.fillStyle=j<wins[i]?'#f6d76e':'#72715a';ctx.beginPath();ctx.arc(right?1204-j*21:76+j*21,121,5,0,7);ctx.fill()}if(p.id!==14&&p.id!==AISHA_ID&&!isProtagonist(p.id)){rect(x,601,445,12,'#15231c');rect(right?x+445-p.meter*4.45:x,601,p.meter*4.45,12,i?'#72bbc0':'#f1c457');text('AXÉ '+Math.floor(p.meter)+' / 100',right?1215:65,637,13,'#e5d8b0',right?'right':'left');}text(p.moveText,right?1215:65,581,16,'#fff1ca',right?'right':'left')});text(String(Math.ceil(timer)),640,100,70,'#fff0c7','center');text(mode==='coxa'?'STAGE '+coxaRun.stage+'/20 · ROUND '+round:mode==='aisha'?roundLabel():roundLimit===1?formatLabel():`ROUND ${round} · BEST OF 5`,640,124,12,'#e4dcb5','center');text(stageNames[activeStage]+' · BRASIL',640,650,13,'#fff5dd','center');if(mode==='training'){rect(28,156,260,217,'#15251ce8');text('MOVEMENT LAB',43,181,20,'#f3cf68');characterMoves[players[0].id].forEach((m,i)=>text(m.button+'  '+(m.signature||m.name),43,208+i*(players[0].id===14?20:25),15,'#efe9d1'));text(players[0].id===COXA_ID?'DOWN + B ONLY: TWO-LEG LOW KICK':players[0].id===AISHA_ID?'HOLD DOWN: SIX CROUCHING RELAYS':'DOWN + A/B/X/Y: LOW KICKS',43,380,12,'#ffe08a');text('VIEW: DUMMY '+['STAND','GUARD','LOW GUARD'][trainingDummy],43,395,14,'#ffe08a');text(players[0].id===14?'HOLD VIEW + LT: RESET · RT: ARENA':'LT: RESET · RT: NEXT ARENA',43,415,14,'#ffe08a');text(fighterPlans[players[0].id].toUpperCase(),640,160,16,'#ffe08a','center');if(players[0].attack!==null)text(moveFor(players[0],players[0].attack).name,640,188,17,'#fff1cc','center');inputs.forEach((h,i)=>text(h.text,1240,180+i*25,15,i===0?'#ffdc76':'#f1ead3','right'))}}
 // Light only the painted arena, keeping the fighters and health bars readable.
 function lightSentinelStudio(){
  const hue=((androidWave-1)*137+28)%360;
@@ -889,6 +888,7 @@ const portraitImages=["dandara", "jurema", "celina", "zinga", "lua", "iara", "na
 portraitImages[COXA_ID]=coxaCard;
 // A held rear-foot ginga base while idle; feet never move with the breath.
 function drawGinga(p){
+ if(p.id===14){drawMare(p);return;}
  if(p.id===9){drawRedesignFrame(p,1);return;}
  const d=gingaV26[p.id],im=gingaImagesV26[p.id];if(!d||!im?.complete||!im.naturalWidth)return;
  // Hold the reference guard when stationary. A stable canvas origin replaces per-frame foot centering.
@@ -982,44 +982,36 @@ $('#savescore').onclick=saveArcadeName;$('#watchending').onclick=()=>openComicEn
 const confirmPlayable=confirmPick;confirmPick=function(){if(!playableIds.includes(pick))return;confirmPlayable()};$('#confirm').onclick=confirmPick;
 
 const gingaStanceHeights={"0": 201, "1": 193, "2": 189, "3": 188, "4": 185, "5": 197, "6": 200, "7": 199, "8": 197, "9": 186, "10": 219, "11": 204, "12": 198, "13": 189, "14": 163};
-const combatData={"14": {"src": "mestre-complete-v27.webp", "referenceHeight": 147, "stanceHeight": 139}};
-const flipData={"7":{"src":"flip-7-v27.webp","referenceHeight":205,"stanceHeight":178},"9":{"src":"flip-9-v27.webp","referenceHeight":212,"stanceHeight":204},"14":{"src":"flip-14-v27.webp","referenceHeight":226,"stanceHeight":201}};
+const combatData={"14":{"src":mareAtlas.src,"referenceHeight":152,"stanceHeight":152}};
+const flipData={"7":{"src":"flip-7-v27.webp","referenceHeight":205,"stanceHeight":178},"9":{"src":"flip-9-v27.webp","referenceHeight":212,"stanceHeight":204},"14":{"src":mareAtlas.src,"referenceHeight":152,"stanceHeight":152}};
 // Mestre uses one full-body sheet for every state.
-const combatImages=Object.fromEntries(Object.entries(combatData).map(([id,d])=>{const im=new Image();im.src=d.src;return[id,im]}));
-const flipImages=Object.fromEntries(Object.entries(flipData).map(([id,d])=>{const im=new Image();im.src=d.src;return[id,im]}));
+const combatImages={14:mareAtlas};
+const flipImages=Object.fromEntries(Object.entries(flipData).map(([id,d])=>{if(Number(id)===14)return[id,mareAtlas];const im=new Image();im.src=d.src;return[id,im]}));
 const combatContacts={14:[[1,3,5],[2,4,6],[2,4,6],[2,5,6],[2,4,6],[2,4,6]]};
 const combatKeys={14:[['rasteira','bencao','frente'],['rasteira','chapa','costas'],['frente','costas','armada'],['chapa','costas','martelo'],['au','chapa','rasteira'],['rasteira','bencao','martelo']]};
 const combatNames={14:['Maré Ascendente','Corrente Rasteira','Giro do Mestre','Recuo e Resposta','Aú da Maré','Espiral Dourada']};
-for(const id of [14])characterMoves[id].forEach((m,n)=>{m.phases=combatKeys[id][n].map((key,i)=>({...m.phases[i],...techniqueBook[key],key,contactFrame:combatContacts[id][n][i],knockdown:i===2,push:i===2?4:0}));m.name=combatNames[id][n];m.signature=m.name;});
-// Assemble two grounded chains from the matching contact poses on Maré's sheet.
-for(const [button,name,sequence] of [
- ['LT','Low Tide',[[1,0],[0,1]]],
- ['RT','Turning Tide',[[3,1],[3,2]]]
-]){
- const base=characterMoves[14][0];
- const phases=sequence.map(([slot,index],step)=>({
-  ...characterMoves[14][slot].phases[index],artRow:slot+2,
-  knockdown:step===sequence.length-1,push:step===sequence.length-1?4:0
- }));
- characterMoves[14].push({...base,...phases[0],button,name,signature:name,phases,active:phases.reduce((total,phase)=>total+phase.frames,0),cost:0});
-}
+installMareMoves();
 function combatFrame(p){
+ if(p.id===14)return marePose(p);
  if(p.hp<=0||p.down>0){const age=Math.max(0,tick-p.hitAt);return p.hp>0&&p.down<12?14:age<8?10:age<16?11:age<24?12:13;}
  if(p.stun>0&&!p.guardStun)return 10;
  if(p.attack!==null){const b=moveFor(p,p.attack),m=attackPhase(b,p.at),row=(m.artRow??(p.attack+2))*8;if(p.at<b.start)return row;if(p.at>=b.start+b.active)return row+7;return row+Math.min(7,m.contactFrame+(m.phaseFrame>=7?1:0));}
  if(p.y>0)return 15;if(p.takeoff>0||p.landing>0||p.crouch)return 9;if(p.block)return 8;return Math.abs(p.vx)>.25?Math.floor((((p.ginga%176)+176)%176)/22):0;
 }
 function drawPacked(p,im,index,f){
+ if(p.id===14){drawMare(p);return;}
+ if(im===mareAtlas){drawMareAt(ctx,index,p.x,590-(p.y||0),p.dir);return;}
  // The original crouch has a second arm behind the planted hand. The clean
  // squat shares its floor anchor and is used for both crouching and rolling.
  if(p.id===14 && im===combatImages[14] && index===9)index=57;
  if(!im?.complete||!im.naturalWidth)return;ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(p.dir,1);ctx.drawImage(im,index%8*320,Math.floor(index/8)*320,320,320,-160*f,-300*f,320*f,320*f);ctx.restore();}
 function drawCompleteFighter(p){
+ if(p.id===14){drawMare(p);return;}
  const index=combatFrame(p),row=Math.floor(index/8);
  drawPacked(p,combatImages[p.id],index,305/(combatData[p.id].referenceHeight*identityRowScale[p.id][row]));
 }
 const flipNames={7:'Jade Inversion',9:'Solar Arc',2:'Memória no Ar',14:'Maré Invertida'};
-function drawVeteranFlip(p){const b=moveFor(p,p.attack),m=attackPhase(b,p.at),index=p.at<b.start?0:p.at>=b.start+b.active?7:1+m.phase*2+(m.phaseFrame>=7?1:0);const d=flipData[p.id],ref=combatData[p.id],rd=redesignData[p.id];const stance=ref?305*ref.stanceHeight/ref.referenceHeight:305*rd.rects[0][3]/rd.referenceHeight;drawPacked(p,flipImages[p.id],index,stance/d.stanceHeight);}
+function drawVeteranFlip(p){if(p.id===14){drawMare(p);return;}const b=moveFor(p,p.attack),m=attackPhase(b,p.at),index=p.at<b.start?0:p.at>=b.start+b.active?7:1+m.phase*2+(m.phaseFrame>=7?1:0);const d=flipData[p.id],ref=combatData[p.id],rd=redesignData[p.id];const stance=ref?305*ref.stanceHeight/ref.referenceHeight:305*rd.rects[0][3]/rd.referenceHeight;drawPacked(p,flipImages[p.id],index,stance/d.stanceHeight);}
 if(!document.querySelector('[data-mode="watcharcade"]')){const b=document.createElement('button');b.dataset.mode='watcharcade';b.innerHTML='<b>WATCH ARCADE</b><span>CPU PLAYS THE STORY LADDER</span>';b.onclick=()=>setMode('watcharcade');document.querySelector('.mode-buttons').append(b);}
 const androidButton=document.createElement('button');
 androidButton.dataset.mode='aisha';
@@ -1038,13 +1030,13 @@ const foundationSound=document.createElement('button');foundationSound.textConte
 document.querySelector('.cabinet-top').append(foundationSound,foundationSkip);
 function startFoundation(){scene='foundation';foundationStarted=tick;show(null);foundationSkip.hidden=false;foundationSound.hidden=false;}
 function finishFoundation(){scene='menu';show('menu');foundationSkip.hidden=true;foundationSound.hidden=true;setStageMusic(-1);}
-function drawFoundation(){const age=tick-foundationStarted;if(age>=1440){finishFoundation();return;}const part=Math.floor(age/360);rect(0,0,W,H,'#15211c');ctx.strokeStyle='#c7a04b';ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(640,590,310,48,0,0,Math.PI*2);ctx.stroke();text('THE MOVEMENT BEHIND RODA',640,72,38,'#edc768','center');const titles=['GINGA · THE MOVING BASE','BÊNÇÃO · DIRECT PRESSURE','MEIA-LUA DE COSTAS · TURNING KICK','RASTEIRA · LOW SWEEP'];text(titles[part],640,122,25,'#fff0d1','center');const frames=[[0,1,2,3,4,5,6,7],[16,18,19,20,23],[32,35,36,37,39],[24,25,26,27,31]][part];drawPacked({x:640,y:0,dir:1},combatImages[14],frames[Math.floor(age/24)%frames.length],305/combatData[14].referenceHeight);text('Inspired by Mestre Curtis Pierre’s published movement curriculum',640,637,18,'#d5cdaa','center');text('Arcade interpretations · not an instructional demonstration',640,665,15,'#b4baae','center');}
+function drawFoundation(){const age=tick-foundationStarted;if(age>=1440){finishFoundation();return;}const part=Math.floor(age/360);rect(0,0,W,H,'#15211c');ctx.strokeStyle='#c7a04b';ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(640,590,310,48,0,0,Math.PI*2);ctx.stroke();text('THE MOVEMENT BEHIND RODA',640,72,38,'#edc768','center');const titles=['GINGA · THE MOVING BASE','BÊNÇÃO · DIRECT PRESSURE','MEIA-LUA DE COSTAS · TURNING KICK','RASTEIRA · LOW SWEEP'];text(titles[part],640,122,25,'#fff0d1','center');drawMareAt(ctx,mareIntroPose(part,age),640,590,1);text('Inspired by Mestre Curtis Pierre’s published movement curriculum',640,637,18,'#d5cdaa','center');text('Arcade interpretations · not an instructional demonstration',640,665,15,'#b4baae','center');}
 foundationSkip.hidden=true;foundationSound.hidden=true;
 // The school page shares this runtime, so its older shell receives current labels.
 const versionLabel=document.querySelector('.intro .eyebrow');if(versionLabel)versionLabel.textContent='RODA / '+playableIds.length+' FIGHTERS · 99-SECOND ROUNDS';
 const reviewLink=document.querySelector('.review-entry a');if(reviewLink)reviewLink.textContent='WATCH THE ACTUAL GAME ANIMATIONS';
 const arenaHeading=document.querySelector('.soundtrack h3');if(arenaHeading)arenaHeading.textContent=stageNames.length+' ARENAS. A WORLD OF RHYTHM.';
 const menuTag=document.querySelector('.menupanel .tag');if(menuTag)menuTag.textContent='PLAY OR WATCH';
-const mestreNote=document.querySelector('.under p.small');if(mestreNote)mestreNote.textContent='MESTRE MARÉ: All six buttons deliver three-hit combinations. Bento and Nestor each have six grounded three-kick combinations.';
+const mestreNote=document.querySelector('.under p.small');if(mestreNote)mestreNote.textContent='MESTRE MARÉ: Eight grounded two-hit combinations; each clean hit takes 7.5% of maximum health. No power moves. Bento and Nestor retain six grounded three-kick combinations.';
 
 retrySentinelScores();
