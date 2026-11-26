@@ -324,7 +324,7 @@ function updateRoll(p,input,dt){
   if(p.id===COXA_ID){p.coxaRollFacing=p.dir;p.tapWindow=0;p.travelDirection=0;p.travelDistance=0;}
   if(p.id===14){p.mareRollFacing=p.dir;p.tapWindow=0;p.travelDirection=0;p.travelDistance=0;}
  }
- if(p.id!==CELINA_ID&&p.id!==COXA_ID&&p.id!==14&&ready&&direction&&direction!==p.previousDirection&&!(p.rollTime>0)){
+ if(p.id!==CELINA_ID&&p.id!==COXA_ID&&p.id!==14&&ready&&!(input?.y>.5)&&direction&&direction!==p.previousDirection&&!(p.rollTime>0)){
   if(p.tapDirection===direction&&p.tapWindow>0){
    p.rollTime=24;p.rollDirection=direction;p.tapWindow=0;p.buffer=null;p.jumpBuffer=0;
   }else{p.tapDirection=direction;p.tapWindow=14;}
@@ -434,13 +434,26 @@ function strikeInReach(p,opp,m){
  if((p.id===CELINA_ID||p.id===14)&&m.art){open=m.contact*m.frames/m.art.length;close=(m.contact+1)*m.frames/m.art.length;}
  return m.phaseFrame>=open && m.phaseFrame<close && Math.abs(opp.x-p.x)<reach;
 }
+function holdingGuard(p,input){
+ return !!input && p.y===0 && p.takeoff<=0 && !p.rollTime &&
+  (input.y>.5 || input.guard===true || input.x*p.dir<-.35);
+}
+function blocksKick(defender,move){
+ if(!defender.block)return false;
+ if(!defender.crouch)return move.level!=='low';
+ const phaseName=(move.name||'').split(' → ')[move.phase||0]||'';
+ const sweep=move.key==='rasteira'||move.key==='lowsweep'||move.visual==='sweep'||
+  /^(rasteira|varredura|sweep)\b/i.test(phaseName);
+ return !sweep;
+}
+
 function updateFighter(p,opp,s,dt){if(updateRoll(p,s,dt))return;if(p.fallSoundAt&&tick>=p.fallSoundAt){playSample('fall',.8);p.fallSoundAt=0}p.flash=Math.max(0,p.flash-dt);p.invuln=Math.max(0,p.invuln-dt);p.x=clamp(p.x+p.pushV*dt,100,1180);p.pushV*=Math.pow(.84,dt);if(p.down>0){p.down=Math.max(0,p.down-dt);p.attack=null;p.stun=0;p.block=false;advanceAir(p,dt);p.moveText=p.down<14?'RECOVERY':'KNOCKDOWN';if(p.down===0)p.invuln=12;return}p.comboTimer-=dt;if(p.comboTimer<=0)p.combo=0;p.meter=Math.min(100,p.meter+.045*dt);if(p.buffer){p.buffer.ttl-=dt;if(p.buffer.ttl<=0)p.buffer=null}if(p.stun>0){p.stun-=dt;p.block=p.guardStun===true;p.attack=null;p.moveText=p.guardStun?'BLOCK':'HIT';advanceAir(p,dt);return}p.guardStun=false;p.dir=opp.x>=p.x?1:-1;let up=!!s&&s.y<-.6;if(up&&!p.jumpHeld)p.jumpBuffer=9;p.jumpHeld=up;if(p.jumpBuffer>0)p.jumpBuffer-=dt;p.walk=s?.x||0;let stepStart=p.x;p.stepOffset=0;p.landing=Math.max(0,p.landing-dt);if(p.takeoff>0){p.takeoff-=dt;if(p.takeoff<=0){p.vy=14.8;p.y=1;p.crouch=false;p.block=false}}
 if(p.attack!==null){let base=moveFor(p,p.attack);p.at+=dt;let m=attackPhase(base,p.at);if(p.phase!==m.phase){p.phase=m.phase;p.hit=false;p.swingPlayed=false}let active=p.at>=m.start&&p.at<m.start+m.active;if(active&&!p.swingPlayed){p.swingPlayed=true;sfx('swing',m.rank)}
 if(p.y>0&&s){p.vx+=(s.x*fighterTraits[p.id].speed-p.vx)*.16;p.x+=p.vx*dt};if(p.y===0){if(p.at<m.start)p.x+=p.dir*(base.retreat||0)*dt;else if(active)p.x+=p.dir*m.travel*dt;}
-if(active&&!p.hit&&strikeInReach(p,opp,m)&&Math.abs(opp.y-p.y)<110&&opp.down<=0&&opp.invuln<=0){p.hit=true;let avoids=opp.crouch&&m.level==='high';if(avoids){tone(220,.06,.03)}else{p.confirmed=true;let blocked=opp.block&&(m.level!=='low'||opp.crouch);if(blocked){opp.stun=7;opp.guardStun=true;opp.meter=Math.min(100,opp.meter+5);p.meter=Math.min(100,p.meter+3);opp.moveText='BLOCK';burst((p.x+opp.x)/2,opp.crouch?505:405,'#c9f9ff',9);sfx('block',m.rank);rumble(players.indexOf(opp),.14,60)}else{let dmg=p.id===CINZA_ID?opp.maxHp*m.damage/100:p.id===14?opp.maxHp*.075:p.id===COXA_ID?coxaDamagePercent(opp.maxHp,m):p.id===CELINA_ID&&m.powerKick?opp.maxHp*.25:m.damage*Math.max(.55,1-p.combo*.1);let actualDamage=Math.min(opp.hp,dmg);opp.hp=Math.max(0,opp.hp-dmg);if(p.id===CINZA_ID)cinza.onCleanHit(p,m);scoreContact(p,opp,actualDamage);opp.stun=m.rank===3?33:24;opp.guardStun=false;opp.flash=8;opp.attack=null;opp.buffer=null;p.combo++;p.comboTimer=80;p.meter=Math.min(100,p.meter+8);opp.meter=Math.min(100,opp.meter+6);opp.pushV=p.dir*m.push;opp.hitAt=tick;opp.reaction=m.level==='high'?4:1;opp.impactKind=m.level;if(m.knockdown||opp.hp<=0){opp.down=opp.hp<=0?999: m.rank===3?52:40;opp.comboTimer=0;opp.fallSoundAt=tick+8}rumble(players.indexOf(opp),m.rank===3?.55:.3,90);shake=m.rank===3?10:5;freeze=m.rank===3?4:2;burst((p.x+opp.x)/2,m.level==='low'?530:m.level==='high'?590-270*fighterTraits[opp.id].height/174:410,m.rank===3?fighterTraits[p.id].accent:'#ffe999',m.rank===3?36:18);sfx('hit',m.rank);vocal(opp.id,opp.hp<=0?'defeat':'hit')}}}
+if(active&&!p.hit&&strikeInReach(p,opp,m)&&Math.abs(opp.y-p.y)<110&&opp.down<=0&&opp.invuln<=0){p.hit=true;let avoids=opp.crouch&&m.level==='high';if(avoids){tone(220,.06,.03)}else{p.confirmed=true;let blocked=blocksKick(opp,m);if(blocked){opp.stun=7;opp.guardStun=true;opp.meter=Math.min(100,opp.meter+5);p.meter=Math.min(100,p.meter+3);opp.moveText='BLOCK';burst((p.x+opp.x)/2,opp.crouch?505:405,'#c9f9ff',9);sfx('block',m.rank);rumble(players.indexOf(opp),.14,60)}else{let dmg=p.id===CINZA_ID?opp.maxHp*m.damage/100:p.id===14?opp.maxHp*.075:p.id===COXA_ID?coxaDamagePercent(opp.maxHp,m):p.id===CELINA_ID&&m.powerKick?opp.maxHp*.25:m.damage*Math.max(.55,1-p.combo*.1);let actualDamage=Math.min(opp.hp,dmg);opp.hp=Math.max(0,opp.hp-dmg);if(p.id===CINZA_ID)cinza.onCleanHit(p,m);scoreContact(p,opp,actualDamage);opp.stun=m.rank===3?33:24;opp.guardStun=false;opp.flash=8;opp.attack=null;opp.buffer=null;p.combo++;p.comboTimer=80;p.meter=Math.min(100,p.meter+8);opp.meter=Math.min(100,opp.meter+6);opp.pushV=p.dir*m.push;opp.hitAt=tick;opp.reaction=m.level==='high'?4:1;opp.impactKind=m.level;if(m.knockdown||opp.hp<=0){opp.down=opp.hp<=0?999: m.rank===3?52:40;opp.comboTimer=0;opp.fallSoundAt=tick+8}rumble(players.indexOf(opp),m.rank===3?.55:.3,90);shake=m.rank===3?10:5;freeze=m.rank===3?4:2;burst((p.x+opp.x)/2,m.level==='low'?530:m.level==='high'?590-270*fighterTraits[opp.id].height/174:410,m.rank===3?fighterTraits[p.id].accent:'#ffe999',m.rank===3?36:18);sfx('hit',m.rank);vocal(opp.id,opp.hp<=0?'defeat':'hit')}}}
 let cancel=p.id!==CINZA_ID&&p.id!==14&&p.id!==COXA_ID&&p.id!==CELINA_ID&&p.id!==HEATHER_ID&&(p.confirmed||p.at>=m.start+m.active+2)&&p.at>=m.start+Math.max(2,m.active*.3)&&p.buffer&&(moveFor(p,p.buffer.n).rank>m.rank||(p.combo<3&&p.buffer.n!==p.attack&&moveFor(p,p.buffer.n).rank===m.rank));
 if(cancel||p.at>=m.start+m.active+m.end){p.attack=null;if(p.buffer){let queued=p.buffer;p.buffer=null;beginAttack(p,queued.n,queued.crouched)}}
-}else{p.crouch=p.y<=0&&s?.y>.5;p.block=!!s&&(s.guard===true||s.x*p.dir<-.35)&&p.y<=0;if(p.crouch)p.vx=0;if(!p.crouch&&s){let target=s.x*(p.block&&opp.attack!==null?2.7:fighterTraits[p.id].speed);if((p.id===COXA_ID||p.id===14||p.id===CELINA_ID||p.id===ABIMBOLA_ID||p.id===CINZA_ID)&&p.y===0){target=0;p.vx=0;}p.vx+=(target-p.vx)*(p.y>0?.16:.62);if((!s.x&&!inJump(p))||Math.abs(p.vx)<.03)p.vx=0;p.x+=p.vx*dt}if(p.jumpBuffer>0&&p.y<=0&&p.takeoff<=0){p.buffer=null;p.takeoff=3;p.jumpBuffer=0;p.crouch=false;p.block=false}p.moveText=p.crouch?(p.block?'LOW GUARD':'ESQUIVA'):p.block?'GUARD':'GINGA';if(p.buffer){let queued=p.buffer;p.buffer=null;beginAttack(p,queued.n,queued.crouched)}}
+}else{p.crouch=p.y<=0&&s?.y>.5;p.block=holdingGuard(p,s);if(p.crouch)p.vx=0;if(!p.crouch&&s){let target=s.x*(p.block&&opp.attack!==null?2.7:fighterTraits[p.id].speed);if((p.id===COXA_ID||p.id===14||p.id===CELINA_ID||p.id===ABIMBOLA_ID||p.id===CINZA_ID)&&p.y===0){target=0;p.vx=0;}p.vx+=(target-p.vx)*(p.y>0?.16:.62);if((!s.x&&!inJump(p))||Math.abs(p.vx)<.03)p.vx=0;p.x+=p.vx*dt}if(p.jumpBuffer>0&&p.y<=0&&p.takeoff<=0){p.buffer=null;p.takeoff=3;p.jumpBuffer=0;p.crouch=false;p.block=false}p.moveText=p.crouch?(p.block?'LOW GUARD':'ESQUIVA'):p.block?'GUARD':'GINGA';if(p.buffer){let queued=p.buffer;p.buffer=null;beginAttack(p,queued.n,queued.crouched)}}
 advanceAir(p,dt);p.x=clamp(p.x,100,1180);
 {
  const moving=p.y===0&&p.attack===null&&!p.crouch&&Math.abs(p.vx)>.25;
@@ -494,12 +507,12 @@ function update(dt,states){
  states=arcadeAutoplay?[ai(players[0],players[1],dt),ai(players[1],players[0],dt)]:[states[0],ai(players[1],players[0],dt)];
  for(let i=0;i<2;i++){
   const p=players[i],st=states[i];p.dir=players[1-i].x>=p.x?1:-1;
-  if(st&&p.attack===null&&p.stun<=0&&p.down<=0){p.crouch=p.y===0&&st.y>.5;p.block=p.y===0&&(st.guard===true||st.x*p.dir<-.35);}
+  if(st&&p.attack===null&&p.stun<=0&&p.down<=0){p.crouch=p.y===0&&st.y>.5;p.block=holdingGuard(p,st);}
  }
  for(let i=0;i<2;i++){
   const p=players[i],st=states[i];
   if(st?.edge&&st.y>=-.5&&i===0&&!arcadeAutoplay)for(let n=0;n<characterMoves[p.id].length;n++)if(st.edge[n])requestAttack(p,n,st.y>.5);
-  if(st&&p.attack===null&&p.stun<=0&&p.down<=0){p.crouch=p.y<=0&&st.y>.5;p.block=p.y<=0&&(st.guard===true||st.x*p.dir<-.35);}
+  if(st&&p.attack===null&&p.stun<=0&&p.down<=0){p.crouch=p.y<=0&&st.y>.5;p.block=holdingGuard(p,st);}
  }
  timer=Math.max(0,timer-dt/60);if(timer<1e-8)timer=0;
  for(let i=0;i<2;i++)updateFighter(players[i],players[1-i],states[i],dt);
