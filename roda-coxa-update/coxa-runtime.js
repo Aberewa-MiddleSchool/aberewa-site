@@ -6,7 +6,7 @@ const COXA_COLORS=Object.freeze(['red','blue','orange','green','black','white'])
 const COXA_ASSETS=new URL('assets/',document.currentScript.src).href;
 const COXA_STORAGE='aberewa_roda_coxa_outfits_v1',COXA_HISTORY='aberewa_roda_coxa_runs_v1';
 const coxaCombat=new Image(),coxaMask=new Image(),coxaCard=new Image(),coxaFace=new Image();
-coxaCombat.src=COXA_ASSETS+'combat.webp';coxaMask.src=COXA_ASSETS+'suit-mask.png';coxaCard.src=COXA_ASSETS+'card.webp';coxaFace.src=COXA_ASSETS+'face.webp';
+coxaCombat.src=COXA_ASSETS+'combat-v2.webp';coxaMask.src=COXA_ASSETS+'suit-mask-v2.png';coxaCard.src=COXA_ASSETS+'card.webp';coxaFace.src=COXA_ASSETS+'face.webp';
 const coxaArt=[coxaCombat];
 let coxaUnlocked=1,coxaSelected=0,coxaRun=null;
 try{const v=JSON.parse(localStorage.getItem(COXA_STORAGE)||'null');if(v){coxaUnlocked=Math.max(1,Math.min(6,Math.floor(Number(v.unlocked)||1)));coxaSelected=Math.max(0,Math.min(coxaUnlocked-1,Math.floor(Number(v.selected)||0)));}}catch{}
@@ -27,7 +27,7 @@ function installCoxa(){
  profiles[COXA_ID]={name:'Coxa',home:'Paris, France',personality:'A 22-year-old Parisian Capoeira Angola novice. Tall, plus-sized, and still finding her rhythm.',win:'One more lesson. I am getting there.',lose:'I will practice and come back.',pitch:190};
  fighterTraits[COXA_ID]={height:185,build:1,speed:4.6,tempo:1.1,reach:1,power:1,style:'Capoeira Angola novice',signature:'Learning the roda',accent:'#ed4245',variant:0};
  fighterPlans[COXA_ID]='Capoeira Angola novice · one kick per face button · down + B only';
- const straight=()=>coxaPhase(4,15,'mid','bencao',195),heel=()=>coxaPhase(5,15,'mid','costas',170),handstand=()=>coxaPhase(7,15,'high','au',205),cartwheel=()=>coxaPhase(6,15,'mid','au',205);
+ const straight=()=>coxaPhase(4,15,'mid','bencao',195),heel=()=>coxaPhase(16,15,'mid','costas',205),handstand=()=>coxaPhase(7,15,'high','au',205),cartwheel=()=>coxaPhase(6,15,'mid','au',205);
  characterMoves[COXA_ID]=[
   coxaMove(0,'Straight kick',[straight()]),
   coxaMove(1,'Backward heel kick',[heel()]),
@@ -45,7 +45,7 @@ function coxaRGB(h,s,v){
 function prepareCoxaColors(){
  if(coxaArt.length===6)return;
  const w=coxaCombat.naturalWidth,h=coxaCombat.naturalHeight;
- if(w!==1536||h!==1280||coxaMask.naturalWidth!==w||coxaMask.naturalHeight!==h)throw Error('Coxa atlas or suit mask has unexpected dimensions');
+ if(w!==1536||h!==1600||coxaMask.naturalWidth!==w||coxaMask.naturalHeight!==h)throw Error('Coxa atlas or suit mask has unexpected dimensions');
  const source=document.createElement('canvas');source.width=w;source.height=h;const sc=source.getContext('2d',{willReadFrequently:true});sc.drawImage(coxaCombat,0,0);const pixels=sc.getImageData(0,0,w,h);
  const mask=document.createElement('canvas');mask.width=w;mask.height=h;const mc=mask.getContext('2d',{willReadFrequently:true});mc.drawImage(coxaMask,0,0);const marked=mc.getImageData(0,0,w,h).data;
  const specs=[[.60,.90],[.075,.98],[.33,.78],null,null];
@@ -63,11 +63,11 @@ function coxaPose(p){
  if(p.stun>0&&!p.guardStun)return 9;
  if(p.rollTime>0){const age=Math.max(0,24-p.rollTime);const path=p.rollDirection===p.dir?[12,13,14]:[14,13,12];return path[Math.min(2,Math.floor(age/8))];}
  if(inJump(p))return 11;
- if(p.attack!==null){const m=moveFor(p,p.attack),phase=attackPhase(m,p.at);if(p.at<m.start)return p.attackCrouched?2:phase.pose===5?14:phase.pose===6||phase.pose===7?12:1;
+ if(p.attack!==null){const m=moveFor(p,p.attack),phase=attackPhase(m,p.at);if(p.at<m.start)return p.attackCrouched?2:phase.pose===16?5:phase.pose===6||phase.pose===7?12:1;
   if(p.at>=m.start+m.active)return p.attackCrouched?2:phase.pose===6||phase.pose===7?14:0;
   if(phase.phaseFrame<8)return phase.pose;
-  if(phase.phase+1<m.phases.length)return phase.pose===4?12:phase.pose===5?12:phase.pose;
-  return phase.pose===6||phase.pose===7?14:p.attackCrouched?2:0;
+  if(phase.phase+1<m.phases.length)return phase.pose===4?12:phase.pose===16?5:phase.pose;
+  return phase.pose===16?5:phase.pose===6||phase.pose===7?14:p.attackCrouched?2:0;
  }
  if(p.block)return p.crouch?2:3;
  if(p.crouch)return 2;
