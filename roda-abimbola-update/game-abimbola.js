@@ -131,7 +131,26 @@ function makeArcade(){
  arcadeStages.splice(0,arcadeStages.length,...arcadeOrder.map((id,index)=>abimbola.isRivalry(chosen[0],id)?homeStageFor(ABIMBOLA_ID):id!==CINZA_ID&&index===arcadeOrder.length-1?DEFAULT_STAGE:homeStageFor(id)));
 }
 
-const redesignImages=Object.fromEntries(Object.entries(redesignData).map(([id,d])=>{const im=new Image();im.src=d.src;return [id,im]}));
+const redesignImages=Object.fromEntries(Object.entries(redesignData).map(([id,d])=>{
+ const im=new Image();im.src=d.src;return [id,im];
+}));
+// Optional artwork loads separately so the base roster remains playable on a slow connection.
+const juremaHD=new Image();
+juremaHD.onload=()=>{
+ const d=redesignData[1], source=d.rects;
+ const strideX=4+2*Math.max(...source.map(r=>r[2]));
+ const strideY=4+2*Math.max(...source.map(r=>r[3]));
+ if(juremaHD.naturalWidth!==8*strideX||juremaHD.naturalHeight!==8*strideY)return;
+ const rects=source.map((r,i)=>[2+i%8*strideX,2+Math.floor(i/8)*strideY,2*r[2],2*r[3]]);
+ d.anchors=source.map((r,i)=>rects[i][0]+2*(d.anchors[i]-r[0]));
+ d.referenceHeight*=2;d.rects=rects;redesignImages[1]=juremaHD;
+ const portrait=document.querySelector('.fightercard[aria-label="Jurema"] canvas');
+ if(portrait)facePortrait(portrait,1);
+};
+juremaHD.src=COXA_ASSETS+'jurema-higgins-hd.webp';
+const jaciDetail=new Image();
+jaciDetail.onload=()=>{redesignImages[8]=jaciDetail;};
+jaciDetail.src=COXA_ASSETS+'jaci-sprites-v25-detail.webp';
 const privateArenaImages=['studio-v24.webp','meilin-hall-v24.webp','meilin-garden-v24.webp'].map(src=>{const im=new Image();im.src=src;return im});
 const bossImage=mareAtlas;
 const atlases=[1,2,3].map(n=>{let i=new Image();i.src=`fighters-${n}.webp`+(n===3?"?v=3.4.2":"");return i});
@@ -259,7 +278,8 @@ const arenas = [
  {name:'ABIMBOLA’S STUDIO · LAGOS, NIGERIA',file:abimbola.arena.src,owner:ABIMBOLA_ID},
  {name:'LÍDIA’S SOCIAL CLUB · SALVADOR',file:cinza.society,owner:CINZA_ID,
   theme:{title:'Donna',src:cinza.asset('music/donna.mp3')}},
- {name:'HIGGINS HURRICANES QUADRA · SALVADOR, BAHIA',file:COXA_ASSETS+'higgins-quadra.webp'}
+ {name:'HIGGINS HURRICANES QUADRA · SALVADOR, BAHIA',file:COXA_ASSETS+'higgins-quadra.webp?v=flags2',
+  theme:{title:'Higgins Pep Band',src:COXA_ASSETS+'higgins-pep-band.mp3'}}
 ];
 const stageNames=arenas.map(arena=>arena.name);
 const DEFAULT_STAGE=4;
@@ -401,6 +421,8 @@ function drawHandspring(p){
 }
 const groundRollArt=new Image();
 groundRollArt.src='ground-rolls.webp';
+const juremaRollArt=new Image();
+juremaRollArt.src=COXA_ASSETS+'jurema-higgins-roll.webp';
 // The height calibration is measured once against each fighter’s standing sprite.
 const groundRollTucks={"0": [0, 0.9189], "1": [1, 1.0041], "3": [2, 0.9486], "4": [3, 0.8164], "5": [4, 0.8736], "6": [5, 0.8616], "8": [6, 0.8265], "9": [7, 0.8679], "10": [8, 0.8921], "11": [9, 0.8719], "13": [10, 0.8044], "14": [11, 0.9692]};
 function drawGroundRoll(p){
@@ -413,7 +435,8 @@ function drawGroundRoll(p){
   const [cell,standingScale]=groundRollTucks[p.id];
   const scale=standingScale/visualHeight(p.id);
   ctx.save();ctx.translate(p.x,590);ctx.scale(p.dir,1);
-  ctx.drawImage(groundRollArt,cell%4*256,Math.floor(cell/4)*256,256,256,-128*scale,-250*scale,256*scale,256*scale);
+  if(p.id===1&&juremaRollArt.naturalWidth)ctx.drawImage(juremaRollArt,-128*scale,-250*scale,256*scale,256*scale);
+  else ctx.drawImage(groundRollArt,cell%4*256,Math.floor(cell/4)*256,256,256,-128*scale,-250*scale,256*scale,256*scale);
   ctx.restore();return;
  }
  if(p.id===7 && step===1 && flipImages[7]?.complete && flipImages[7].naturalWidth){
@@ -594,7 +617,7 @@ function drawFighter(p){
  if(p.id!==COXA_ID&&p.id!==CELINA_ID){
   ctx.imageSmoothingEnabled=true;
   ctx.imageSmoothingQuality='high';
-  ctx.filter=fighterInkFilter;
+  ctx.filter=p.id===9?fighterInkFilter.replace('#roda-fighter-ink','#roda-sol-detail'):fighterInkFilter;
  }
  const moving=p.travelDirection && p.attack===null && p.hp>0 && p.down<=0 && p.stun<=0 && !p.crouch && !inJump(p) && !p.landing;
  const roll=p.rollTime>0?p:moving?{...p,rollTime:24-(p.travelDistance/5)%24,rollDirection:p.travelDirection}:null;
@@ -770,6 +793,8 @@ show('title');
 const portraitImages=["dandara", "jurema", "celina", "zinga", "lua", "iara", "nala", "meilin-v24", "jaci", "sol-v24", "ayana", "bento",  , "nestor", "mestre-mare", , "heather"].map(slug=>{if(slug==='celina')return celinaCard;let im=new Image();if(slug==='zinga'){im.src=COXA_ASSETS+'zinga-approved-card.webp';return im;}const base=slug.replace('-v24','');im.src=["jaci", "jurema", "lua", "nala", "mestre-mare", "sol", "meilin", "nestor", "zinga"].includes(base)?'portraits/'+base+'-card-v25.jpg':'portraits/'+slug+'.webp';return im});
 portraitImages[CINZA_ID]=new Image();
 portraitImages[CINZA_ID].src=cinza.asset('dona-cinza-card.jpg');
+portraitImages[1]=new Image();
+portraitImages[1].src=COXA_ASSETS+'jurema-higgins-card.jpg';
 portraitImages[COXA_ID]=coxaCard;
 portraitImages[ABIMBOLA_ID]=new Image();
 portraitImages[ABIMBOLA_ID].src=abimbola.asset('card.jpg');
@@ -828,6 +853,13 @@ heatherWhiteCard.src='portraits/heather-white.webp';
 // Each source card has different framing. Coordinates refer to a 152 × 208 thumbnail.
 const selectFaceBounds={"2":[76,37,39],"0": [75, 40, 41], "1": [76, 38, 39], "3": [76, 35, 44], "4": [76, 40, 40], "5": [76, 38, 42], "6": [73, 39, 40], "7": [81, 73, 46], "8": [73, 36, 42], "9": [83, 49, 43], "10": [76, 32, 41], "11": [76, 31, 41], "13": [73, 32, 42], "14": [75, 32, 42], "15": [75, 68, 128], "16": [79, 50, 45]};
 function facePortrait(c,id){
+ if(id===1){
+  const im=redesignImages[1];
+  if(!im.naturalWidth)return;
+  const g=c.getContext('2d');g.fillStyle='#282c64';g.fillRect(0,0,c.width,c.height);
+  const r=redesignData[1].rects[0],scale=im===juremaHD?2:1;
+  g.drawImage(im,r[0]+18*scale,r[1],67*scale,45*scale,0,0,c.width,c.height);return;
+ }
  if(id===CINZA_ID){cinzaArt.face(c);return;}
  if(id===ABIMBOLA_ID){abimbola.portrait(c);return;}
  if(id===COXA_ID && coxaSelected===COXA_HIGGINS && coxaHiggins.naturalWidth){
