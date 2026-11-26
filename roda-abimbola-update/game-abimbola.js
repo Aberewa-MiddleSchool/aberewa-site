@@ -511,7 +511,7 @@ function inJump(p){return p.takeoff>0||p.y>0||p.vy!==0}
 function requestAttack(p,n,crouched=p.crouch){if(p.id===COXA_ID&&!coxaCanAttack(n,crouched))return;if(inJump(p)||p.rollTime>0||p.down>0||p.hp<=0)return;if(p.attack===null&&p.stun<=0&&p.takeoff<=0)beginAttack(p,n,crouched);else p.buffer={n,crouched:!!crouched,ttl:24}}
 function advanceAir(p,dt){if(p.y>0||p.vy){p.y+=p.vy*dt;p.vy-=(p.vy>0?.52:.76)*dt;if(p.y<=0){p.y=0;p.vy=0;p.landing=6;burst(p.x,590,'#d0b48155',5)}}}
 function updateRoll(p,input,dt){
- if(p.id===ABIMBOLA_ID||p.id===CINZA_ID)return abimbola.roll(p,input,dt);
+ if(isProtagonist(p.id)||p.id===ABIMBOLA_ID||p.id===CINZA_ID)return abimbola.roll(p,input,dt);
  // Celina's CPU inputs are .60 on Easy and .85 on Normal; human D-pad is 1.
  // Training guard dummies must stay planted, not roll away.
  const celinaCpu=p.id===CELINA_ID&&(arcadeAutoplay||(p===players[1]&&mode!==cinzaRewards.versus));

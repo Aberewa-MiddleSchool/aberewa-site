@@ -5,6 +5,8 @@ const duoKit=(()=>{
   const image=new Image();image.src=new URL(name+'.webp',root);art[id]=image;
  }
  const acrobatics=new Image();acrobatics.src=new URL('inversions.webp',root);
+ const movement=new Image();movement.src=new URL('movement.webp',root);
+ const rolls=new Image();rolls.src=new URL('rolls.webp',root);
  const attacks={
   11:[
    ['Front kick → rear push',[4,4]],['Shin kick → side kick',[8,5]],
@@ -37,7 +39,7 @@ const duoKit=(()=>{
  fighterTraits[11].speed=3.6;fighterTraits[13].speed=6.25;
  function draw(p){
   let sheet=art[p.id],invertedIndex=-1;
-  if(!sheet?.naturalWidth||p.down>0||p.stun>0||p.hp<=0||p.crouch&&p.attack===null||inJump(p)||p.rollTime>0)return false;
+  if(!sheet?.naturalWidth||p.down>0||(p.stun>0&&!p.guardStun)||p.hp<=0)return false;
   let pose=[0,1,2,1][Math.floor(p.ginga/(p.id===11?17:10))%4]||0;
   if(p.attack!==null){
    const move=moveFor(p,p.attack),phase=attackPhase(move,p.at),age=p.at-move.start;
@@ -47,7 +49,21 @@ const duoKit=(()=>{
     invertedIndex=(p.attack-4)*4+phase.phase;sheet=acrobatics;
    }
   }
-  const box=invertedIndex>=0?duoInversions[invertedIndex]:duoFrames[p.id][pose],scale=invertedIndex>=0?286/duoInversions[3][3]:286/duoFrames[p.id][1][3];
+  let movementIndex=0;
+  if(p.attack===null){
+   if(p.y>0||p.vy!==0)movementIndex=p.vy>0?3:4;
+   else if(p.takeoff>0||p.landing>0)movementIndex=2;
+   else if(p.crouch)movementIndex=1;
+  }
+  let box=invertedIndex>=0?duoInversions[invertedIndex]:duoFrames[p.id][pose],scale=invertedIndex>=0?286/duoInversions[3][3]:286/duoFrames[p.id][1][3];
+  if(p.rollTime>0&&rolls.naturalWidth){
+   const row=duoRolls[p.id],step=Math.min(3,Math.floor((24-p.rollTime)/6));
+   const forward=p.rollDirection===(p.abimbolaRollFacing??p.dir);
+   box=row[forward?1+step:4-step];scale=286/row[0][3];sheet=rolls;
+  }else if(movementIndex&&movement.naturalWidth){
+   const row=duoMovement[p.id];
+   box=row[movementIndex];scale=286/row[0][3];sheet=movement;
+  }
   ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(p.dir/fighterTraits[p.id].build,1);
   ctx.drawImage(sheet,...box,-box[2]*scale/2,-box[3]*scale,box[2]*scale,box[3]*scale);ctx.restore();return true;
  }
