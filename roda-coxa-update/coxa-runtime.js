@@ -52,7 +52,13 @@ function prepareCoxaColors(){
  for(let c=1;c<6;c++){
   const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const g=canvas.getContext('2d');const frame=g.createImageData(w,h);frame.data.set(pixels.data);
   for(let i=0;i<frame.data.length;i+=4){if(marked[i]<128||!frame.data[i+3])continue;const r=frame.data[i],gg=frame.data[i+1],b=frame.data[i+2],v=Math.max(r,gg,b),s=v?(v-Math.min(r,gg,b))/v:0;let rgb;
-   if(c===4){const v2=Math.round(13+v*.30);rgb=coxaRGB(0,.045,v2/255);}else if(c===5){const v2=Math.min(255,Math.round(105+v*.61));rgb=coxaRGB(0,.035,v2/255);}else{const [hue,sat]=specs[c-1];rgb=coxaRGB(hue,Math.min(1,s*sat),Math.min(1,v*(c===2?1.08:1)/255));}
+   if(c===4){const v2=Math.round(13+v*.30);rgb=coxaRGB(0,.045,v2/255);}else if(c===5){
+    // White fabric: retain the original dark ink instead of lifting every masked pixel to grey.
+    if(v<=45)continue;
+    const t=Math.min(1,(v-45)/125);
+    const v2=Math.round(v+(255-v)*.70*t*t*(3-2*t));
+    rgb=[v2,v2,v2];
+   }else{const [hue,sat]=specs[c-1];rgb=coxaRGB(hue,Math.min(1,s*sat),Math.min(1,v*(c===2?1.08:1)/255));}
    frame.data[i]=rgb[0];frame.data[i+1]=rgb[1];frame.data[i+2]=rgb[2];
   }
   g.putImageData(frame,0,0);coxaArt.push(canvas);
@@ -71,7 +77,8 @@ function coxaPose(p){
  }
  if(p.block)return p.crouch?2:3;
  if(p.crouch)return 2;
- return [0,1,0,15][Math.floor((tick+(p===players[0]?0:14))/12)%4];
+ // Match the other RODA fighters: hold one planted novice ginga pose.
+ return 0;
 }
 function drawCoxa(p){
  const pose=coxaPose(p),im=coxaArt[p.coxaColor??0]||coxaCombat;if(!im||(!im.width&&!im.naturalWidth))return;
