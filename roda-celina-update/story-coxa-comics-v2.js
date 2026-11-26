@@ -630,7 +630,7 @@ function openHeatherComic(after){
 
 function openStory(ending=false){
  if(!ending&&mode==='solo'&&arcadeIndex===0){
-  openShortChapter('Looking for Donna','Red Moon Courtyard',[
+  openShortChapter('Looking for Donna','Red Moon Courtyard · Transylvania',[
    [arenas[homeStageFor(CONSTANCA_ID)].file,'A berimbau sounds from the porch. Constança waits until the last note fades before she speaks.'],
    [constanca.portrait.src,'“I’m looking for Donna. Someone here must have played with her. One game, then tell me where you last saw her.”']
   ],'OPENING BOUT · DONA CONSTANÇA DA LUZ',profiles[chosen[1]].name.toUpperCase(),'Bout 1 of '+arcadeOrder.length);

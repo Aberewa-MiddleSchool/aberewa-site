@@ -51,7 +51,7 @@ function brideAttackFrame(a){
    timeline:brideAttackTimeline({type:moves[slot].button,hits,brideHigh:high,bridePower:power})};
  }
  function install(){
-  profiles[20]={name:'Dona Constança da Luz',home:'Brasil',personality:'A daywalker who remembers the earliest rodas.',win:'I still hear the roda after the music stops.',lose:'The sun will find me here tomorrow.',pitch:175};
+  profiles[20]={name:'Dona Constança da Luz',home:'Transylvania · Born and raised in Brasil',personality:'Born and raised in Brasil, Constança remembers the earliest rodas. She now calls Transylvania home.',win:'I still hear the roda after the music stops.',lose:'The sun will find me here tomorrow.',pitch:175};
   fighterTraits[20]={height:183,build:1,speed:5,tempo:1,reach:1,power:1,style:'Bridal Angola',signature:'Última Valsa',accent:'#ef445a',variant:0};
   fighterPlans[20]='B/X/Y · two kicks for 3% life. Down + B/X/Y · single high kick. A/LB/RB · drain enemy axé. Move sideways to fly.';
   standing=moves.map((_,i)=>make(i,false));low=moves.map((_,i)=>make(i,true));characterMoves[20]=standing;
