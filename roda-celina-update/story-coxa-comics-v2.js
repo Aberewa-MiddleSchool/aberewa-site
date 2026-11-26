@@ -485,7 +485,7 @@ const familyEnding=[
 ];
 const skullEnding=[["comic/fire-window.webp","Bento and Nestor destroyed the old studio. But Meilin gave the family a new home, and the roda continues."]];
 const familyClosure=[['comic/courtyard.jpg','The final game ends. In their new home, the roda gathers once more. The family stays together.']];
-function endingPanels(){return isProtagonist(chosen[0])?skullEnding:familyClosure}
+function endingPanels(){if(campaignTwo)return cinza.ending;return isProtagonist(chosen[0])?skullEnding:familyClosure}
 function paintFamilyPanels(title,place,panels){
  $('#storytitle').textContent=title;$('#storyplace').textContent=place;
  const strip=$('#story .family-comic');
@@ -583,7 +583,7 @@ function openZingaPostBout(){
 }
 function installZingaStoryRouting(){
  const prior=autoContinue;
- autoContinue=function(...args){if(openZingaPostBout())return;return prior.apply(this,args);};
+ autoContinue=function(...args){if(!campaignTwo&&openZingaPostBout())return;return prior.apply(this,args);};
 }
 function setStoryHint(){const hint=$('#storyhint');if(hint)hint.textContent=arcadeAutoplay?'WATCH ARCADE · CONTINUES AUTOMATICALLY · START PAUSES':'TAKE YOUR TIME · A TO CONTINUE · START TO PAUSE'}
 function openOpeningComic(destination='menu'){
@@ -615,6 +615,7 @@ function openHeatherComic(after){
 }
 
 function openStory(ending=false){
+ if(campaignTwo){if(ending)openComicEnding();else cinza.chapter();return;}
  if(!ending&&arcadeIndex===arcadeOrder.length-1){openStudioReveal();return;}
  if(!ending&&arcadeIndex===0&&chosen[0]===COXA_ID&&chosen[1]===HEATHER_ID){openCoxaOpening();return;}
  if(!ending&&chosen[1]===CELINA_ID){storyEnding=false;storyPrologue=false;storyReturn='fight';scene='story';show('story');storyTime=arcadeAutoplay?540:Infinity;$('#storychapter').textContent='CELINA · FORTY YEARS IN THE RODA';paintFamilyPanels('Wisdom of the roda','Salvador, Bahia · Brasil',[{speaker:'Celina',speech:'Show me what the roda has taught you. Every encounter offers a lesson.',source:CELINA_ASSET_ROOT+'wisdom-1.webp',description:'Celina welcomes her opponent'}]);$('#storyopponent').textContent='NEXT: CELINA';$('#storyrole').textContent='Mentor encounter · '+formatLabel();$('#storyadvance').textContent='A · ENTER THE RODA';setStoryHint();setStageMusic(activeStage);return;}
@@ -659,9 +660,9 @@ function paintComicEnding(){
  storyTime=arcadeAutoplay?480:Infinity;
  $('#endingimage').src=panel[0];$('#endingimage').alt=panel[1];
  $('#endingcaption').textContent=panel[1];
- $('#endingcount').textContent=(panels===skullEnding?'BENTO & NESTOR':'MEILIN & VOVÔ')+' · '+(comicPage+1)+' / '+panels.length;
+ $('#endingcount').textContent=(campaignTwo?'DONA CINZA':panels===skullEnding?'BENTO & NESTOR':'MEILIN & VOVÔ')+' · '+(comicPage+1)+' / '+panels.length;
  $('#ending').classList.toggle('skull-epilogue',panels===skullEnding);
- const heading=$('#ending h2');if(heading)heading.textContent=panels===skullEnding?'THEIR TURN':'A PLACE FOR US';
+ const heading=$('#ending h2');if(heading)heading.textContent=campaignTwo?'FORTY-TWO':panels===skullEnding?'THEIR TURN':'A PLACE FOR US';
  $('#endingprev').disabled=comicPage===0;$('#endingnext').textContent=comicPage===panels.length-1?'A · CONTINUE':'A · NEXT PANEL';
 }
 function advanceComicEnding(){
