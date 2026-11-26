@@ -235,7 +235,7 @@ installCelina();
 installCoxa();
 abimbola.install();
 cinza.install();
-const moveFor=(p,n)=>p.id===1?characterMoves[1][n]:p.id===CINZA_ID?characterMoves[CINZA_ID][n]:p.id===ABIMBOLA_ID&&p.attackCrouched?abimbola.lowMove(n):p.id===COXA_ID?(p.attackCrouched&&n===1?coxaLowMove:characterMoves[COXA_ID][n]):p.id===CELINA_ID?(p.attackCrouched&&n<6?celinaLowMoves[n]:characterMoves[p.id][n]):p.attackCrouched&&p.id!==HEATHER_ID&&p.id!==7&&p.id!==14&&!isProtagonist(p.id)?crouchingMove(characterMoves[p.id][n],n):characterMoves[p.id][n];
+const moveFor=(p,n)=>isProtagonist(p.id)&&p.attackCrouched&&duoKit.lows[p.id][n]?duoKit.lows[p.id][n]:p.id===1?characterMoves[1][n]:p.id===CINZA_ID?characterMoves[CINZA_ID][n]:p.id===ABIMBOLA_ID&&p.attackCrouched?abimbola.lowMove(n):p.id===COXA_ID?(p.attackCrouched&&n===1?coxaLowMove:characterMoves[COXA_ID][n]):p.id===CELINA_ID?(p.attackCrouched&&n<6?celinaLowMoves[n]:characterMoves[p.id][n]):p.attackCrouched&&p.id!==HEATHER_ID&&p.id!==7&&p.id!==14&&!isProtagonist(p.id)?crouchingMove(characterMoves[p.id][n],n):characterMoves[p.id][n];
 function crouchingMove(base,n){const key=n===1||n===4?'rasteira':n===3||n===5?'costas':'chapa';const tech=techniqueBook[key];const phases=[{...base.phases[0],...tech,visual:n===3||n===5?'lowback':'lowpush',level:'low',travel:0,frames:base.active,range:base.range*.9,damage:base.damage,knockdown:n>=2,push:3}];return {...base,...phases[0],phases,name:['Chapa baixa','Rasteira curta','Chapa baixa forte','Meia-lua baixa','Varredura','Contra-ataque baixo'][n],signature:n>=4?'BAIXA · '+base.signature:null,active:phases[0].frames,start:Math.max(4,base.start-1),crouching:true};}
 const ROUND_SECONDS=99;
 let campaignTwo=false;
@@ -661,7 +661,7 @@ function updateFighter(p,opp,s,dt){if(updateRoll(p,s,dt))return;if(p.fallSoundAt
 if(p.attack!==null){let base=moveFor(p,p.attack);p.at+=dt;let m=attackPhase(base,p.at);if(p.phase!==m.phase){p.phase=m.phase;p.hit=false;p.swingPlayed=false}let active=p.at>=m.start&&p.at<m.start+m.active;if(active&&!p.swingPlayed){p.swingPlayed=true;sfx('swing',m.rank)}
 if(p.y>0&&s){p.vx+=(s.x*fighterTraits[p.id].speed-p.vx)*.16;p.x+=p.vx*dt};if(p.y===0){if(p.at<m.start)p.x+=p.dir*(base.retreat||0)*dt;else if(active)p.x+=p.dir*m.travel*dt;}
 if(active&&!p.hit&&strikeInReach(p,opp,m)&&Math.abs(opp.y-p.y)<110&&opp.down<=0&&opp.invuln<=0){p.hit=true;let avoids=opp.crouch&&m.level==='high';if(avoids){tone(220,.06,.03)}else{p.confirmed=true;let blocked=blocksKick(opp,m);if(blocked){opp.stun=7;opp.guardStun=true;opp.meter=Math.min(100,opp.meter+5);p.meter=Math.min(100,p.meter+3);opp.moveText='BLOCK';burst((p.x+opp.x)/2,opp.crouch?505:405,'#c9f9ff',9);sfx('block',m.rank);rumble(players.indexOf(opp),.14,60)}else{let dmg=p.id===CINZA_ID?opp.maxHp*m.damage/100:p.id===14?opp.maxHp*.075:p.id===COXA_ID?coxaDamagePercent(opp.maxHp,m):p.id===CELINA_ID&&m.powerKick?opp.maxHp*.25:m.damage*Math.max(.55,1-p.combo*.1);let actualDamage=Math.min(opp.hp,dmg);opp.hp=Math.max(0,opp.hp-dmg);if(p.id===CINZA_ID)cinza.onCleanHit(p,m);scoreContact(p,opp,actualDamage);opp.stun=m.rank===3?33:24;opp.guardStun=false;opp.flash=8;opp.attack=null;opp.buffer=null;p.combo++;p.comboTimer=80;p.meter=Math.min(100,p.meter+8);opp.meter=Math.min(100,opp.meter+6);opp.pushV=p.dir*m.push;opp.hitAt=tick;opp.reaction=m.level==='high'?4:1;opp.impactKind=m.level;if(m.knockdown||opp.hp<=0){opp.down=opp.hp<=0?999: m.rank===3?52:40;opp.comboTimer=0;opp.fallSoundAt=tick+8}rumble(players.indexOf(opp),m.rank===3?.55:.3,90);shake=m.rank===3?10:5;freeze=m.rank===3?4:2;burst((p.x+opp.x)/2,m.level==='low'?530:m.level==='high'?590-270*fighterTraits[opp.id].height/174:410,m.rank===3?fighterTraits[p.id].accent:'#ffe999',m.rank===3?36:18);sfx('hit',m.rank);vocal(opp.id,opp.hp<=0?'defeat':'hit')}}}
-let cancel=p.id!==CINZA_ID&&p.id!==14&&p.id!==COXA_ID&&p.id!==CELINA_ID&&p.id!==HEATHER_ID&&(p.confirmed||p.at>=m.start+m.active+2)&&p.at>=m.start+Math.max(2,m.active*.3)&&p.buffer&&(moveFor(p,p.buffer.n).rank>m.rank||(p.combo<3&&p.buffer.n!==p.attack&&moveFor(p,p.buffer.n).rank===m.rank));
+let cancel=!isProtagonist(p.id)&&p.id!==CINZA_ID&&p.id!==14&&p.id!==COXA_ID&&p.id!==CELINA_ID&&p.id!==HEATHER_ID&&(p.confirmed||p.at>=m.start+m.active+2)&&p.at>=m.start+Math.max(2,m.active*.3)&&p.buffer&&(moveFor(p,p.buffer.n).rank>m.rank||(p.combo<3&&p.buffer.n!==p.attack&&moveFor(p,p.buffer.n).rank===m.rank));
 if(cancel||p.at>=m.start+m.active+m.end){p.attack=null;if(p.buffer){let queued=p.buffer;p.buffer=null;beginAttack(p,queued.n,queued.crouched)}}
 }else{p.crouch=p.y<=0&&s?.y>.5;p.block=holdingGuard(p,s);if(p.crouch)p.vx=0;if(!p.crouch&&s){let target=s.x*(p.block&&opp.attack!==null?2.7:fighterTraits[p.id].speed);if((p.id===COXA_ID||p.id===14||p.id===CELINA_ID||p.id===ABIMBOLA_ID||p.id===CINZA_ID)&&p.y===0){target=0;p.vx=0;}p.vx+=(target-p.vx)*(p.y>0?.16:.62);if((!s.x&&!inJump(p))||Math.abs(p.vx)<.03)p.vx=0;p.x+=p.vx*dt}if(p.jumpBuffer>0&&p.y<=0&&p.takeoff<=0){p.buffer=null;p.takeoff=3;p.jumpBuffer=0;p.crouch=false;p.block=false}p.moveText=p.crouch?(p.block?'LOW GUARD':'ESQUIVA'):p.block?'GUARD':'GINGA';if(p.buffer){let queued=p.buffer;p.buffer=null;beginAttack(p,queued.n,queued.crouched)}}
 advanceAir(p,dt);p.x=clamp(p.x,100,1180);
@@ -797,6 +797,7 @@ function drawFighter(p){
  if(p.id===COXA_ID)drawCoxa(p);
  else if(p.id===CELINA_ID)drawCelina(p);
  else if(p.id===HEATHER_ID)drawHeather(roll||p);
+ else if(isProtagonist(p.id)&&duoKit.draw(p)){}
  else if(roll)drawGroundRoll(roll);
  else drawFighterBody(p,t);
  ctx.restore();
@@ -1130,7 +1131,7 @@ const versionLabel=document.querySelector('.intro .eyebrow');if(versionLabel)ver
 const reviewLink=document.querySelector('.review-entry a');if(reviewLink)reviewLink.textContent='WATCH THE ACTUAL GAME ANIMATIONS';
 const arenaHeading=document.querySelector('.soundtrack h3');if(arenaHeading)arenaHeading.textContent=stageNames.length+' ARENAS. A WORLD OF RHYTHM.';
 const menuTag=document.querySelector('.menupanel .tag');if(menuTag)menuTag.textContent='PLAY OR WATCH';
-const mestreNote=document.querySelector('.under p.small');if(mestreNote)mestreNote.textContent='MESTRE MARÉ: Eight grounded two-hit combinations; each clean hit takes 7.5% of maximum health. No power moves. Bento and Nestor retain six grounded three-kick combinations.';
+const mestreNote=document.querySelector('.under p.small');if(mestreNote)mestreNote.textContent='MESTRE MARÉ: Eight grounded two-hit combinations; each clean hit takes 7.5% of maximum health. No power moves. Bento: two-hit face buttons, single power kicks on LB/RB, Down+B sweep. Nestor: single face-button kicks, four-hit LB/RB, Down+B/X sweeps.';
 
 
 const advanceRegularArcadeStory=advanceStory;
