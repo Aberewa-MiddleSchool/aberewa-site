@@ -477,7 +477,8 @@ const arenas = [
   theme:{title:'Donna',src:cinza.asset('music/donna.mp3')}},
  {name:'HIGGINS HURRICANES QUADRA · SALVADOR, BAHIA',file:COXA_ASSETS+'higgins-quadra.webp?v=flags2',
   theme:{title:'Higgins Pep Band',src:COXA_ASSETS+'higgins-pep-band.mp3'}},
- {name:'RED MOON COURTYARD',file:'https://aberewamiddleschool.org/roda-constanca/red-moon-courtyard.webp',owner:CONSTANCA_ID}
+ {name:'RED MOON COURTYARD',file:'https://aberewamiddleschool.org/roda-constanca/red-moon-courtyard.webp',owner:CONSTANCA_ID,
+  theme:{title:'Red Moon Yard',src:'https://aberewamiddleschool.org/roda-constanca/red-moon-yard.ogg'}}
 ];
 const stageNames=arenas.map(arena=>arena.name);
 const DEFAULT_STAGE=4;
