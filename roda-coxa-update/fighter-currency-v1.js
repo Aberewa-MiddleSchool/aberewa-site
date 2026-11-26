@@ -1,12 +1,12 @@
 /* RODA: fictional score denominations, no exchange rates or cash payouts. */
 (()=>{'use strict';
- const currencyFor=fighter=>/^heather(?:\s|$)/i.test(String(fighter||'').trim())?'USD':/^coxa(?:\s|$)/i.test(String(fighter||'').trim())?'EUR':'BRL';
- const formats={USD:new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}),EUR:new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}),BRL:new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'})};
+ const currencyFor=fighter=>/^(?:dona\s+)?constan[çc]a(?:\s|$)/i.test(String(fighter||'').trim())?'RON':/^heather(?:\s|$)/i.test(String(fighter||'').trim())?'USD':/^coxa(?:\s|$)/i.test(String(fighter||'').trim())?'EUR':'BRL';
+ const formats={RON:new Intl.NumberFormat("ro-RO",{style:"currency",currency:"RON"}),USD:new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}),EUR:new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}),BRL:new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'})};
  const money=(points,currency='BRL')=>(formats[currency]||formats.BRL).format((Number(points)||0)/100);
  window.RODACurrency=Object.freeze({currencyFor,money});
  // This helper is also loaded by the public earnings ledger, without the game.
  if(typeof chosen==='undefined'||typeof mode==='undefined')return;
- const selected=()=>chosen[0]===COXA_ID?'EUR':chosen[0]===HEATHER_ID?'USD':'BRL';
+ const selected=()=>currencyFor(profiles[chosen[0]]?.name);
  const active=()=>mode==='solo'||mode==='coxa';
  const convert=(s,c=selected())=>typeof s==='string'&&c!=='BRL'?s.replace(/R\$\s*([0-9.]+(?:,[0-9]{2})?)/g,(_,v)=>money(Math.round(Number(v.replace(/\./g,'').replace(',','.'))*100),c)):s;
  const originalRecord=window.record;
