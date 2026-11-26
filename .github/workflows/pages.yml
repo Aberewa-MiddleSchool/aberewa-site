@@ -25,6 +25,14 @@ jobs:
       - name: Check out website
         uses: actions/checkout@v4
 
+      - name: Prepare original RODA character-card JPGs
+        continue-on-error: true
+        timeout-minutes: 3
+        run: |
+          python3 -m venv "$RUNNER_TEMP/roda-card-venv"
+          "$RUNNER_TEMP/roda-card-venv/bin/pip" install --disable-pip-version-check Pillow
+          "$RUNNER_TEMP/roda-card-venv/bin/python" scripts/prepare_roda_cards.py
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
