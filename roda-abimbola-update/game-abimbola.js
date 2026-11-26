@@ -271,7 +271,7 @@ function buildCelinaArcadeOrder(player,rotate=true){
  const start=rotate?Math.floor(Math.random()*early.length):0;
  const regular=opening.concat(early.slice(start),early.slice(0,start),closing);
  const route=[];regular.forEach((id,i)=>{route.push(id);if(player!==CELINA_ID&&(i+1)%2===0)route.push(CELINA_ID);});
- route.push(final);return route;
+ route.push(final);return [CONSTANCA_ID,...route];
 }
 function makeArcade(){
  resetArcadeScore();
@@ -280,6 +280,7 @@ function makeArcade(){
  if(chosen[0]===COXA_ID&&namedArcadeRun){namedArcadeRun.currency='EUR';persistArcadeRun();}
  arcadeIndex=0;chosen[1]=arcadeOrder[0];
  arcadeStages.splice(0,arcadeStages.length,...arcadeOrder.map((id,index)=>abimbola.isRivalry(chosen[0],id)?homeStageFor(ABIMBOLA_ID):id!==CINZA_ID&&index===arcadeOrder.length-1?DEFAULT_STAGE:homeStageFor(id)));
+ arcadeStages[0]=homeStageFor(CONSTANCA_ID);
 }
 
 const redesignImages=Object.fromEntries(Object.entries(redesignData).map(([id,d])=>{
@@ -475,7 +476,8 @@ const arenas = [
  {name:'LÍDIA’S SOCIAL CLUB · SALVADOR',file:cinza.society,owner:CINZA_ID,
   theme:{title:'Donna',src:cinza.asset('music/donna.mp3')}},
  {name:'HIGGINS HURRICANES QUADRA · SALVADOR, BAHIA',file:COXA_ASSETS+'higgins-quadra.webp?v=flags2',
-  theme:{title:'Higgins Pep Band',src:COXA_ASSETS+'higgins-pep-band.mp3'}}
+  theme:{title:'Higgins Pep Band',src:COXA_ASSETS+'higgins-pep-band.mp3'}},
+ {name:'RED MOON COURTYARD',file:'https://aberewamiddleschool.org/roda-constanca/red-moon-courtyard.webp',owner:CONSTANCA_ID}
 ];
 const stageNames=arenas.map(arena=>arena.name);
 const DEFAULT_STAGE=4;
@@ -1191,6 +1193,7 @@ advanceStory=function(){
 document.querySelector('#storyadvance').onclick=advanceStory;
 
 function finishBoutPresentation(){
+ if(mode==="solo"&&arcadeIndex===0&&arcadeOrder[0]===CONSTANCA_ID){showResults();return;}
  if(campaignTwo){cinzaComics.open();return;}
  if(!abimbola.isRivalry(players[0].id,players[1].id)){showResults();return;}
  abimbola.openRivalry();

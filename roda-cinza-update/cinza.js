@@ -52,7 +52,7 @@ const cinza = (() => {
       result.push(id);
       if(player!==CINZA_ID && (i+1)%2===0)result.push(CINZA_ID);
     });
-    return result;
+    return [CONSTANCA_ID,...result];
   }
   const chapters = [
     ['Two coffees','Doralice waits outside the newly opened studio. Maré recognizes her before Meilin can turn her key. “Abimbola, pass me those cups. I want your hands free.”'],

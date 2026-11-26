@@ -93,8 +93,10 @@ const cinzaComics = (() => {
     const local=mode===cinzaRewards.versus;
     const bout=local?cinzaRewards.bout:arcadeIndex;
     const total=local?pages.length:arcadeOrder.length;
-    const number = replay ? pages.length : total===shortCut.length
-      ? shortCut[bout] : bout+1;
+    const offset = !local && arcadeOrder[0]===CONSTANCA_ID ? 1 : 0;
+    const chapter = Math.max(0,bout-offset), count = total-offset;
+    const number = replay ? pages.length : count===shortCut.length
+      ? shortCut[chapter] : Math.min(pages.length,chapter+1);
     const page = pages[number-1];
     const source = cinza.asset('comics/page-'+String(number).padStart(2,'0')+'.webp');
     const destination = replay ? 'cinza-score' : 'cinza-result';

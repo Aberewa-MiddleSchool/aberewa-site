@@ -629,11 +629,18 @@ function openHeatherComic(after){
 }
 
 function openStory(ending=false){
+ if(!ending&&mode==='solo'&&arcadeIndex===0){
+  openShortChapter('Looking for Donna','Red Moon Courtyard',[
+   [arenas[homeStageFor(CONSTANCA_ID)].file,'A berimbau sounds from the porch. Constança waits until the last note fades before she speaks.'],
+   [constanca.portrait.src,'“I’m looking for Donna. Someone here must have played with her. One game, then tell me where you last saw her.”']
+  ],'OPENING BOUT · DONA CONSTANÇA DA LUZ',profiles[chosen[1]].name.toUpperCase(),'Bout 1 of '+arcadeOrder.length);
+  return;
+ }
  if(campaignTwo){if(ending)cinzaComics.open(true);return;}
  if(!ending&&arcadeIndex===arcadeOrder.length-1){openStudioReveal();return;}
- if(!ending&&arcadeIndex===0&&chosen[0]===COXA_ID&&chosen[1]===HEATHER_ID){openCoxaOpening();return;}
+ if(!ending&&arcadeIndex===(arcadeOrder[0]===CONSTANCA_ID?1:0)&&chosen[0]===COXA_ID&&chosen[1]===HEATHER_ID){openCoxaOpening();return;}
  if(!ending&&chosen[1]===CELINA_ID){storyEnding=false;storyPrologue=false;storyReturn='fight';scene='story';show('story');storyTime=arcadeAutoplay?540:Infinity;$('#storychapter').textContent='CELINA · FORTY YEARS IN THE RODA';paintFamilyPanels('Wisdom of the roda','Salvador, Bahia · Brasil',[{speaker:'Celina',speech:'Show me what the roda has taught you. Every encounter offers a lesson.',source:CELINA_ASSET_ROOT+'wisdom-1.webp',description:'Celina welcomes her opponent'}]);$('#storyopponent').textContent='NEXT: CELINA';$('#storyrole').textContent='Mentor encounter · '+formatLabel();$('#storyadvance').textContent='A · ENTER THE RODA';setStoryHint();setStageMusic(activeStage);return;}
- const regularIndex=arcadeOrder.slice(0,arcadeIndex).filter(id=>id!==CELINA_ID).length;
+ const regularIndex=arcadeOrder.slice(0,arcadeIndex).filter(id=>id!==CONSTANCA_ID&&id!==CELINA_ID).length;
  if(!ending && regularIndex===1){
   const i=regularIndex;
   storyEnding=false;storyPrologue=false;storyReturn='beginning-insert';
@@ -651,7 +658,7 @@ function openBoutStory(ending=false){
  if(isFinal){openStudioReveal();return;}
  // Her opponent-specific chapter is inserted into the family story sequence.
  if(opponent===HEATHER_ID){openHeatherComic(false);return}
- const familyIndex=arcadeOrder.slice(0,arcadeIndex).filter(id=>id!==HEATHER_ID&&id!==CELINA_ID).length;
+ const familyIndex=arcadeOrder.slice(0,arcadeIndex).filter(id=>id!==CONSTANCA_ID&&id!==HEATHER_ID&&id!==CELINA_ID).length;
  if(!isFinal&&familyIndex===0){openOpeningComic('fight');return}
  const chapter=isFinal?{title:"THE FINAL RODA",place:profiles[opponent].home,panels:[{source:portraitImages[opponent].src,description:profiles[opponent].name+" welcomes the final challenge",speaker:profiles[opponent].name,speech:opponent===14?"One final game. Listen to the berimbau and show me what you have learned.":"Come on, Vovô! One last game for the family."}]}:familyInterludes[familyIndex];if(!chapter){storyReturn='fight';advanceStory();return}
  storyEnding=false;storyPrologue=false;storyReturn='fight';scene='story';show('story');storyTime=arcadeAutoplay?1080:Infinity;
