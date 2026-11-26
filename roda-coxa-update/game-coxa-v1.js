@@ -445,7 +445,7 @@ function updateRoll(p,input,dt){
  }
  if(ready&&direction&&direction!==p.previousDirection&&!(p.rollTime>0)){
   if(p.tapDirection===direction&&p.tapWindow>0){
-   p.rollTime=24;p.rollDirection=direction;p.tapWindow=0;p.buffer=null;p.jumpBuffer=0;
+   p.rollTime=24;p.rollDirection=direction;p.tapWindow=0;p.buffer=null;p.jumpBuffer=0;if(p.id===COXA_ID)p.coxaRollFacing=p.dir;
   }else{p.tapDirection=direction;p.tapWindow=14;}
  }
  p.previousDirection=direction;p.tapWindow=Math.max(0,(p.tapWindow||0)-dt);
@@ -453,7 +453,8 @@ function updateRoll(p,input,dt){
  p.x=clamp(p.x+p.rollDirection*5*dt,100,1180);p.vx=0;p.crouch=true;p.block=false;
  p.moveText=p.dir===p.rollDirection?'FORWARD ROLL':'BACKWARD ROLL';
  p.rollTime=Math.max(0,p.rollTime-dt);
- if(p.id===CELINA_ID&&!p.rollTime)p.crouch=false;
+ if((p.id===CELINA_ID||p.id===COXA_ID)&&!p.rollTime)p.crouch=false;
+ if(p.id===COXA_ID&&!p.rollTime)p.coxaRollFacing=null;
  return true;
 }
 // Source-head scale in each eight-frame row, measured against the upright

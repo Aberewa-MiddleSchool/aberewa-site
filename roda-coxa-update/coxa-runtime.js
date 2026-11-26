@@ -6,7 +6,7 @@ const COXA_COLORS=Object.freeze(['red','blue','orange','green','black','white'])
 const COXA_ASSETS=new URL('assets/',document.currentScript.src).href;
 const COXA_STORAGE='aberewa_roda_coxa_outfits_v1',COXA_HISTORY='aberewa_roda_coxa_runs_v1';
 const coxaCombat=new Image(),coxaMask=new Image(),coxaCard=new Image(),coxaFace=new Image();
-coxaCombat.src=COXA_ASSETS+'combat-v2.webp';coxaMask.src=COXA_ASSETS+'suit-mask-v2.png';coxaCard.src=COXA_ASSETS+'card.webp';coxaFace.src=COXA_ASSETS+'face.webp';
+coxaCombat.src=COXA_ASSETS+'combat-v3.webp';coxaMask.src=COXA_ASSETS+'suit-mask-v3.png';coxaCard.src=COXA_ASSETS+'card-v2.webp';coxaFace.src=COXA_ASSETS+'face.webp';
 const coxaArt=[coxaCombat];
 let coxaUnlocked=1,coxaSelected=0,coxaRun=null;
 try{const v=JSON.parse(localStorage.getItem(COXA_STORAGE)||'null');if(v){coxaUnlocked=Math.max(1,Math.min(6,Math.floor(Number(v.unlocked)||1)));coxaSelected=Math.max(0,Math.min(coxaUnlocked-1,Math.floor(Number(v.selected)||0)));}}catch{}
@@ -45,7 +45,7 @@ function coxaRGB(h,s,v){
 function prepareCoxaColors(){
  if(coxaArt.length===6)return;
  const w=coxaCombat.naturalWidth,h=coxaCombat.naturalHeight;
- if(w!==1536||h!==1600||coxaMask.naturalWidth!==w||coxaMask.naturalHeight!==h)throw Error('Coxa atlas or suit mask has unexpected dimensions');
+ if(w!==1536||h!==2880||coxaMask.naturalWidth!==w||coxaMask.naturalHeight!==h)throw Error('Coxa atlas or suit mask has unexpected dimensions');
  const source=document.createElement('canvas');source.width=w;source.height=h;const sc=source.getContext('2d',{willReadFrequently:true});sc.drawImage(coxaCombat,0,0);const pixels=sc.getImageData(0,0,w,h);
  const mask=document.createElement('canvas');mask.width=w;mask.height=h;const mc=mask.getContext('2d',{willReadFrequently:true});mc.drawImage(coxaMask,0,0);const marked=mc.getImageData(0,0,w,h).data;
  const specs=[[.60,.90],[.075,.98],[.33,.78],null,null];
@@ -61,7 +61,7 @@ function prepareCoxaColors(){
 function coxaPose(p){
  if(p.hp<=0||p.down>0)return p.hp>0&&p.down<14?14:10;
  if(p.stun>0&&!p.guardStun)return 9;
- if(p.rollTime>0){const age=Math.max(0,24-p.rollTime);const path=p.rollDirection===p.dir?[12,13,14]:[14,13,12];return path[Math.min(2,Math.floor(age/8))];}
+ if(p.rollTime>0){const age=Math.max(0,24-p.rollTime);const start=p.rollDirection===(p.coxaRollFacing??p.dir)?20:28;return start+Math.min(7,Math.floor(age/3));}
  if(inJump(p))return 11;
  if(p.attack!==null){const m=moveFor(p,p.attack),phase=attackPhase(m,p.at);if(p.at<m.start)return p.attackCrouched?2:phase.pose===16?5:phase.pose===6||phase.pose===7?12:1;
   if(p.at>=m.start+m.active)return p.attackCrouched?2:phase.pose===6||phase.pose===7?14:0;
@@ -76,7 +76,7 @@ function coxaPose(p){
 function drawCoxa(p){
  const pose=coxaPose(p),im=coxaArt[p.coxaColor??0]||coxaCombat;if(!im||(!im.width&&!im.naturalWidth))return;
  // One calibrated lens for every pose, no pose-specific rescale, rotation or sprite-body translation.
- const f=1.16,dir=p.dir*(pose===5||pose===6?-1:1);
+ const f=1.16,dir=(p.rollTime>0?(p.coxaRollFacing??p.dir):p.dir)*(pose===5||pose===6?-1:1);
  ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(dir,1);ctx.drawImage(im,(pose%4)*384,Math.floor(pose/4)*320,384,320,-192*f,-300*f,384*f,320*f);ctx.restore();
 }
 function coxaSaveHistory(record){try{let rows=JSON.parse(localStorage.getItem(COXA_HISTORY)||'[]');if(!Array.isArray(rows))rows=[];const i=rows.findIndex(r=>r.id===record.id);if(i>=0)rows[i]=record;else rows.push(record);localStorage.setItem(COXA_HISTORY,JSON.stringify(rows.slice(-200)));return true;}catch{return false;}}
