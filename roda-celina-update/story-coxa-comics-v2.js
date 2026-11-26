@@ -632,7 +632,7 @@ function openStory(ending=false){
  if(!ending&&mode==='solo'&&arcadeIndex===0){
   openCoxaPage({title:'Donna’s Debt',source:'https://aberewamiddleschool.org/roda-constanca/donnas-debt.webp',
    alt:'Constança: “Maré. Celina. I’m looking for Donna.” Maré: “What do you want with her?” Constança: “Donna owes me. I came to collect.” Celina: “Does Donna know you’re here?”'},
-   'OPENING BOUT · DONA CONSTANÇA DA LUZ',profiles[chosen[1]].name.toUpperCase(),'Bout 1 of '+arcadeOrder.length);
+   'OPENING BOUT · DONA CONSTANÇA DA LUZ',profiles[chosen[1]].name.toUpperCase(),'Bout 1 of '+arcadeOrder.length,campaignTwo?'sealed-envelope':'fight');
   $('#storyplace').textContent='Red Moon Courtyard · Transylvania';
   return;
  }
@@ -667,6 +667,17 @@ function openBoutStory(ending=false){
  $('#storyadvance').textContent='A · CONTINUE THE RODA';setStoryHint();setStageMusic(DEFAULT_STAGE);
 }
 function advanceStory(){
+ if(storyReturn==='fear-duel'&&!storyEnding){
+  storyReturn='fight';startFearDuel();return;
+ }
+ if(storyReturn==='sealed-envelope'&&!storyEnding){
+  openCoxaPage({title:'The Sealed Envelope',source:'https://aberewamiddleschool.org/roda-constanca/sealed-envelope.webp',
+   alt:'Constança calls to Dona Cinza at the courtyard door. Terrified, Cinza drops her keys and asks how Constança found her. Dona Cinza says “Take it” and hands the sealed envelope to Constança. “I’ll fight everyone here. Then I’ll leave.”'},
+   'CAMPAIGN TWO · PROLOGUE','DONA CINZA vs. CONSTANÇA','Dona Cinza fights at 10% strength','fear-duel');
+  $('#storyadvance').textContent='A · BEGIN THE DUEL';
+  $('#storyplace').textContent='Red Moon Courtyard · Transylvania';
+  return;
+ }
  if(storyReturn==='studio-keys'&&!storyEnding){openStudioKeys();return;}
  if(storyReturn==='coxa-next'&&!storyEnding){storyReturn='fight';advanceCoxaAfterStory();return;}
  if(storyReturn==='coxa-complete'&&!storyEnding){storyReturn='fight';showCoxaCompletion();return;}

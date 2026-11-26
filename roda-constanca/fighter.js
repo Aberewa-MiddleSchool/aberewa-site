@@ -2,7 +2,7 @@ const CONSTANCA_ID=20;
 const constanca=(()=>{
  const root=new URL('.',document.currentScript.src);
  function image(file){const img=new Image();img.src=new URL(file,root);return img;}
- const portrait=image('portrait.png');
+ const portrait=image('character-card.jpg');
  const sheets=Object.fromEntries(['body','turn','rise','arc','bat','power','invert','high'].map(k=>[k,image(k+'.webp')]));
 const brideContacts={B:[2,4],X:[3,4],Y:[4,2],A:[0,3,5],LB:[1,2,4],RB:[0,2,3]};
 // The contact drawings straddle the actual hit checks. Between hits the bride
@@ -73,6 +73,7 @@ function brideAttackFrame(a){
   ctx.drawImage(img,frame%3*512,Math.floor(frame/3)*448,512,448,-256,-390,512,448);ctx.restore();
  }
  function face(c){if(!portrait.naturalWidth){portrait.addEventListener('load',()=>face(c),{once:true});return;}
-  const side=Math.min(portrait.width,portrait.height),g=c.getContext('2d');g.drawImage(portrait,(portrait.width-side)/2,0,side,side,0,0,c.width,c.height);}
+  const scale=Math.min(c.width/portrait.width,c.height/portrait.height),w=portrait.width*scale,h=portrait.height*scale;
+  const g=c.getContext('2d');g.fillStyle='#17130f';g.fillRect(0,0,c.width,c.height);g.drawImage(portrait,(c.width-w)/2,(c.height-h)/2,w,h);}
  return {install,draw,face,move,portrait};
 })();
