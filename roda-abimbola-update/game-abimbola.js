@@ -82,12 +82,160 @@ const bossMoves=moves.map((m,i)=>({...m,name:['Bênção forte','Chapa baixa','M
 buildFighterMoves(moves,bossMoves);
 connectExclusiveSpecials();
 connectEightFighters();
+const juremaKit={
+ "techniques": {
+  "push": {
+   "name": "Bênção",
+   "key": "bencao",
+   "level": "mid",
+   "art": [
+    26,
+    27,
+    28,
+    29,
+    30
+   ]
+  },
+  "round": {
+   "name": "Martelo",
+   "key": "martelo",
+   "level": "high",
+   "art": [
+    42,
+    43,
+    44,
+    45,
+    46
+   ]
+  },
+  "crescent": {
+   "name": "Meia-lua de frente",
+   "key": "frente",
+   "level": "high",
+   "art": [
+    18,
+    19,
+    20,
+    21,
+    22
+   ]
+  },
+  "sweep": {
+   "name": "Rasteira",
+   "key": "rasteira",
+   "level": "low",
+   "art": [
+    33,
+    34,
+    78,
+    37,
+    38
+   ]
+  },
+  "reverse": {
+   "name": "Reverse heel sweep",
+   "key": "lowsweep",
+   "level": "low",
+   "art": [
+    38,
+    35,
+    79,
+    37,
+    38
+   ]
+  },
+  "split": {
+   "name": "High split kick",
+   "key": "frente",
+   "level": "high",
+   "art": [
+    76,
+    76,
+    77,
+    76,
+    22
+   ]
+  },
+  "invert": {
+   "name": "Aú batido",
+   "key": "au",
+   "level": "high",
+   "art": [
+    72,
+    73,
+    74,
+    74,
+    73
+   ]
+  },
+  "scissor": {
+   "name": "Inverted heel kick",
+   "key": "costas",
+   "level": "high",
+   "art": [
+    73,
+    74,
+    75,
+    73,
+    72
+   ]
+  }
+ },
+ "chains": [
+  [
+   "push",
+   "round"
+  ],
+  [
+   "sweep",
+   "reverse"
+  ],
+  [
+   "crescent",
+   "split"
+  ],
+  [
+   "invert",
+   "scissor"
+  ],
+  [
+   "push",
+   "crescent",
+   "split",
+   "sweep"
+  ],
+  [
+   "sweep",
+   "reverse",
+   "invert",
+   "scissor"
+  ]
+ ],
+ "speed": 0.85,
+ "phaseTicks": 19
+};
+function installJuremaCombos(){
+ characterMoves[1]=characterMoves[1].map((base,slot)=>{
+  const sequence=juremaKit.chains[slot];
+  const budget=base.phases.reduce((sum,phase)=>sum+phase.damage,0);
+  const phases=sequence.map((key,index)=>{
+   const kick=juremaKit.techniques[key],finish=index===sequence.length-1;
+   return {...techniqueBook[kick.key],...kick,rank:base.rank,frames:juremaKit.phaseTicks,
+    travel:0,range:base.range,damage:budget/sequence.length,push:finish?3:0,
+    knockdown:finish&&(slot>=4||kick.level==='low')};
+  });
+  const name=phases.map(phase=>phase.name).join(' → ');
+  return {...base,name,signature:slot>=4?name:null,phases,active:phases.length*juremaKit.phaseTicks,
+   start:Math.ceil(base.start/juremaKit.speed),end:Math.ceil(base.end/juremaKit.speed)};
+ });
+}
+installJuremaCombos();
 installHeather();
 installCelina();
 installCoxa();
 abimbola.install();
 cinza.install();
-const moveFor=(p,n)=>p.id===CINZA_ID?characterMoves[CINZA_ID][n]:p.id===ABIMBOLA_ID&&p.attackCrouched?abimbola.lowMove(n):p.id===COXA_ID?(p.attackCrouched&&n===1?coxaLowMove:characterMoves[COXA_ID][n]):p.id===CELINA_ID?(p.attackCrouched&&n<6?celinaLowMoves[n]:characterMoves[p.id][n]):p.attackCrouched&&p.id!==HEATHER_ID&&p.id!==7&&p.id!==14&&!isProtagonist(p.id)?crouchingMove(characterMoves[p.id][n],n):characterMoves[p.id][n];
+const moveFor=(p,n)=>p.id===1?characterMoves[1][n]:p.id===CINZA_ID?characterMoves[CINZA_ID][n]:p.id===ABIMBOLA_ID&&p.attackCrouched?abimbola.lowMove(n):p.id===COXA_ID?(p.attackCrouched&&n===1?coxaLowMove:characterMoves[COXA_ID][n]):p.id===CELINA_ID?(p.attackCrouched&&n<6?celinaLowMoves[n]:characterMoves[p.id][n]):p.attackCrouched&&p.id!==HEATHER_ID&&p.id!==7&&p.id!==14&&!isProtagonist(p.id)?crouchingMove(characterMoves[p.id][n],n):characterMoves[p.id][n];
 function crouchingMove(base,n){const key=n===1||n===4?'rasteira':n===3||n===5?'costas':'chapa';const tech=techniqueBook[key];const phases=[{...base.phases[0],...tech,visual:n===3||n===5?'lowback':'lowpush',level:'low',travel:0,frames:base.active,range:base.range*.9,damage:base.damage,knockdown:n>=2,push:3}];return {...base,...phases[0],phases,name:['Chapa baixa','Rasteira curta','Chapa baixa forte','Meia-lua baixa','Varredura','Contra-ataque baixo'][n],signature:n>=4?'BAIXA · '+base.signature:null,active:phases[0].frames,start:Math.max(4,base.start-1),crouching:true};}
 const ROUND_SECONDS=99;
 let campaignTwo=false;
@@ -135,19 +283,32 @@ const redesignImages=Object.fromEntries(Object.entries(redesignData).map(([id,d]
  const im=new Image();im.src=d.src;return [id,im];
 }));
 // Optional artwork loads separately so the base roster remains playable on a slow connection.
+// Atlas coordinates and the planted-foot anchor for each authored drawing.
+const juremaFrames=[
+ [2,2,171,302,122],[177,2,180,300,133],[361,2,158,225,109],[523,2,162,253,103],[689,2,215,289,160],[908,2,320,71,160],[1232,2,206,223,100],[1442,2,180,295,130],
+ [2,308,215,302,159],[221,308,161,301,89],[386,308,225,284,174],[615,308,166,299,114],[785,308,191,244,113],[980,308,172,274,39],[1156,308,171,277,134],[1331,308,190,207,102],
+ [2,614,130,302,78],[136,614,171,298,123],[311,614,164,298,68],[479,614,183,298,73],[666,614,236,298,84],[906,614,235,298,84],[1145,614,171,298,79],[1320,614,145,301,94],
+ [2,920,150,302,56],[156,920,165,292,36],[325,920,155,294,64],[484,920,157,294,84],[645,920,225,302,84],[874,920,218,297,92],[1096,920,162,296,90],[1262,920,202,288,43],
+ [2,1226,166,302,110],[172,1226,181,277,124],[357,1226,197,235,26],[558,1226,193,204,42],[755,1226,303,194,51],[1062,1226,278,200,46],[1344,1226,186,222,67],[1534,1226,181,282,123],
+ [2,1532,193,299,141],[199,1532,179,298,136],[382,1532,174,298,80],[560,1532,221,298,114],[785,1532,265,300,115],[1054,1532,276,299,118],[1334,1532,182,300,95],[1520,1532,199,302,152],
+ [2,1838,211,302,160],[217,1838,267,302,98],[488,1838,157,301,80],[649,1838,274,302,118],[927,1838,267,302,104],[1198,1838,313,226,57],[1515,1838,209,226,70],[1728,1838,211,301,161],
+ [2,2144,196,302,142],[202,2144,234,301,51],[440,2144,152,301,79],[596,2144,231,301,110],[831,2144,251,300,117],[1086,2144,262,301,106],[1352,2144,159,300,84],[1515,2144,197,301,146],
+ [2,2450,129,181,64],[135,2450,181,163,90],[320,2450,181,139,90],[505,2450,201,142,100],[710,2450,159,142,79],[873,2450,201,130,100],[1078,2450,209,178,104],[1291,2450,169,257,84],
+ [2,2711,273,199,172],[279,2711,243,187,178],[526,2711,274,320,91],[804,2711,265,272,81],[1073,2711,153,275,59],[1230,2711,189,335,80],[1423,2711,231,169,51],[1658,2711,228,160,57]
+];
 const juremaHD=new Image();
 juremaHD.onload=()=>{
- const d=redesignData[1], source=d.rects;
- const strideX=4+2*Math.max(...source.map(r=>r[2]));
- const strideY=4+2*Math.max(...source.map(r=>r[3]));
- if(juremaHD.naturalWidth!==8*strideX||juremaHD.naturalHeight!==8*strideY)return;
- const rects=source.map((r,i)=>[2+i%8*strideX,2+Math.floor(i/8)*strideY,2*r[2],2*r[3]]);
- d.anchors=source.map((r,i)=>rects[i][0]+2*(d.anchors[i]-r[0]));
- d.referenceHeight*=2;d.rects=rects;redesignImages[1]=juremaHD;
+ if(juremaFrames.some(([x,y,w,h])=>x+w>juremaHD.naturalWidth||y+h>juremaHD.naturalHeight))return;
+ const d=redesignData[1],poses=juremaFrames.slice(0,64);
+ d.rects=poses.map(frame=>frame.slice(0,4));
+ d.anchors=poses.map(([x,y,w,h,foot])=>x+foot);
+ d.referenceHeight=305;
+ identityRowScale[1].fill(1);
+ redesignImages[1]=juremaHD;
  const portrait=document.querySelector('.fightercard[aria-label="Jurema"] canvas');
  if(portrait)facePortrait(portrait,1);
 };
-juremaHD.src=COXA_ASSETS+'jurema-higgins-hd.webp';
+juremaHD.src=COXA_ASSETS+'jurema-fresh.webp';
 const jaciDetail=new Image();
 jaciDetail.onload=()=>{redesignImages[8]=jaciDetail;};
 jaciDetail.src=COXA_ASSETS+'jaci-sprites-v25-detail.webp';
@@ -365,6 +526,7 @@ function updateRoll(p,input,dt){
  }
  p.previousDirection=direction;p.tapWindow=Math.max(0,(p.tapWindow||0)-dt);
  if(!(p.rollTime>0))return false;
+ if(p.id===1)dt=Math.min(p.rollTime,dt*juremaKit.speed);
  p.x=clamp(p.x+p.rollDirection*5*dt,100,1180);p.vx=0;p.crouch=true;p.block=false;
  p.moveText=(p.id===14?(p.mareRollFacing??p.dir):p.dir)===p.rollDirection?'FORWARD ROLL':'BACKWARD ROLL';
  p.rollTime=Math.max(0,p.rollTime-dt);
@@ -421,13 +583,17 @@ function drawHandspring(p){
 }
 const groundRollArt=new Image();
 groundRollArt.src='ground-rolls.webp';
-const juremaRollArt=new Image();
-juremaRollArt.src=COXA_ASSETS+'jurema-higgins-roll.webp';
 // The height calibration is measured once against each fighter’s standing sprite.
 const groundRollTucks={"0": [0, 0.9189], "1": [1, 1.0041], "3": [2, 0.9486], "4": [3, 0.8164], "5": [4, 0.8736], "6": [5, 0.8616], "8": [6, 0.8265], "9": [7, 0.8679], "10": [8, 0.8921], "11": [9, 0.8719], "13": [10, 0.8044], "14": [11, 0.9692]};
 function drawGroundRoll(p){
  if(p.id===14){drawMare(p);return;}
  const age=24-p.rollTime;
+ if(p.id===1&&redesignImages[1]===juremaHD){
+  const frame=clamp(Math.floor(age/3),0,7);
+  const [x,y,w,h,foot]=juremaFrames[64+(p.rollDirection===p.dir?frame:7-frame)];
+  ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(p.dir,1);
+  ctx.drawImage(juremaHD,x,y,w,h,-foot,-h,w,h);ctx.restore();return;
+ }
  if(age<4||age>20){drawFighterBody({...p,rollTime:0,crouch:true},fighterTraits[p.id]);return}
  const poseIndex=age<9?0:age<16?1:2;
  const step=p.rollDirection===p.dir?poseIndex:2-poseIndex;
@@ -435,8 +601,7 @@ function drawGroundRoll(p){
   const [cell,standingScale]=groundRollTucks[p.id];
   const scale=standingScale/visualHeight(p.id);
   ctx.save();ctx.translate(p.x,590);ctx.scale(p.dir,1);
-  if(p.id===1&&juremaRollArt.naturalWidth)ctx.drawImage(juremaRollArt,-128*scale,-250*scale,256*scale,256*scale);
-  else ctx.drawImage(groundRollArt,cell%4*256,Math.floor(cell/4)*256,256,256,-128*scale,-250*scale,256*scale,256*scale);
+  ctx.drawImage(groundRollArt,cell%4*256,Math.floor(cell/4)*256,256,256,-128*scale,-250*scale,256*scale,256*scale);
   ctx.restore();return;
  }
  if(p.id===7 && step===1 && flipImages[7]?.complete && flipImages[7].naturalWidth){
@@ -468,6 +633,7 @@ function strikeInReach(p,opp,m){
  if(p.id===ABIMBOLA_ID)return abimbola.strike(p,opp,m);
  let reach=m.range;
  let open=0,close=7;
+ if(p.id===1){open=Math.ceil(m.frames*.4);close=Math.ceil(m.frames*.6);}
  if((p.id===CELINA_ID||p.id===14)&&m.art){open=m.contact*m.frames/m.art.length;close=(m.contact+1)*m.frames/m.art.length;}
  return m.phaseFrame>=open && m.phaseFrame<close && Math.abs(opp.x-p.x)<reach;
 }
@@ -794,7 +960,7 @@ const portraitImages=["dandara", "jurema", "celina", "zinga", "lua", "iara", "na
 portraitImages[CINZA_ID]=new Image();
 portraitImages[CINZA_ID].src=cinza.asset('dona-cinza-card.jpg');
 portraitImages[1]=new Image();
-portraitImages[1].src=COXA_ASSETS+'jurema-higgins-card.jpg';
+portraitImages[1].src=COXA_ASSETS+'jurema-fresh-card.jpg';
 portraitImages[COXA_ID]=coxaCard;
 portraitImages[ABIMBOLA_ID]=new Image();
 portraitImages[ABIMBOLA_ID].src=abimbola.asset('card.jpg');
@@ -857,8 +1023,9 @@ function facePortrait(c,id){
   const im=redesignImages[1];
   if(!im.naturalWidth)return;
   const g=c.getContext('2d');g.fillStyle='#282c64';g.fillRect(0,0,c.width,c.height);
-  const r=redesignData[1].rects[0],scale=im===juremaHD?2:1;
-  g.drawImage(im,r[0]+18*scale,r[1],67*scale,45*scale,0,0,c.width,c.height);return;
+  const r=redesignData[1].rects[0];
+  const span=im===juremaHD?Math.min(r[2],r[3]*.48):67;
+  g.drawImage(im,r[0]+(r[2]-span)/2,r[1],span,span*2/3,0,0,c.width,c.height);return;
  }
  if(id===CINZA_ID){cinzaArt.face(c);return;}
  if(id===ABIMBOLA_ID){abimbola.portrait(c);return;}
@@ -880,8 +1047,18 @@ function facePortrait(c,id){
 // Mestre has a different three-technique chain on every attack button.
 const mestreKits=[['bencao','frente','rasteira'],['rasteira','bencao','costas'],['frente','costas','bencao'],['costas','frente','rasteira'],['frente','rasteira','costas'],['costas','bencao','frente']];
 characterMoves[14]=mestreKits.map((keys,n)=>{const old=characterMoves[14][n],phases=keys.map((key,i)=>({...techniqueBook[key],key,rank:n>=4?3:2,frames:12,range:old.range,damage:n>=4?9:6,knockdown:i===2,push:i===2?4:0}));return {...old,...phases[0],phases,start:12,active:36,end:19,authoredRow:null,name:keys.map(k=>techniqueBook[k].name).join(' → ')};});
+// Display the strike drawing during the same interval used for contact.
 const originalRedesignedAttack=drawRedesignedAttack;
-drawRedesignedAttack=function(p){if(p.id!==14){originalRedesignedAttack(p);return}const b=moveFor(p,p.attack),m=attackPhase(b,p.at);if(p.at<b.start||p.at>=b.start+b.active){drawGinga(p);return}const row=({frente:2,bencao:3,rasteira:4,costas:5})[m.key];const frame=m.phaseFrame<3?2:m.phaseFrame<8?4:6;drawRedesignFrame(p,row*8+frame);};
+drawRedesignedAttack=function(p){
+ if(p.id===1&&redesignImages[1]===juremaHD){
+  const base=moveFor(p,p.attack),phase=attackPhase(base,p.at);
+  const part=Math.min(4,Math.floor(phase.phaseFrame*5/phase.frames));
+  const frame=p.at<base.start?phase.art[0]:p.at>=base.start+base.active?phase.art[4]:phase.art[part];
+  const [x,y,w,h,foot]=juremaFrames[frame];
+  ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(p.dir,1);
+  ctx.drawImage(juremaHD,x,y,w,h,-foot,-h,w,h);ctx.restore();return;
+ }
+ if(p.id!==14){originalRedesignedAttack(p);return}const b=moveFor(p,p.attack),m=attackPhase(b,p.at);if(p.at<b.start||p.at>=b.start+b.active){drawGinga(p);return}const row=({frente:2,bencao:3,rasteira:4,costas:5})[m.key];const frame=m.phaseFrame<3?2:m.phaseFrame<8?4:6;drawRedesignFrame(p,row*8+frame);};
 let arcadeScore,scoreToast=null,firstHitClaimed=false,roundRewarded=false;
 let rankStore={characters:{},boards:[]};try{const saved=JSON.parse(localStorage.getItem('roda-ranks-v1')||'null');if(saved&&typeof saved.characters==='object'&&Array.isArray(saved.boards))rankStore=saved;}catch(e){}
 function resetArcadeScore(){scoreToast=null;arcadeScore={total:0,hits:0,firsts:0,combo:0,rounds:0,perfect:0,clear:0,maxCombo:0,completed:false,saved:false,rankApplied:false};}
