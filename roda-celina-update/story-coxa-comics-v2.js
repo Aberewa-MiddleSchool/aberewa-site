@@ -445,12 +445,26 @@ const familyInterludes={
   ]
  }
 };
-// Show the supplied anthology in reading order as its events enter the campaign.
-for(const [bout,art] of [[0,'origin-1'],[1,'origin-2'],[5,'origin-3'],[7,'origin-4'],[8,'challenge-1'],[9,'challenge-2']]){
- const panel=familyInterludes[bout].panels[0];
- panel.source='comic/'+art+'.webp';
- panel.description=familyInterludes[bout].title;
-}
+// Keep each memory paired with its own scene, including the original anthology pages.
+const memoryArtRoot=new URL('family-art/',document.currentScript.src).href;
+const familyScenes=[
+ ['comic/origin-1.webp','Maré sits with young Meilin at the bench.'],
+ ['comic/origin-2.webp','An illustrated memory of Meilin and Maré in her new home.'],
+ [memoryArtRoot+'shoelaces.webp','Maré discovers Meilin has tied his shoelaces together.'],
+ [memoryArtRoot+'tambourine.webp','Meilin makes the studio laugh with a tambourine and an impression of Maré.'],
+ [memoryArtRoot+'invitation.webp','Maré shows Meilin the café across the street and encourages her to perform.'],
+ ['comic/origin-3.webp','Meilin tries her comedy on a live audience.'],
+ [memoryArtRoot+'late-call.webp','Meilin calls Maré from backstage after a difficult set.'],
+ ['comic/origin-4.webp','Meilin and Maré see her success in print.'],
+ ['comic/challenge-1.webp','Meilin in the roda, as her family remembers her.'],
+ ['comic/challenge-2.webp','Meilin shares another day at the studio with her family.'],
+ [memoryArtRoot+'folded-note.webp','Meilin hands Maré her folded invitation.'],
+ [memoryArtRoot+'bus.webp','On the bus, Maré notices Meilin hiding a key in her pocket.'],
+ [memoryArtRoot+'at-the-gate.webp','Meilin holds her keys at the courtyard gate while Maré closes his eyes.']
+];
+familyScenes.forEach(([source,description],index)=>{
+ Object.assign(familyInterludes[index].panels[0],{source,description});
+});
 const openingPanels=familyInterludes[0].panels;
 let storyTime=0,storyEnding=false,storyPrologue=false,storyReturn='fight',prologueSeen=false;
 let comicPage=0;
@@ -475,7 +489,7 @@ const familyEnding=[
   "Meilin strides past Heather and Mestre Maré. “Vovo, I got this.” Bento and Nestor turn to look at her. “I’m rich, remember, Vovo?” Mestre’s eyes widen. “That is right! You are rich!”"
  ],
  [
-  "comic/courtyard.jpg",
+  "comic/welcome-3.webp",
   "The women stare. “You said I was silly enough for comedy, and it worked! I’m a rich D-list celebrity. I have a courtyard and an indoor studio we can train in whenever we want.” Meilin goes down the line, giving everyone a key."
  ],
  [
@@ -484,7 +498,7 @@ const familyEnding=[
  ]
 ];
 const skullEnding=[["comic/fire-window.webp","Bento and Nestor destroyed the old studio. But Meilin gave the family a new home, and the roda continues."]];
-const familyClosure=[['comic/courtyard.jpg','The final game ends. In their new home, the roda gathers once more. The family stays together.']];
+const familyClosure=[[memoryArtRoot+'the-family.webp','The final game ends. In their new home, the roda gathers once more. The family stays together.']];
 function endingPanels(){if(campaignTwo)return cinza.ending;return isProtagonist(chosen[0])?skullEnding:familyClosure}
 function paintFamilyPanels(title,place,panels){
  $('#storytitle').textContent=title;$('#storyplace').textContent=place;
@@ -532,7 +546,7 @@ function openCoxaPage(page,chapter,opponent,role,destination='fight'){
  storyEnding=false;storyPrologue=false;storyReturn=destination;scene='story';show('story');storyTime=arcadeAutoplay?900:Infinity;
  $('#storychapter').textContent=chapter;$('#storytitle').textContent=page.title;$('#storyplace').textContent='Salvador, Bahia · Brasil';
  const strip=$('#story .family-comic');strip.replaceChildren();strip.classList.remove('roda-two-panel');strip.classList.add('roda-coxa-page');
- const art=document.createElement('img');art.className='roda-coxa-comic-art';art.src=COXA_COMIC_ROOT+page.file;art.alt=page.alt;strip.append(art);
+ const art=document.createElement('img');art.className='roda-coxa-comic-art';art.src=page.source || COXA_COMIC_ROOT+page.file;art.alt=page.alt;strip.append(art);
  $('#storyopponent').textContent=opponent;$('#storyrole').textContent=role;
  $('#storyadvance').textContent=destination==='fight'?'A · ENTER THE RODA':destination==='coxa-next'?'A · NEXT BOUT':'A · CONTINUE';setStoryHint();
 }
@@ -615,7 +629,7 @@ function openHeatherComic(after){
 }
 
 function openStory(ending=false){
- if(campaignTwo){if(ending)openComicEnding();else cinza.chapter();return;}
+ if(campaignTwo){if(ending)cinzaComics.open(true);return;}
  if(!ending&&arcadeIndex===arcadeOrder.length-1){openStudioReveal();return;}
  if(!ending&&arcadeIndex===0&&chosen[0]===COXA_ID&&chosen[1]===HEATHER_ID){openCoxaOpening();return;}
  if(!ending&&chosen[1]===CELINA_ID){storyEnding=false;storyPrologue=false;storyReturn='fight';scene='story';show('story');storyTime=arcadeAutoplay?540:Infinity;$('#storychapter').textContent='CELINA · FORTY YEARS IN THE RODA';paintFamilyPanels('Wisdom of the roda','Salvador, Bahia · Brasil',[{speaker:'Celina',speech:'Show me what the roda has taught you. Every encounter offers a lesson.',source:CELINA_ASSET_ROOT+'wisdom-1.webp',description:'Celina welcomes her opponent'}]);$('#storyopponent').textContent='NEXT: CELINA';$('#storyrole').textContent='Mentor encounter · '+formatLabel();$('#storyadvance').textContent='A · ENTER THE RODA';setStoryHint();setStageMusic(activeStage);return;}
@@ -654,7 +668,7 @@ function advanceStory(){
  if(storyEnding){advanceComicEnding();return}if(storyPrologue){prologueSeen=true;storyPrologue=false;if(storyReturn==='menu'){scene='menu';show('menu');setStageMusic(-1);return}}
  scene='fight';show(null);roundIntro=true;introDuration=round===1?270:120;announceTime=introDuration;announcement=round===1?'ENTER THE RODA':roundLabel();$('#sessionlabel').textContent=(mode==='coxa'?'COXA MODE · STAGE '+coxaRun.stage+'/20':(arcadeAutoplay?'WATCH ARCADE ':'ARCADE ')+(arcadeIndex+1)+'/'+arcadeOrder.length)+' · '+stageNames[activeStage];setStageMusic(activeStage);
 }
-function openComicEnding(){storyEnding=true;storyPrologue=false;comicPage=0;scene='story';show('ending');setStageMusic(DEFAULT_STAGE);paintComicEnding()}
+function openComicEnding(){if(campaignTwo){cinzaComics.open(true);return;}storyEnding=true;storyPrologue=false;comicPage=0;scene='story';show('ending');setStageMusic(DEFAULT_STAGE);paintComicEnding()}
 function paintComicEnding(){
  const panels=endingPanels(),panel=panels[comicPage];
  storyTime=arcadeAutoplay?480:Infinity;

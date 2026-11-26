@@ -37,7 +37,7 @@
   autoContinue=function rodaArcadeFinish(...args){
     // Watching never enters player name entry or controller-dependent Game Over.
     // The existing spectator ladder advances through its result and story screens.
-    if(arcadeAutoplay)return nextBout.apply(this,args);
+    if(arcadeAutoplay || campaignTwo)return nextBout.apply(this,args);
     if(mode==='solo'&&matchOver&&arcadeIndex===arcadeOrder.length-1){
       hideOver();pendingComic=true;
       try{openComicEnding();}

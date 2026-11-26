@@ -24,12 +24,14 @@
     'x-o---xx-x-o-x--','x--o-x--xx-o-x-x','x-x--ox-x--o--xx',
     'x---o-x-xx--ox--','x-o-xx-x---o-x--','x-ox--x-xx--o-x-'
   ];
-  let currentStage=-1, timer=null, context=null, noise=null, nextTime=0, step=0;
+  let currentStage=-1, timer=null, context=null, musicGain=null, noise=null, nextTime=0, step=0;
   const READAHEAD=.3, LOOKAHEAD_MS=85;
 
   function ctxReady(){
     if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state !== 'closed') {
-      context=audioCtx;return context.state === 'running';
+      if(context!==audioCtx){context=audioCtx;musicGain=context.createGain();musicGain.connect(context.destination);}
+      musicGain.gain.value=musicEnabled&&sound?1:0;
+      return context.state === 'running';
     }
     return false;
   }
@@ -50,7 +52,7 @@
     gain.gain.setValueAtTime(.0001,at);
     gain.gain.exponentialRampToValueAtTime(loud,at+.007);
     gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
-    osc.connect(filter);filter.connect(gain);gain.connect(c.destination);
+    osc.connect(filter);filter.connect(gain);gain.connect(musicGain);
     osc.start(at);osc.stop(at+duration+.02);
   }
   function drum(at,loud){
@@ -61,7 +63,7 @@
     g.gain.setValueAtTime(.0001,at);
     g.gain.exponentialRampToValueAtTime(loud,at+.005);
     g.gain.exponentialRampToValueAtTime(.0001,at+.21);
-    osc.connect(g);g.connect(c.destination);osc.start(at);osc.stop(at+.23);
+    osc.connect(g);g.connect(musicGain);osc.start(at);osc.stop(at+.23);
   }
   function shake(at,loud){
     const c=context;if(!c)return;
@@ -71,7 +73,7 @@
     g.gain.setValueAtTime(.0001,at);
     g.gain.exponentialRampToValueAtTime(loud,at+.003);
     g.gain.exponentialRampToValueAtTime(.0001,at+.085);
-    source.connect(hp);hp.connect(g);g.connect(c.destination);
+    source.connect(hp);hp.connect(g);g.connect(musicGain);
     source.start(at);source.stop(at+.09);
   }
   function hit(n,at){
@@ -96,7 +98,7 @@
     }
   }
   function schedule(){
-    if(!ctxReady() || currentStage<0 || !sound ||
+    if(currentStage<0 || !ctxReady() || !sound || !musicEnabled ||
        document.hidden || !['fight','select'].includes(scene)) {
       nextTime=0;
       return;
@@ -113,7 +115,7 @@
   function start(stage,preview){
     const id=Number(stage);
     if(!Number.isInteger(id) || id<0 || id>=tempi.length){
-      currentStage=-1;nextTime=0;step=0;return;
+      currentStage=-1;nextTime=0;step=0;if(musicGain)musicGain.gain.value=0;return;
     }
     const switched=id!==currentStage;
     currentStage=id;
@@ -124,23 +126,25 @@
     schedule();
   }
   window.setStageMusic=function stageSpecificMusic(stage){
+    if(!musicEnabled){start(-1,false);return;}
     const number=Number(stage);
     const id=Number.isFinite(number)?Math.max(-1,Math.min(stageNames.length-1,Math.trunc(number))):DEFAULT_STAGE;
     const result=originalMusic.call(this,id);
-    start(id===homeStageFor(CELINA_ID)?-1:id,false);
+    start(arenas[id]?.theme || id===homeStageFor(CELINA_ID)?-1:id,false);
     return result;
   };
   function audition(id){
+    if(!musicEnabled)return;
     if (typeof window.initAudio === 'function')window.initAudio();
     window.setStageMusic(Number(id));
     // 'select' scene is permitted for the preview music.
     schedule();
     const status=document.getElementById('musicstatus');
-    if(status&&Number(id)!==homeStageFor(CELINA_ID)) status.textContent='Stage '+(Number(id)+1)+': unique original berimbau, atabaque and pandeiro arrangement.';
+    if(status&&!arenas[id]?.theme&&Number(id)!==homeStageFor(CELINA_ID)) status.textContent='Stage '+(Number(id)+1)+': unique original berimbau, atabaque and pandeiro arrangement.';
   }
   document.addEventListener('visibilitychange',()=>{if(document.hidden)nextTime=0;});
   window.RODAStageRhythms=Object.freeze({
     version:'3.4',stageCount:stageNames.length,tempi:[...tempi],
-    audition, stop:()=>start(-1), get currentStage(){return currentStage;}
+    audition, stop:()=>{start(-1);if(musicGain)musicGain.gain.value=0;}, get currentStage(){return currentStage;}
   });
 })();

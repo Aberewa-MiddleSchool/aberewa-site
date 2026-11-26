@@ -8,6 +8,24 @@ const cinzaArt = (() => {
     return true;
   }).catch(error=>{console.error('Dona Cinza art unavailable',error);return false;});
 
+  const costumes = [
+    {key:'original',name:'Original',combat:sheet,rolls},
+    {key:'marfim',name:'Marfim'},
+    {key:'rosa',name:'Rosa Rubra'},
+    {key:'ninja',name:'Gray Ninja'}
+  ];
+  let selected=0;
+  function cycleCostume(){
+    selected=(selected+1)%costumes.length;
+    const kit=costumes[selected];
+    if(!kit.combat){
+      for(const part of ['combat','rolls']){
+        const image=new Image();
+        image.src=cinza.asset('outfits/'+kit.key+'-'+part+'.webp');
+        kit[part]=image;
+      }
+    }
+  }
   const kicks = {bencao:5,frente:6,costas:6,rasteira:7,armada:9,compasso:9};
   function pose(p){
     if(p.down>0 || p.hp<=0)return 14;
@@ -40,15 +58,30 @@ const cinzaArt = (() => {
     ctx.translate(p.x,590-p.y);
     ctx.scale(p.rollTime>0?(p.abimbolaRollFacing??p.dir):p.dir,1);
     ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
-    ctx.drawImage(p.rollTime>0 && p.down<=0 && p.hp>0 && p.stun<=0?rolls:sheet,(frame%4)*cell,Math.floor(frame/4)*cell,cell,cell,-size/2,3-size,size,size);
+    const kit=costumes[p.cinzaCostume||0] || costumes[0];
+    const part=p.rollTime>0 && p.down<=0 && p.hp>0 && p.stun<=0?'rolls':'combat';
+    const art=kit[part]?.naturalWidth?kit[part]:costumes[0][part];
+    ctx.drawImage(art,(frame%4)*cell,Math.floor(frame/4)*cell,cell,cell,-size/2,3-size,size,size);
     ctx.restore();
     if(p.combo>=2 && p.comboTimer>0)text(p.combo+' HIT',p.x,205,34,'#ffdb6e','center');
   }
   function face(canvas){
+    const choice=costumes[selected];
+    if(selected && choice.combat){
+      if(!choice.combat.complete){
+        choice.combat.addEventListener('load',()=>{if(costumes[selected]===choice)face(canvas);},{once:true});
+      }else if(choice.combat.naturalWidth){
+        const g=canvas.getContext('2d');
+        g.clearRect(0,0,canvas.width,canvas.height);
+        const scale=Math.min(canvas.width/235,canvas.height/245);
+        g.drawImage(choice.combat,82,140,235,244,(canvas.width-235*scale)/2,canvas.height-244*scale,235*scale,244*scale);
+        return;
+      }
+    }
     const photo=cinza.portrait;
     const scale=Math.max(canvas.width/photo.naturalWidth,canvas.height/photo.naturalHeight);
     const width=photo.naturalWidth*scale,height=photo.naturalHeight*scale;
     canvas.getContext('2d').drawImage(photo,(canvas.width-width)/2,(canvas.height-height)*.2,width,height);
   }
-  return {ready,draw,face};
+  return {ready,draw,face,cycleCostume,get selected(){return selected;},get outfitName(){return costumes[selected].name;}};
 })();

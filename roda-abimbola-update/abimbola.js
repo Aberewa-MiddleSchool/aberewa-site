@@ -77,7 +77,7 @@ const abimbola = (() => {
  }
 
  function roll(p,input,dt) {
-  const human = p === players[0] && !arcadeAutoplay;
+  const human = (p === players[0] || mode === cinzaRewards.versus) && !arcadeAutoplay;
   const direction = Math.abs(input?.x || 0) > (human ? .6 : .35) ? Math.sign(input.x) : 0;
   if (p.stun > 0 || p.down > 0 || p.hp <= 0) {
    p.rollTime=0;

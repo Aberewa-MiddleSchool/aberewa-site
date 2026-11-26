@@ -43,7 +43,7 @@ function forget(e){const i=e.gamepad?.index;if(i===undefined)return;for(const k 
 window.addEventListener('gamepadconnected',forget);window.addEventListener('gamepaddisconnected',forget);
 function mareRoll(p,input,dt){
  if(p.id!==14)return previousRoll(p,input,dt);
- const human=p===players[0]&&!arcadeAutoplay;
+ const human=(p===players[0]||mode===cinzaRewards.versus)&&!arcadeAutoplay;
  const intent=human?Math.sign(input?.rollIntent||0):mode==='training'?0:Math.abs(input?.x||0)>.35?Math.sign(input.x):0;
  const vertical=Math.abs(input?.y||0)>.5;
  if(!intent)p.mareRollArmed=true;
