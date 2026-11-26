@@ -283,7 +283,7 @@ function toggleHeatherOutfit(){
 outfitButton.onclick=toggleHeatherOutfit;
 function updatePick(){
  outfitButton.hidden=pick!==HEATHER_ID&&pick!==COXA_ID;
- outfitButton.textContent=pick===COXA_ID?'Y · OUTFIT: '+COXA_COLORS[coxaSelected].toUpperCase()+' ('+coxaUnlocked+'/'+COXA_COLORS.length+' UNLOCKED)':'Y · OUTFIT: '+(heatherWhiteSelected?'ALL WHITE':'OAKLAND');
+ outfitButton.textContent=pick===COXA_ID?'Y · OUTFIT: '+COXA_COLORS[coxaSelected].toUpperCase()+' ('+coxaUnlocked+'/'+COXA_COLORS.length+' UNLOCKED)'+(coxaUnlocked<COXA_COLORS.length?' · ONE COLOR PER 20–0 RUN':''):'Y · OUTFIT: '+(heatherWhiteSelected?'ALL WHITE':'OAKLAND');
  outfitButton.setAttribute('aria-pressed',String(pick===COXA_ID?coxaSelected!==0:heatherWhiteSelected));
  if(pick===HEATHER_ID){
   const preview=$$('.fightercard')[playableIds.indexOf(HEATHER_ID)]?.querySelector('canvas');

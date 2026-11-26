@@ -4,12 +4,26 @@ const COXA_ID=17;
 const COXA_LIMIT=20;
 const COXA_COLORS=Object.freeze(['red','blue','orange','green','black']);
 const COXA_ASSETS=new URL('assets/',document.currentScript.src).href;
-const COXA_STORAGE='aberewa_roda_coxa_outfits_v1',COXA_HISTORY='aberewa_roda_coxa_runs_v1';
+const COXA_LEGACY_STORAGE='aberewa_roda_coxa_outfits_v1',COXA_STORAGE='aberewa_roda_coxa_outfits_20_0_v2',COXA_HISTORY='aberewa_roda_coxa_runs_v1';
 const coxaCombat=new Image(),coxaMask=new Image(),coxaCard=new Image(),coxaFace=new Image();
 coxaCombat.src=COXA_ASSETS+'combat-v3.webp';coxaMask.src=COXA_ASSETS+'suit-mask-v3.png';coxaCard.src=COXA_ASSETS+'card-v2.webp';coxaFace.src=COXA_ASSETS+'face.webp';
 const coxaArt=[coxaCombat];
 let coxaUnlocked=1,coxaSelected=0,coxaRun=null;
-try{const v=JSON.parse(localStorage.getItem(COXA_STORAGE)||'null');if(v){coxaUnlocked=Math.max(1,Math.min(COXA_COLORS.length,Math.floor(Number(v.unlocked)||1)));coxaSelected=Math.max(0,Math.min(coxaUnlocked-1,Math.floor(Number(v.selected)||0)));}}catch{}
+// Migrate the old per-bout reward only from recorded, distinct undefeated challenges.
+function coxaPerfectRun(r){return r?.mode==='Coxa Mode'&&r.complete===true&&r.wins===COXA_LIMIT&&r.losses===0;}
+function coxaLoadOutfits(){
+ try{
+  const v=JSON.parse(localStorage.getItem(COXA_STORAGE)||'null');
+  if(v){coxaUnlocked=Math.max(1,Math.min(COXA_COLORS.length,Math.floor(Number(v.unlocked)||1)));coxaSelected=Math.max(0,Math.min(coxaUnlocked-1,Math.floor(Number(v.selected)||0)));return;}
+  const rows=JSON.parse(localStorage.getItem(COXA_HISTORY)||'[]');
+  const earned=new Set((Array.isArray(rows)?rows:[]).filter(r=>coxaPerfectRun(r)&&r.id).map(r=>r.id));
+  coxaUnlocked=Math.min(COXA_COLORS.length,1+earned.size);
+  const legacy=JSON.parse(localStorage.getItem(COXA_LEGACY_STORAGE)||'null');
+  coxaSelected=Math.max(0,Math.min(coxaUnlocked-1,Math.floor(Number(legacy?.selected)||0)));
+  coxaSaveOutfits();
+ }catch{}
+}
+coxaLoadOutfits();
 const coxaMoney=n=>new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format((Number(n)||0)/100);
 function coxaSaveOutfits(){try{localStorage.setItem(COXA_STORAGE,JSON.stringify({unlocked:coxaUnlocked,selected:coxaSelected}));return true;}catch{return false;}}
 function coxaCycleOutfit(){coxaSelected=(coxaSelected+1)%coxaUnlocked;coxaSaveOutfits();}
@@ -81,8 +95,15 @@ function drawCoxa(p){
  ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(dir,1);ctx.drawImage(im,(pose%4)*384,Math.floor(pose/4)*320,384,320,-192*f,-300*f,384*f,320*f);ctx.restore();
 }
 function coxaSaveHistory(record){try{let rows=JSON.parse(localStorage.getItem(COXA_HISTORY)||'[]');if(!Array.isArray(rows))rows=[];const i=rows.findIndex(r=>r.id===record.id);if(i>=0)rows[i]=record;else rows.push(record);localStorage.setItem(COXA_HISTORY,JSON.stringify(rows.slice(-200)));return true;}catch{return false;}}
-function coxaNewRun(stageCount,random=Math.random){return {id:globalThis.crypto?.randomUUID?.()||String(Date.now())+'-'+Math.random(),mode:'Coxa Mode',currency:'EUR',stage:1,arena:coxaStagePool(stageCount,-1,random),wins:0,losses:0,recordedStage:0,unlocked:coxaUnlocked,score:0,complete:false,date:new Date().toISOString()};}
-function coxaApplyBout(run,won,score){if(run.complete||run.recordedStage===run.stage)return null;run.recordedStage=run.stage;run.wins+=won?1:0;run.losses+=won?0:1;run.score=Number(score)||0;const color=won?coxaUnlockNext():null;run.unlocked=coxaUnlocked;run.complete=run.stage===COXA_LIMIT;return color;}
+function coxaNewRun(stageCount,random=Math.random){return {id:globalThis.crypto?.randomUUID?.()||String(Date.now())+'-'+Math.random(),mode:'Coxa Mode',currency:'EUR',stage:1,arena:coxaStagePool(stageCount,-1,random),wins:0,losses:0,recordedStage:0,unlocked:coxaUnlocked,score:0,complete:false,rewardRule:'20-0',date:new Date().toISOString()};}
+function coxaApplyBout(run,won,score){
+ if(run.complete||run.recordedStage===run.stage)return null;
+ run.recordedStage=run.stage;run.wins+=won?1:0;run.losses+=won?0:1;run.score=Number(score)||0;
+ run.complete=run.stage===COXA_LIMIT;
+ // One color per completed 20-0 challenge; losses are recorded without resetting the ladder.
+ const color=coxaPerfectRun(run)?coxaUnlockNext():null;
+ run.unlocked=coxaUnlocked;run.reward=color||null;return color;
+}
 function coxaAdvanceBout(run,stageCount,random=Math.random){if(run.complete||run.recordedStage!==run.stage)return false;run.stage++;run.arena=coxaStagePool(stageCount,run.arena,random);return true;}
 function beginCoxaRun(){if(!loaded||!playableIds.includes(COXA_ID))return;arcadeAutoplay=false;mode='coxa';coxaRun=coxaNewRun(stageNames.length);coxaRun.player=(document.getElementById('coxa-player-name')?.value||'').trim().slice(0,32)||'Coxa';coxaRun.difficulty=difficulty;coxaRun.roundLimit=roundLimit;chosen=[COXA_ID,HEATHER_ID];resetArcadeScore();wins=[0,0];round=1;startRound();}
 function recordCoxaBout(){if(mode!=='coxa'||!coxaRun||!matchOver||matchWinner<0||coxaRun.recordedStage===coxaRun.stage)return;
@@ -90,12 +111,12 @@ function recordCoxaBout(){if(mode!=='coxa'||!coxaRun||!matchOver||matchWinner<0|
  coxaRun.saved=coxaSaveHistory(coxaRun);$('#resulttitle').textContent+=(color?' · '+color.toUpperCase()+' UNLOCKED':'');$('#roda-bout-record').textContent='STAGE '+coxaRun.stage+' / 20 · '+coxaRun.wins+' W / '+coxaRun.losses+' L · '+coxaMoney(coxaRun.score)+' · '+coxaUnlocked+' / '+COXA_COLORS.length+' COLORS';
 }
 function continueCoxaRun(){if(!coxaRun)return;recordCoxaBout();if(coxaAdvanceBout(coxaRun,stageNames.length)){wins=[0,0];round=1;startRound();return;}if(!coxaRun.complete)return;
- scene='coxa-complete';show('coxa-complete');$('#coxa-summary').textContent=coxaRun.wins+' wins · '+coxaRun.losses+' losses · '+coxaMoney(coxaRun.score);$('#coxa-colors-summary').textContent=coxaUnlocked+' of '+COXA_COLORS.length+' outfits unlocked'+(coxaRun.saved?' · record saved':' · storage unavailable');$('#sessionlabel').textContent='COXA MODE COMPLETE · '+coxaMoney(coxaRun.score);
+ scene='coxa-complete';show('coxa-complete');$('#coxa-summary').textContent=coxaRun.wins+' wins · '+coxaRun.losses+' losses · '+coxaMoney(coxaRun.score);$('#coxa-colors-summary').textContent=(coxaPerfectRun(coxaRun)?(coxaRun.reward?coxaRun.reward.toUpperCase()+' UNLOCKED · ':'UNDEFEATED · ALL COLORS EARNED · '):'NO NEW OUTFIT · A 20–0 RUN IS REQUIRED · ')+coxaUnlocked+' of '+COXA_COLORS.length+' outfits unlocked'+(coxaRun.saved?' · record saved':' · storage unavailable');$('#sessionlabel').textContent='COXA MODE COMPLETE · '+coxaMoney(coxaRun.score);
 }
-function coxaRecordArcade(entry){return coxaSaveHistory({id:'arcade-'+entry.time+'-'+entry.name,mode:'Arcade',player:entry.name,currency:'EUR',difficulty,score:entry.score,wins:entry.wins,losses:entry.losses,unlocked:coxaUnlocked,complete:true,date:new Date(entry.time).toISOString()});}
+function coxaRecordArcade(entry){return coxaSaveHistory({id:'arcade-'+entry.time+'-'+entry.name,mode:'Arcade',player:entry.name,currency:'EUR',difficulty,score:entry.score,wins:entry.wins,losses:entry.losses,unlocked:coxaUnlocked,complete:true,rewardRule:'20-0',date:new Date(entry.time).toISOString()});}
 function installCoxaUI(){
- const b=document.createElement('button');b.dataset.mode='coxa';b.innerHTML='<b>COXA MODE</b><span>20 BOUTS VS HEATHER · RANDOM ARENAS · FIVE OUTFITS</span>';b.onclick=()=>setMode('coxa');document.querySelector('.mode-buttons').append(b);
+ const b=document.createElement('button');b.dataset.mode='coxa';b.innerHTML='<b>COXA MODE</b><span>20 BOUTS VS HEATHER · RANDOM ARENAS · ONE NEW COLOR PER 20–0 RUN</span>';b.onclick=()=>setMode('coxa');document.querySelector('.mode-buttons').append(b);
  const name=document.createElement('label');name.id='coxa-name-wrap';name.hidden=true;name.textContent='COXA MODE PLAYER NAME (OPTIONAL)';name.style.cssText='margin:8px 0;color:#ffe1aa;font-weight:700';const input=document.createElement('input');input.id='coxa-player-name';input.maxLength=32;input.placeholder='Enter your name';input.style.cssText='display:block;padding:8px;color:#111;background:white;width:100%';try{input.value=localStorage.getItem('roda-last-player')||'';}catch{}name.append(input);$('#choose').before(name);
- const panel=document.createElement('section');panel.id='coxa-complete';panel.className='overlay hidden';panel.style.cssText='text-align:center;padding:28px;overflow:auto';panel.innerHTML='<h2>COXA MODE COMPLETE</h2><p>20 BOUTS AGAINST HEATHER</p><h3 id="coxa-summary"></h3><p id="coxa-colors-summary"></p><button id="coxa-done" class="primary">A · RETURN TO MAIN MENU</button>';$('.screen').append(panel);$('#coxa-done').onclick=returnToMenu;
+ const panel=document.createElement('section');panel.id='coxa-complete';panel.className='overlay hidden';panel.style.cssText='text-align:center;padding:28px;overflow:auto';panel.innerHTML='<h2>COXA MODE COMPLETE</h2><p>20 BOUTS AGAINST HEATHER · ONE NEW OUTFIT PER UNDEFEATED RUN</p><h3 id="coxa-summary"></h3><p id="coxa-colors-summary"></p><button id="coxa-done" class="primary">A · RETURN TO MAIN MENU</button>';$('.screen').append(panel);$('#coxa-done').onclick=returnToMenu;
 }
 function coxaMenuSync(){const name=document.getElementById('coxa-name-wrap');if(name)name.hidden=mode!=='coxa';if(mode==='coxa'){const stage=document.querySelector('.roda-menu-stages');if(stage)stage.hidden=true;}}
