@@ -44,7 +44,7 @@ const cinza = (() => {
   function route(player,rotate){
     const final = player===COXA_ID || !playableIds.includes(COXA_ID) ? (player===14?7:14) : COXA_ID;
     const opening = player===COXA_ID ? [HEATHER_ID] : [];
-    const pool = playableIds.filter(id=>id!==player && id!==final && id!==CINZA_ID && !isProtagonist(id) && !opening.includes(id));
+    const pool = playableIds.filter(id=>id!==CONSTANCA_ID && id!==player && id!==final && id!==CINZA_ID && !isProtagonist(id) && !opening.includes(id));
     const start = rotate ? Math.floor(Math.random()*pool.length) : 0;
     const regular = [...opening,...pool.slice(start),...pool.slice(0,start),final];
     const result = [];
