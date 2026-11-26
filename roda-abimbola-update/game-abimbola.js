@@ -967,7 +967,7 @@ const portraitImages=["dandara", "jurema", "celina", "zinga", "lua", "iara", "na
 portraitImages[CINZA_ID]=new Image();
 portraitImages[CINZA_ID].src=cinza.asset('dona-cinza-card.jpg');
 portraitImages[1]=new Image();
-portraitImages[1].src=COXA_ASSETS+'jurema-fresh-card.jpg';
+portraitImages[1].src=COXA_ASSETS+'jurema-higgins-card.jpg';
 portraitImages[COXA_ID]=coxaCard;
 portraitImages[ABIMBOLA_ID]=new Image();
 portraitImages[ABIMBOLA_ID].src=abimbola.asset('card.jpg');
@@ -1024,16 +1024,8 @@ function drawAnnouncement(){const elapsed=roundIntro?introDuration-announceTime:
 const heatherWhiteCard=new Image();
 heatherWhiteCard.src='portraits/heather-white.webp';
 // Each source card has different framing. Coordinates refer to a 152 × 208 thumbnail.
-const selectFaceBounds={"2":[76,37,39],"0": [75, 40, 41], "1": [76, 38, 39], "3": [76, 35, 44], "4": [76, 40, 40], "5": [76, 38, 42], "6": [73, 39, 40], "7": [81, 73, 46], "8": [73, 36, 42], "9": [83, 49, 43], "10": [76, 32, 41], "11": [76, 31, 41], "13": [73, 32, 42], "14": [75, 32, 42], "15": [75, 68, 128], "16": [79, 50, 45]};
+const selectFaceBounds={"2":[76,37,39],"0": [75, 40, 41], "1": [76, 38, 41], "3": [76, 35, 44], "4": [76, 40, 40], "5": [76, 38, 42], "6": [73, 39, 40], "7": [81, 73, 46], "8": [73, 36, 42], "9": [83, 49, 43], "10": [76, 32, 41], "11": [76, 31, 41], "13": [73, 32, 42], "14": [75, 32, 42], "15": [75, 68, 128], "16": [79, 50, 45]};
 function facePortrait(c,id){
- if(id===1){
-  const im=redesignImages[1];
-  if(!im.naturalWidth)return;
-  const g=c.getContext('2d');g.fillStyle='#282c64';g.fillRect(0,0,c.width,c.height);
-  const r=redesignData[1].rects[0];
-  const span=im===juremaHD?Math.min(r[2],r[3]*.48):67;
-  g.drawImage(im,r[0]+(r[2]-span)/2,r[1],span,span*2/3,0,0,c.width,c.height);return;
- }
  if(id===CINZA_ID){cinzaArt.face(c);return;}
  if(id===ABIMBOLA_ID){abimbola.portrait(c);return;}
  if(id===COXA_ID && coxaSelected===COXA_HIGGINS && coxaHiggins.naturalWidth){
