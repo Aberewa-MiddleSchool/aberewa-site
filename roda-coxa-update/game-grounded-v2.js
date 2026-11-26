@@ -287,7 +287,7 @@ function pollPads(){
   if(s.edge[9])togglePause();else if(s.edge[0])advanceStory();
  }else if(scene==='pause'){
   if(s.edge[9])togglePause();
-  else{if(uiTick>navAt&&Math.abs(s.y)>.5){pauseFocus=(pauseFocus+(s.y>0?1:2))%3;paintPause();navAt=uiTick+15;}if(s.edge[0])[$('#resume'),$('#restart'),$('#quit')][pauseFocus].click();}
+  else{if(Math.abs(s.y)>.5){pauseFocus=(pauseFocus+(s.y>0?1:2))%3;paintPause();navAt=uiTick+15;}if(s.edge[0])[$('#resume'),$('#restart'),$('#quit')][pauseFocus].click();}
  }else if(scene==='result'&&mode==='solo'&&!arcadeAutoplay&&chosen[1]===CELINA_ID&&s.edge[0])autoContinue();
  else if(['fight','result'].includes(scene)&&s.edge[9])togglePause();
  return states;
