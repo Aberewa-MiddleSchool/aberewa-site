@@ -62,6 +62,11 @@
     film.play().catch(()=>{if(scene==='endingfilm')film.controls=true});
   }
   window.finishArcadeComic=function(shortEnding){
+    if(shortEnding && typeof campaignTwo!=='undefined' && campaignTwo){
+      storyEnding=false;
+      if(pendingComic)toScore();else openArcadeScore();
+      return;
+    }
     if(shortEnding){gameOver();return}
     storyEnding=false;scene='endingfilm';show(null);cinema.hidden=false;
     if(localMusic)localMusic.pause();
