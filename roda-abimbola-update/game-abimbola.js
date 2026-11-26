@@ -464,6 +464,13 @@ function pollPads(){
  $('#status').textContent=arcadeAutoplay?'CPU CONTROL · NO CONTROLLER REQUIRED':lastPads.length?'CONTROLLER READY':'AWAITING CONTROLLER';
  if(!arcadeAutoplay&&!isMenuPrologue()&&['fight','result','story'].includes(scene)&&!lastPads.length){togglePause('Controller disconnected. Reconnect, then press Start.');return states;}
  const s=versus&&scene==='select'?states[pickStage]:states[0]||(versus&&scene==='pause'?states[1]:null);if(!s)return states;
+ if(scene==='menu'||scene==='pause'){
+  if(s.edge[10])toggleGameMusic();
+  if(s.edge[4]||s.edge[5]){
+   rodaAnnouncer.setVolume(rodaAnnouncer.volume+(s.edge[5]?10:-10));
+   syncAnnouncerControls();
+  }
+ }
  if(scene==='coxa-complete'){if(s.edge[0]||s.edge[9])$('#coxa-done').click();return states}
  if(scene==='watchcomplete'){if(s.edge[0]||s.edge[9])$('#watchdone').click();return states}
  if(scene==='foundation'){if(s.edge[9]||s.edge[0])finishFoundation();return states;}

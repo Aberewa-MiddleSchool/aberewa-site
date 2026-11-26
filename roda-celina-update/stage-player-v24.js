@@ -40,7 +40,7 @@ function syncFilmMusic(video){
 document.addEventListener('play',event=>{if(event.target instanceof HTMLVideoElement)syncFilmMusic(event.target);},true);
 function syncMusicButtons(){
  document.querySelectorAll('video').forEach(syncFilmMusic);
- for(const button of [$('#cabinet-music'),$('#musicmute')]){
+ for(const button of document.querySelectorAll('#cabinet-music,#musicmute,[data-music]')){
   button.textContent=musicEnabled?'MUSIC ON':'MUSIC OFF';
   button.setAttribute('aria-pressed',String(musicEnabled));
  }
@@ -57,6 +57,17 @@ function toggleGameMusic(){
  syncMusicButtons();
 }
 try{musicEnabled=localStorage.getItem(musicPreference)!=='false';}catch{}
-for(const button of [$('#cabinet-music'),$('#musicmute')])button.onclick=toggleGameMusic;
+for(const button of document.querySelectorAll('#cabinet-music,#musicmute,[data-music]'))button.onclick=toggleGameMusic;
 syncMusicButtons();
 const soundtrackText=document.querySelector('.soundtrack > div > p:not(.eyebrow)');if(soundtrackText)soundtrackText.textContent='Stage music is selected automatically. The Comedy Club plays “Berimbau Bounce” once unlocked. Lídia’s Social Club plays “Donna.”';
+
+function syncAnnouncerControls(){
+ for(const input of document.querySelectorAll('[data-voice]')){
+  input.value=rodaAnnouncer.volume;
+  input.nextElementSibling.textContent=input.value+'%';
+ }
+}
+for(const input of document.querySelectorAll('[data-voice]')){
+ input.oninput=()=>{rodaAnnouncer.setVolume(Number(input.value));syncAnnouncerControls();};
+}
+syncAnnouncerControls();
