@@ -884,7 +884,7 @@ $('#titlesetup').onclick=openSetup;
 $('#nextarena').onclick=()=>{stageChoice=(stageChoice+1)%stageNames.length;activeStage=stageChoice;updatePick()};
 window.addEventListener('pointerdown',()=>{if(sound)initAudio()},{once:true});
 show('title');
-const portraitImages=["dandara", "jurema", "celina", "zinga", "lua", "iara", "nala", "meilin-v24", "jaci", "sol-v24", "ayana", "bento",  , "nestor", "mestre-mare", "aisha", "heather"].map(slug=>{if(slug==='celina')return celinaCard;let im=new Image();const base=slug.replace('-v24','');im.src=["jaci", "jurema", "lua", "nala", "mestre-mare", "sol", "meilin", "nestor", "zinga"].includes(base)?'portraits/'+base+'-card-v25.jpg':'portraits/'+slug+'.webp';return im});
+const portraitImages=["dandara", "jurema", "celina", "zinga", "lua", "iara", "nala", "meilin-v24", "jaci", "sol-v24", "ayana", "bento",  , "nestor", "mestre-mare", "aisha", "heather"].map(slug=>{if(slug==='celina')return celinaCard;let im=new Image();if(slug==='zinga'){im.src=new URL('assets/zinga-approved-card.webp',document.currentScript.src).href;return im;}const base=slug.replace('-v24','');im.src=["jaci", "jurema", "lua", "nala", "mestre-mare", "sol", "meilin", "nestor", "zinga"].includes(base)?'portraits/'+base+'-card-v25.jpg':'portraits/'+slug+'.webp';return im});
 portraitImages[COXA_ID]=coxaCard;
 // A held rear-foot ginga base while idle; feet never move with the breath.
 function drawGinga(p){
@@ -941,7 +941,7 @@ function drawAnnouncement(){const elapsed=roundIntro?introDuration-announceTime:
 const heatherWhiteCard=new Image();
 heatherWhiteCard.src='portraits/heather-white.webp';
 // Each source card has different framing. Coordinates refer to a 152 × 208 thumbnail.
-const selectFaceBounds={"2":[76,37,39],"0": [75, 40, 41], "1": [76, 38, 39], "3": [75, 36, 40], "4": [76, 40, 40], "5": [76, 38, 42], "6": [73, 39, 40], "7": [81, 73, 46], "8": [73, 36, 42], "9": [83, 49, 43], "10": [76, 32, 41], "11": [76, 31, 41], "13": [73, 32, 42], "14": [75, 32, 42], "15": [75, 68, 128], "16": [79, 50, 45]};
+const selectFaceBounds={"2":[76,37,39],"0": [75, 40, 41], "1": [76, 38, 39], "3": [76, 35, 44], "4": [76, 40, 40], "5": [76, 38, 42], "6": [73, 39, 40], "7": [81, 73, 46], "8": [73, 36, 42], "9": [83, 49, 43], "10": [76, 32, 41], "11": [76, 31, 41], "13": [73, 32, 42], "14": [75, 32, 42], "15": [75, 68, 128], "16": [79, 50, 45]};
 function facePortrait(c,id){
  if(id===COXA_ID){if(!coxaFace.complete||!coxaFace.naturalWidth)return;const g=c.getContext('2d'),w=coxaFace.naturalWidth,h=coxaFace.naturalHeight,scale=Math.max(c.width/w,c.height/h);g.clearRect(0,0,c.width,c.height);g.drawImage(coxaFace,(c.width-w*scale)/2,(c.height-h*scale)/2,w*scale,h*scale);return;}
  const im=id===HEATHER_ID&&heatherWhiteSelected?heatherWhiteCard:portraitImages[id];
