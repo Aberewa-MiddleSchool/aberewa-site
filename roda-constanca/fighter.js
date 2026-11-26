@@ -67,7 +67,9 @@ function brideAttackFrame(a){
   else if(Math.abs(p.vx)>.3){clip='bat';frame=Math.floor(tick/5)%6;}
   else if(p.block)frame=1;
   const img=sheets[clip];if(!img.naturalWidth)return;
-  ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(p.dir*.89,.89);
+  // The standing frame measures 317 painted pixels from veil to sole.
+  const scale=clip==='bat'?.89:(305*visualHeight(p.id))/317;
+  ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(p.dir*scale,scale);
   ctx.drawImage(img,frame%3*512,Math.floor(frame/3)*448,512,448,-256,-390,512,448);ctx.restore();
  }
  function face(c){if(!portrait.naturalWidth){portrait.addEventListener('load',()=>face(c),{once:true});return;}
