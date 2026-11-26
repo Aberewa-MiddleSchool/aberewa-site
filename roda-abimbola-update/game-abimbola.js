@@ -497,6 +497,7 @@ function pollPads(){
  const versus=mode===cinzaRewards.versus;
  const states=versus?cinzaRewards.pads().map(p=>p?padState(p):null):lastPads.map(padState);
  if(versus&&['fight','result','story'].includes(scene)&&(!states[0]||!states[1])){togglePause('Reconnect both controllers, then press Start.');return states;}
+ if(scene==='constanca-film'){if(states[0]?.edge[1])familyFilm.close();return states;}
  if(scene==='rivalryfilm'){if(states[0]?.edge[1])document.querySelector('.screen video[data-rivalry]')?.nextElementSibling?.click();return states;}
  $('#connection').textContent=lastPads.length?`● ${lastPads.length} CONTROLLER${lastPads.length>1?'S':''} CONNECTED`:'● CONNECT A CONTROLLER';
  $('#status').textContent=arcadeAutoplay?'CPU CONTROL · NO CONTROLLER REQUIRED':lastPads.length?'CONTROLLER READY':'AWAITING CONTROLLER';
@@ -518,6 +519,7 @@ function pollPads(){
   if(s.edge[9]||s.edge[1])finishOpeningFilm();
   else if(s.edge[0])playOpeningFilm();
  }else if(scene==='menu'){
+  if(s.edge[11])familyFilm.play('menu');
   // The controller guard delivers one direction per press, including analog deflections.
   if(s.x<-.5)setRounds(1);
   else if(s.x>.5)setRounds(5);
@@ -533,6 +535,7 @@ function pollPads(){
   if(s.edge[3])toggleFighterOutfit();
   if(s.edge[0])confirmPick();if(s.edge[1]){if(pauseSelection){cancelPauseSelection();return states;}if(versus&&pickStage===1){pickStage=0;pick=chosen[0];updatePick();}else{if(versus)setMode('cinza');scene='menu';show('menu');}}
  }else if(scene==='score'){
+  if(s.edge[2])familyFilm.play('score');
   if(s.edge[9]){returnToMenu();return states}if(s.edge[0])saveArcadeName();if(s.edge[1])openComicEnding();
  }else if(scene==='story'){
   if(s.edge[9])togglePause();else if(s.edge[0])advanceStory();
@@ -736,7 +739,10 @@ function finishRound(){
  }
  if(win>=0){wins[win]++;scoreRound(win);}
  matchOver=win>=0&&wins[win]>=winsNeeded();matchWinner=win;roundIntro=false;
- if(matchOver){recordNamedBout();cinzaRewards.win();}
+ if(matchOver){
+  recordNamedBout();cinzaRewards.win();
+  if(mode==='solo'&&campaignTwo&&!arcadeAutoplay&&win===0&&arcadeOrder.length>0&&arcadeIndex===arcadeOrder.length-1&&players[0].id===CONSTANCA_ID)familyFilm.award();
+ }
  announcement=win<0?'DRAW · REPLAY ROUND':matchOver?(mode==='solo'&&win===0&&arcadeIndex===arcadeOrder.length-1?'RODA CHAMPION!':roster[players[win].id][0].toUpperCase()+' WINS!'):(players.some(p=>p.hp<=0)?'K.O.':'TIME UP');
  announceTime=180;endWait=180;
 }
@@ -1239,3 +1245,5 @@ function playRivalryFilm(){
  overlay.append(film,skip);document.querySelector('.screen').append(overlay);
  film.play().catch(()=>{if(scene==='rivalryfilm'){film.muted=true;film.play().catch(()=>{});}});
 }
+
+familyFilm.install();
