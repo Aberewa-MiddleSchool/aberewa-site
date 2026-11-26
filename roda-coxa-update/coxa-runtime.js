@@ -2,14 +2,14 @@
 'use strict';
 const COXA_ID=17;
 const COXA_LIMIT=20;
-const COXA_COLORS=Object.freeze(['red','blue','orange','green','black','white']);
+const COXA_COLORS=Object.freeze(['red','blue','orange','green','black']);
 const COXA_ASSETS=new URL('assets/',document.currentScript.src).href;
 const COXA_STORAGE='aberewa_roda_coxa_outfits_v1',COXA_HISTORY='aberewa_roda_coxa_runs_v1';
 const coxaCombat=new Image(),coxaMask=new Image(),coxaCard=new Image(),coxaFace=new Image();
 coxaCombat.src=COXA_ASSETS+'combat-v3.webp';coxaMask.src=COXA_ASSETS+'suit-mask-v3.png';coxaCard.src=COXA_ASSETS+'card-v2.webp';coxaFace.src=COXA_ASSETS+'face.webp';
 const coxaArt=[coxaCombat];
 let coxaUnlocked=1,coxaSelected=0,coxaRun=null;
-try{const v=JSON.parse(localStorage.getItem(COXA_STORAGE)||'null');if(v){coxaUnlocked=Math.max(1,Math.min(6,Math.floor(Number(v.unlocked)||1)));coxaSelected=Math.max(0,Math.min(coxaUnlocked-1,Math.floor(Number(v.selected)||0)));}}catch{}
+try{const v=JSON.parse(localStorage.getItem(COXA_STORAGE)||'null');if(v){coxaUnlocked=Math.max(1,Math.min(COXA_COLORS.length,Math.floor(Number(v.unlocked)||1)));coxaSelected=Math.max(0,Math.min(coxaUnlocked-1,Math.floor(Number(v.selected)||0)));}}catch{}
 const coxaMoney=n=>new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format((Number(n)||0)/100);
 function coxaSaveOutfits(){try{localStorage.setItem(COXA_STORAGE,JSON.stringify({unlocked:coxaUnlocked,selected:coxaSelected}));return true;}catch{return false;}}
 function coxaCycleOutfit(){coxaSelected=(coxaSelected+1)%coxaUnlocked;coxaSaveOutfits();}
@@ -43,22 +43,16 @@ function coxaRGB(h,s,v){
  return [Math.round(f(5)*255),Math.round(f(3)*255),Math.round(f(1)*255)];
 }
 function prepareCoxaColors(){
- if(coxaArt.length===6)return;
+ if(coxaArt.length===COXA_COLORS.length)return;
  const w=coxaCombat.naturalWidth,h=coxaCombat.naturalHeight;
  if(w!==1536||h!==2880||coxaMask.naturalWidth!==w||coxaMask.naturalHeight!==h)throw Error('Coxa atlas or suit mask has unexpected dimensions');
  const source=document.createElement('canvas');source.width=w;source.height=h;const sc=source.getContext('2d',{willReadFrequently:true});sc.drawImage(coxaCombat,0,0);const pixels=sc.getImageData(0,0,w,h);
  const mask=document.createElement('canvas');mask.width=w;mask.height=h;const mc=mask.getContext('2d',{willReadFrequently:true});mc.drawImage(coxaMask,0,0);const marked=mc.getImageData(0,0,w,h).data;
- const specs=[[.60,.90],[.075,.98],[.33,.78],null,null];
- for(let c=1;c<6;c++){
+ const specs=[[.60,.90],[.075,.98],[.33,.78],null];
+ for(let c=1;c<COXA_COLORS.length;c++){
   const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const g=canvas.getContext('2d');const frame=g.createImageData(w,h);frame.data.set(pixels.data);
   for(let i=0;i<frame.data.length;i+=4){if(marked[i]<128||!frame.data[i+3])continue;const r=frame.data[i],gg=frame.data[i+1],b=frame.data[i+2],v=Math.max(r,gg,b),s=v?(v-Math.min(r,gg,b))/v:0;let rgb;
-   if(c===4){const v2=Math.round(13+v*.30);rgb=coxaRGB(0,.045,v2/255);}else if(c===5){
-    // White fabric: retain the original dark ink instead of lifting every masked pixel to grey.
-    if(v<=45)continue;
-    const t=Math.min(1,(v-45)/125);
-    const v2=Math.round(v+(255-v)*.70*t*t*(3-2*t));
-    rgb=[v2,v2,v2];
-   }else{const [hue,sat]=specs[c-1];rgb=coxaRGB(hue,Math.min(1,s*sat),Math.min(1,v*(c===2?1.08:1)/255));}
+   if(c===4){const v2=Math.round(13+v*.30);rgb=coxaRGB(0,.045,v2/255);}else{const [hue,sat]=specs[c-1];rgb=coxaRGB(hue,Math.min(1,s*sat),Math.min(1,v*(c===2?1.08:1)/255));}
    frame.data[i]=rgb[0];frame.data[i+1]=rgb[1];frame.data[i+2]=rgb[2];
   }
   g.putImageData(frame,0,0);coxaArt.push(canvas);
@@ -93,14 +87,14 @@ function coxaAdvanceBout(run,stageCount,random=Math.random){if(run.complete||run
 function beginCoxaRun(){if(!loaded||!playableIds.includes(COXA_ID))return;arcadeAutoplay=false;mode='coxa';coxaRun=coxaNewRun(stageNames.length);coxaRun.player=(document.getElementById('coxa-player-name')?.value||'').trim().slice(0,32)||'Coxa';coxaRun.difficulty=difficulty;coxaRun.roundLimit=roundLimit;chosen=[COXA_ID,HEATHER_ID];resetArcadeScore();wins=[0,0];round=1;startRound();}
 function recordCoxaBout(){if(mode!=='coxa'||!coxaRun||!matchOver||matchWinner<0||coxaRun.recordedStage===coxaRun.stage)return;
  const color=coxaApplyBout(coxaRun,matchWinner===0,arcadeScore.total);if(coxaRun.complete&&!arcadeScore.completed){award('clear',5000);arcadeScore.completed=true;coxaRun.score=arcadeScore.total;}
- coxaRun.saved=coxaSaveHistory(coxaRun);$('#resulttitle').textContent+=(color?' · '+color.toUpperCase()+' UNLOCKED':'');$('#roda-bout-record').textContent='STAGE '+coxaRun.stage+' / 20 · '+coxaRun.wins+' W / '+coxaRun.losses+' L · '+coxaMoney(coxaRun.score)+' · '+coxaUnlocked+' / 6 COLORS';
+ coxaRun.saved=coxaSaveHistory(coxaRun);$('#resulttitle').textContent+=(color?' · '+color.toUpperCase()+' UNLOCKED':'');$('#roda-bout-record').textContent='STAGE '+coxaRun.stage+' / 20 · '+coxaRun.wins+' W / '+coxaRun.losses+' L · '+coxaMoney(coxaRun.score)+' · '+coxaUnlocked+' / '+COXA_COLORS.length+' COLORS';
 }
 function continueCoxaRun(){if(!coxaRun)return;recordCoxaBout();if(coxaAdvanceBout(coxaRun,stageNames.length)){wins=[0,0];round=1;startRound();return;}if(!coxaRun.complete)return;
- scene='coxa-complete';show('coxa-complete');$('#coxa-summary').textContent=coxaRun.wins+' wins · '+coxaRun.losses+' losses · '+coxaMoney(coxaRun.score);$('#coxa-colors-summary').textContent=coxaUnlocked+' of 6 outfits unlocked'+(coxaRun.saved?' · record saved':' · storage unavailable');$('#sessionlabel').textContent='COXA MODE COMPLETE · '+coxaMoney(coxaRun.score);
+ scene='coxa-complete';show('coxa-complete');$('#coxa-summary').textContent=coxaRun.wins+' wins · '+coxaRun.losses+' losses · '+coxaMoney(coxaRun.score);$('#coxa-colors-summary').textContent=coxaUnlocked+' of '+COXA_COLORS.length+' outfits unlocked'+(coxaRun.saved?' · record saved':' · storage unavailable');$('#sessionlabel').textContent='COXA MODE COMPLETE · '+coxaMoney(coxaRun.score);
 }
 function coxaRecordArcade(entry){return coxaSaveHistory({id:'arcade-'+entry.time+'-'+entry.name,mode:'Arcade',player:entry.name,currency:'EUR',difficulty,score:entry.score,wins:entry.wins,losses:entry.losses,unlocked:coxaUnlocked,complete:true,date:new Date(entry.time).toISOString()});}
 function installCoxaUI(){
- const b=document.createElement('button');b.dataset.mode='coxa';b.innerHTML='<b>COXA MODE</b><span>20 BOUTS VS HEATHER · RANDOM ARENAS · SIX OUTFITS</span>';b.onclick=()=>setMode('coxa');document.querySelector('.mode-buttons').append(b);
+ const b=document.createElement('button');b.dataset.mode='coxa';b.innerHTML='<b>COXA MODE</b><span>20 BOUTS VS HEATHER · RANDOM ARENAS · FIVE OUTFITS</span>';b.onclick=()=>setMode('coxa');document.querySelector('.mode-buttons').append(b);
  const name=document.createElement('label');name.id='coxa-name-wrap';name.hidden=true;name.textContent='COXA MODE PLAYER NAME (OPTIONAL)';name.style.cssText='margin:8px 0;color:#ffe1aa;font-weight:700';const input=document.createElement('input');input.id='coxa-player-name';input.maxLength=32;input.placeholder='Enter your name';input.style.cssText='display:block;padding:8px;color:#111;background:white;width:100%';try{input.value=localStorage.getItem('roda-last-player')||'';}catch{}name.append(input);$('#choose').before(name);
  const panel=document.createElement('section');panel.id='coxa-complete';panel.className='overlay hidden';panel.style.cssText='text-align:center;padding:28px;overflow:auto';panel.innerHTML='<h2>COXA MODE COMPLETE</h2><p>20 BOUTS AGAINST HEATHER</p><h3 id="coxa-summary"></h3><p id="coxa-colors-summary"></p><button id="coxa-done" class="primary">A · RETURN TO MAIN MENU</button>';$('.screen').append(panel);$('#coxa-done').onclick=returnToMenu;
 }
