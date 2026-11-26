@@ -1,0 +1,2229 @@
+{
+  "version": 2,
+  "fighter": "Abimbola",
+  "reference": "approved comparison against Meilin HD2",
+  "approved_ginga_full_height": 331.5459990405487,
+  "estimated_anatomical_ginga_height": 292.8874734607219,
+  "tile": {
+    "width": 800,
+    "height": 680,
+    "anchor_x": 400,
+    "floor_y": 640,
+    "columns": 3,
+    "rows": 2
+  },
+  "rendering": "Use a fixed scale per source sheet from page.scale. Draw destination rectangle [-400*scale,-640*scale,800*scale,680*scale] relative to actor floor anchor. Flip horizontally for facing; do not rotate or fit poses. Jump elevation is supplied by the engine. Source scale varies because different source pages were drawn at different native resolutions.",
+  "sequences": {
+    "ginga": [
+      [
+        "ginga-low",
+        0
+      ]
+    ],
+    "crouch": [
+      [
+        "ginga-low",
+        1
+      ]
+    ],
+    "low_kick": [
+      [
+        "ginga-low",
+        0
+      ],
+      [
+        "ginga-low",
+        1
+      ],
+      [
+        "ginga-low",
+        2
+      ],
+      [
+        "ginga-low",
+        3
+      ],
+      [
+        "ginga-low",
+        4
+      ],
+      [
+        "ginga-low",
+        5
+      ]
+    ],
+    "front_kick": [
+      [
+        "front-kick",
+        0
+      ],
+      [
+        "front-kick",
+        1
+      ],
+      [
+        "front-kick",
+        2
+      ],
+      [
+        "front-kick",
+        3
+      ],
+      [
+        "front-kick",
+        4
+      ],
+      [
+        "front-kick",
+        5
+      ]
+    ],
+    "cartwheel": [
+      [
+        "cartwheel-01",
+        0
+      ],
+      [
+        "cartwheel-01",
+        1
+      ],
+      [
+        "cartwheel-01",
+        2
+      ],
+      [
+        "cartwheel-01",
+        3
+      ],
+      [
+        "cartwheel-01",
+        4
+      ],
+      [
+        "cartwheel-01",
+        5
+      ],
+      [
+        "cartwheel-02",
+        0
+      ],
+      [
+        "cartwheel-02",
+        1
+      ],
+      [
+        "cartwheel-02",
+        2
+      ],
+      [
+        "cartwheel-02",
+        3
+      ],
+      [
+        "cartwheel-02",
+        4
+      ],
+      [
+        "cartwheel-02",
+        5
+      ]
+    ],
+    "jump": [
+      [
+        "jump",
+        0
+      ],
+      [
+        "jump",
+        1
+      ],
+      [
+        "jump",
+        2
+      ],
+      [
+        "jump",
+        3
+      ],
+      [
+        "jump",
+        4
+      ],
+      [
+        "jump",
+        5
+      ]
+    ],
+    "roll_forward": [
+      [
+        "roll-forward-01",
+        0
+      ],
+      [
+        "roll-forward-01",
+        1
+      ],
+      [
+        "roll-forward-01",
+        2
+      ],
+      [
+        "roll-forward-01",
+        3
+      ],
+      [
+        "roll-forward-01",
+        4
+      ],
+      [
+        "roll-forward-01",
+        5
+      ],
+      [
+        "roll-forward-02",
+        0
+      ],
+      [
+        "roll-forward-02",
+        1
+      ],
+      [
+        "roll-forward-02",
+        2
+      ],
+      [
+        "roll-forward-02",
+        3
+      ],
+      [
+        "roll-forward-02",
+        4
+      ],
+      [
+        "roll-forward-02",
+        5
+      ]
+    ],
+    "roll_backward": [
+      [
+        "roll-backward-01",
+        0
+      ],
+      [
+        "roll-backward-01",
+        1
+      ],
+      [
+        "roll-backward-01",
+        2
+      ],
+      [
+        "roll-backward-01",
+        3
+      ],
+      [
+        "roll-backward-01",
+        4
+      ],
+      [
+        "roll-backward-01",
+        5
+      ],
+      [
+        "roll-backward-02",
+        0
+      ],
+      [
+        "roll-backward-02",
+        1
+      ],
+      [
+        "roll-backward-02",
+        2
+      ],
+      [
+        "roll-backward-02",
+        3
+      ],
+      [
+        "roll-backward-02",
+        4
+      ],
+      [
+        "roll-backward-02",
+        5
+      ]
+    ],
+    "hit_reaction": [
+      [
+        "hit-reaction-01",
+        0
+      ],
+      [
+        "hit-reaction-01",
+        1
+      ],
+      [
+        "hit-reaction-01",
+        2
+      ],
+      [
+        "hit-reaction-01",
+        3
+      ],
+      [
+        "hit-reaction-01",
+        4
+      ],
+      [
+        "hit-reaction-01",
+        5
+      ],
+      [
+        "hit-reaction-02",
+        0
+      ],
+      [
+        "hit-reaction-02",
+        1
+      ],
+      [
+        "hit-reaction-02",
+        2
+      ],
+      [
+        "hit-reaction-02",
+        3
+      ],
+      [
+        "hit-reaction-02",
+        4
+      ],
+      [
+        "hit-reaction-02",
+        5
+      ]
+    ],
+    "knockdown_recovery": [
+      [
+        "knockdown-recovery",
+        0
+      ],
+      [
+        "knockdown-recovery",
+        1
+      ],
+      [
+        "knockdown-recovery",
+        2
+      ],
+      [
+        "knockdown-recovery",
+        3
+      ],
+      [
+        "knockdown-recovery",
+        4
+      ],
+      [
+        "knockdown-recovery",
+        5
+      ]
+    ],
+    "high_kick": [
+      [
+        "high-kick",
+        0
+      ],
+      [
+        "high-kick",
+        1
+      ],
+      [
+        "high-kick",
+        2
+      ],
+      [
+        "high-kick",
+        3
+      ],
+      [
+        "high-kick",
+        4
+      ],
+      [
+        "high-kick",
+        5
+      ]
+    ],
+    "turning_kick": [
+      [
+        "turning-kick",
+        0
+      ],
+      [
+        "turning-kick",
+        1
+      ],
+      [
+        "turning-kick",
+        2
+      ],
+      [
+        "turning-kick",
+        3
+      ],
+      [
+        "turning-kick",
+        4
+      ],
+      [
+        "turning-kick",
+        5
+      ]
+    ]
+  },
+  "notes": [
+    "Backward roll uses the forward-roll drawings in reverse order, not a rotated standing sprite.",
+    "Earlier jump, cartwheel, roll and reaction strips have smaller native drawings than the six-pose kick sheets. No synthetic detail or frame-by-frame size fitting.",
+    "All listed actions have dedicated matching art; the actual browser game must be tested separately."
+  ],
+  "pages": {
+    "ginga-low": {
+      "file": "atlases/ginga-low.webp",
+      "source": "image(20261126-054536).webp",
+      "scale": 0.6552292471157088,
+      "size": [
+        2400,
+        1360
+      ],
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            800,
+            680
+          ],
+          "source_index": 0,
+          "source_box": [
+            24,
+            3,
+            475,
+            509
+          ],
+          "native_size": [
+            452,
+            509
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            0,
+            800,
+            680
+          ],
+          "source_index": 1,
+          "source_box": [
+            545,
+            48,
+            946,
+            508
+          ],
+          "native_size": [
+            402,
+            462
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            0,
+            800,
+            680
+          ],
+          "source_index": 2,
+          "source_box": [
+            996,
+            65,
+            1514,
+            502
+          ],
+          "native_size": [
+            520,
+            437
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            0,
+            680,
+            800,
+            680
+          ],
+          "source_index": 3,
+          "source_box": [
+            26,
+            547,
+            526,
+            1014
+          ],
+          "native_size": [
+            502,
+            468
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            680,
+            800,
+            680
+          ],
+          "source_index": 4,
+          "source_box": [
+            588,
+            546,
+            982,
+            1018
+          ],
+          "native_size": [
+            396,
+            472
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            680,
+            800,
+            680
+          ],
+          "source_index": 5,
+          "source_box": [
+            1045,
+            509,
+            1506,
+            1018
+          ],
+          "native_size": [
+            463,
+            510
+          ],
+          "lift_source_px": 0
+        }
+      ],
+      "sha256": "e1e7eae1f98f6a5fda8a9d918f41f66c3ea0f6135dd46ec1970c978a32f21fac"
+    },
+    "front-kick": {
+      "file": "atlases/front-kick.webp",
+      "source": "a_clean_high_resolution_sprite_sheet_on_a_transpa.png",
+      "scale": 0.6617684611587799,
+      "size": [
+        2400,
+        1360
+      ],
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            800,
+            680
+          ],
+          "source_index": 0,
+          "source_box": [
+            27,
+            2,
+            444,
+            503
+          ],
+          "native_size": [
+            419,
+            503
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            0,
+            800,
+            680
+          ],
+          "source_index": 1,
+          "source_box": [
+            538,
+            2,
+            862,
+            503
+          ],
+          "native_size": [
+            325,
+            503
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            0,
+            800,
+            680
+          ],
+          "source_index": 2,
+          "source_box": [
+            1029,
+            4,
+            1494,
+            501
+          ],
+          "native_size": [
+            465,
+            500
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            0,
+            680,
+            800,
+            680
+          ],
+          "source_index": 3,
+          "source_box": [
+            35,
+            517,
+            485,
+            1018
+          ],
+          "native_size": [
+            451,
+            503
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            680,
+            800,
+            680
+          ],
+          "source_index": 4,
+          "source_box": [
+            554,
+            517,
+            875,
+            1019
+          ],
+          "native_size": [
+            322,
+            503
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            680,
+            800,
+            680
+          ],
+          "source_index": 5,
+          "source_box": [
+            1041,
+            517,
+            1454,
+            1021
+          ],
+          "native_size": [
+            415,
+            506
+          ],
+          "lift_source_px": 0
+        }
+      ],
+      "sha256": "2ba8a884f64c213792e82d3e458cc4493cd805b236057782fae7f150129f1600"
+    },
+    "cartwheel-01": {
+      "file": "atlases/cartwheel-01.webp",
+      "source": "a_clean_high_resolution_sprite_sheet_animation.png",
+      "scale": 1.0799543942688883,
+      "size": [
+        2400,
+        1360
+      ],
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            800,
+            680
+          ],
+          "source_index": 0,
+          "source_box": [
+            44,
+            28,
+            299,
+            335
+          ],
+          "native_size": [
+            257,
+            309
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            0,
+            800,
+            680
+          ],
+          "source_index": 1,
+          "source_box": [
+            391,
+            64,
+            675,
+            335
+          ],
+          "native_size": [
+            286,
+            273
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            0,
+            800,
+            680
+          ],
+          "source_index": 2,
+          "source_box": [
+            740,
+            97,
+            1053,
+            333
+          ],
+          "native_size": [
+            314,
+            237
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            0,
+            680,
+            800,
+            680
+          ],
+          "source_index": 3,
+          "source_box": [
+            1110,
+            134,
+            1397,
+            337
+          ],
+          "native_size": [
+            288,
+            205
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            680,
+            800,
+            680
+          ],
+          "source_index": 4,
+          "source_box": [
+            1493,
+            23,
+            1767,
+            337
+          ],
+          "native_size": [
+            274,
+            315
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            680,
+            800,
+            680
+          ],
+          "source_index": 5,
+          "source_box": [
+            1846,
+            47,
+            2162,
+            335
+          ],
+          "native_size": [
+            317,
+            289
+          ],
+          "lift_source_px": 0
+        }
+      ],
+      "sha256": "16a08d93650bec6f1dae6eb683581de714e5ea0f33efe8bcce7c842c0cfb110e"
+    },
+    "cartwheel-02": {
+      "file": "atlases/cartwheel-02.webp",
+      "source": "a_clean_high_resolution_sprite_sheet_animation.png",
+      "scale": 1.0799543942688883,
+      "size": [
+        2400,
+        1360
+      ],
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            800,
+            680
+          ],
+          "source_index": 6,
+          "source_box": [
+            52,
+            408,
+            347,
+            695
+          ],
+          "native_size": [
+            296,
+            289
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            0,
+            800,
+            680
+          ],
+          "source_index": 7,
+          "source_box": [
+            399,
+            422,
+            705,
+            696
+          ],
+          "native_size": [
+            308,
+            276
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            0,
+            800,
+            680
+          ],
+          "source_index": 8,
+          "source_box": [
+            752,
+            382,
+            1067,
+            701
+          ],
+          "native_size": [
+            317,
+            321
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            0,
+            680,
+            800,
+            680
+          ],
+          "source_index": 9,
+          "source_box": [
+            1132,
+            374,
+            1376,
+            698
+          ],
+          "native_size": [
+            246,
+            326
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            680,
+            800,
+            680
+          ],
+          "source_index": 10,
+          "source_box": [
+            1502,
+            398,
+            1736,
+            699
+          ],
+          "native_size": [
+            235,
+            304
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            680,
+            800,
+            680
+          ],
+          "source_index": 11,
+          "source_box": [
+            1854,
+            398,
+            2126,
+            698
+          ],
+          "native_size": [
+            273,
+            302
+          ],
+          "lift_source_px": 0
+        }
+      ],
+      "sha256": "4dc770d8953381c6b704000d7de142ac1c895533da6eb3a18663af3567293f81"
+    },
+    "jump": {
+      "file": "atlases/jump.webp",
+      "source": "a_clean_high_resolution_comic_anime_style_sprite.png",
+      "scale": 0.76,
+      "size": [
+        2400,
+        1360
+      ],
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            800,
+            680
+          ],
+          "source_index": 0,
+          "source_box": [
+            15,
+            296,
+            261,
+            686
+          ],
+          "native_size": [
+            248,
+            392
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            0,
+            800,
+            680
+          ],
+          "source_index": 1,
+          "source_box": [
+            288,
+            293,
+            526,
+            679
+          ],
+          "native_size": [
+            239,
+            388
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            0,
+            800,
+            680
+          ],
+          "source_index": 2,
+          "source_box": [
+            562,
+            182,
+            782,
+            650
+          ],
+          "native_size": [
+            222,
+            469
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            0,
+            680,
+            800,
+            680
+          ],
+          "source_index": 4,
+          "source_box": [
+            1088,
+            78,
+            1324,
+            445
+          ],
+          "native_size": [
+            239,
+            368
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            680,
+            800,
+            680
+          ],
+          "source_index": 6,
+          "source_box": [
+            1645,
+            216,
+            1868,
+            660
+          ],
+          "native_size": [
+            224,
+            446
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            680,
+            800,
+            680
+          ],
+          "source_index": 7,
+          "source_box": [
+            1913,
+            298,
+            2156,
+            686
+          ],
+          "native_size": [
+            245,
+            390
+          ],
+          "lift_source_px": 0
+        }
+      ],
+      "sha256": "feb585b7034dfc666710e9e4650ca7534b8532bf95992b77f5336ae597ff4c08"
+    },
+    "roll-forward-01": {
+      "file": "atlases/roll-forward-01.webp",
+      "source": "a_clean_crisp_sprite_sheet_on_a_white_background.png",
+      "scale": 1.0393291505973312,
+      "size": [
+        2400,
+        1360
+      ],
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            800,
+            680
+          ],
+          "source_index": 0,
+          "source_box": [
+            44,
+            17,
+            323,
+            336
+          ],
+          "native_size": [
+            279,
+            319
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            0,
+            800,
+            680
+          ],
+          "source_index": 1,
+          "source_box": [
+            425,
+            44,
+            692,
+            333
+          ],
+          "native_size": [
+            269,
+            291
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            0,
+            800,
+            680
+          ],
+          "source_index": 2,
+          "source_box": [
+            789,
+            78,
+            1031,
+            333
+          ],
+          "native_size": [
+            244,
+            257
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            0,
+            680,
+            800,
+            680
+          ],
+          "source_index": 3,
+          "source_box": [
+            1144,
+            113,
+            1406,
+            331
+          ],
+          "native_size": [
+            264,
+            221
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            680,
+            800,
+            680
+          ],
+          "source_index": 4,
+          "source_box": [
+            1500,
+            93,
+            1730,
+            318
+          ],
+          "native_size": [
+            232,
+            226
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            680,
+            800,
+            680
+          ],
+          "source_index": 5,
+          "source_box": [
+            1836,
+            72,
+            2096,
+            311
+          ],
+          "native_size": [
+            261,
+            240
+          ],
+          "lift_source_px": 0
+        }
+      ],
+      "sha256": "05f6a1bfc020fa928b4e8e1f9999a6f5cfa14f641847ddcbb57918cc8f33230f"
+    },
+    "roll-forward-02": {
+      "file": "atlases/roll-forward-02.webp",
+      "source": "a_clean_crisp_sprite_sheet_on_a_white_background.png",
+      "scale": 1.0393291505973312,
+      "size": [
+        2400,
+        1360
+      ],
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            800,
+            680
+          ],
+          "source_index": 6,
+          "source_box": [
+            29,
+            430,
+            322,
+            692
+          ],
+          "native_size": [
+            294,
+            264
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            0,
+            800,
+            680
+          ],
+          "source_index": 7,
+          "source_box": [
+            411,
+            470,
+            706,
+            691
+          ],
+          "native_size": [
+            297,
+            222
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            0,
+            800,
+            680
+          ],
+          "source_index": 8,
+          "source_box": [
+            754,
+            427,
+            1054,
+            691
+          ],
+          "native_size": [
+            301,
+            264
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            0,
+            680,
+            800,
+            680
+          ],
+          "source_index": 9,
+          "source_box": [
+            1133,
+            402,
+            1421,
+            697
+          ],
+          "native_size": [
+            289,
+            297
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            680,
+            800,
+            680
+          ],
+          "source_index": 10,
+          "source_box": [
+            1511,
+            393,
+            1761,
+            698
+          ],
+          "native_size": [
+            250,
+            307
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            680,
+            800,
+            680
+          ],
+          "source_index": 11,
+          "source_box": [
+            1852,
+            372,
+            2134,
+            698
+          ],
+          "native_size": [
+            283,
+            328
+          ],
+          "lift_source_px": 0
+        }
+      ],
+      "sha256": "8a109301319928febdfb74ded6ab90e621730bb2a0c2fbe4fe7fc95a680d7d65"
+    },
+    "roll-backward-01": {
+      "file": "atlases/roll-backward-01.webp",
+      "source": "a_clean_crisp_sprite_sheet_on_a_white_background.png",
+      "scale": 1.0393291505973312,
+      "size": [
+        2400,
+        1360
+      ],
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            800,
+            680
+          ],
+          "source_index": 11,
+          "source_box": [
+            1852,
+            372,
+            2134,
+            698
+          ],
+          "native_size": [
+            283,
+            328
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            0,
+            800,
+            680
+          ],
+          "source_index": 10,
+          "source_box": [
+            1511,
+            393,
+            1761,
+            698
+          ],
+          "native_size": [
+            250,
+            307
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            0,
+            800,
+            680
+          ],
+          "source_index": 9,
+          "source_box": [
+            1133,
+            402,
+            1421,
+            697
+          ],
+          "native_size": [
+            289,
+            297
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            0,
+            680,
+            800,
+            680
+          ],
+          "source_index": 8,
+          "source_box": [
+            754,
+            427,
+            1054,
+            691
+          ],
+          "native_size": [
+            301,
+            264
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            680,
+            800,
+            680
+          ],
+          "source_index": 7,
+          "source_box": [
+            411,
+            470,
+            706,
+            691
+          ],
+          "native_size": [
+            297,
+            222
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            680,
+            800,
+            680
+          ],
+          "source_index": 6,
+          "source_box": [
+            29,
+            430,
+            322,
+            692
+          ],
+          "native_size": [
+            294,
+            264
+          ],
+          "lift_source_px": 0
+        }
+      ],
+      "sha256": "3f3408e6236e2435ad5c71006e2f3b37733787188a4d9acd9085cbd8f2106e41"
+    },
+    "roll-backward-02": {
+      "file": "atlases/roll-backward-02.webp",
+      "source": "a_clean_crisp_sprite_sheet_on_a_white_background.png",
+      "scale": 1.0393291505973312,
+      "size": [
+        2400,
+        1360
+      ],
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            800,
+            680
+          ],
+          "source_index": 5,
+          "source_box": [
+            1836,
+            72,
+            2096,
+            311
+          ],
+          "native_size": [
+            261,
+            240
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            0,
+            800,
+            680
+          ],
+          "source_index": 4,
+          "source_box": [
+            1500,
+            93,
+            1730,
+            318
+          ],
+          "native_size": [
+            232,
+            226
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            0,
+            800,
+            680
+          ],
+          "source_index": 3,
+          "source_box": [
+            1144,
+            113,
+            1406,
+            331
+          ],
+          "native_size": [
+            264,
+            221
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            0,
+            680,
+            800,
+            680
+          ],
+          "source_index": 2,
+          "source_box": [
+            789,
+            78,
+            1031,
+            333
+          ],
+          "native_size": [
+            244,
+            257
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            680,
+            800,
+            680
+          ],
+          "source_index": 1,
+          "source_box": [
+            425,
+            44,
+            692,
+            333
+          ],
+          "native_size": [
+            269,
+            291
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            680,
+            800,
+            680
+          ],
+          "source_index": 0,
+          "source_box": [
+            44,
+            17,
+            323,
+            336
+          ],
+          "native_size": [
+            279,
+            319
+          ],
+          "lift_source_px": 0
+        }
+      ],
+      "sha256": "67e30e2b8dc4fcc3727b2f8ed50d059e0a4614eeddfb13c5c83cace37cc62c8f"
+    },
+    "hit-reaction-01": {
+      "file": "atlases/hit-reaction-01.webp",
+      "source": "abimbola-staging/abimbola-hit-original.png",
+      "scale": 0.9722756570104066,
+      "size": [
+        2400,
+        1360
+      ],
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            800,
+            680
+          ],
+          "source_index": 0,
+          "source_box": [
+            55,
+            9,
+            323,
+            350
+          ],
+          "native_size": [
+            271,
+            344
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            0,
+            800,
+            680
+          ],
+          "source_index": 1,
+          "source_box": [
+            439,
+            10,
+            698,
+            350
+          ],
+          "native_size": [
+            260,
+            341
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            0,
+            800,
+            680
+          ],
+          "source_index": 2,
+          "source_box": [
+            774,
+            23,
+            1060,
+            350
+          ],
+          "native_size": [
+            287,
+            330
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            0,
+            680,
+            800,
+            680
+          ],
+          "source_index": 3,
+          "source_box": [
+            1134,
+            28,
+            1421,
+            350
+          ],
+          "native_size": [
+            288,
+            324
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            680,
+            800,
+            680
+          ],
+          "source_index": 4,
+          "source_box": [
+            1491,
+            32,
+            1780,
+            350
+          ],
+          "native_size": [
+            290,
+            320
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            680,
+            800,
+            680
+          ],
+          "source_index": 5,
+          "source_box": [
+            1868,
+            16,
+            2128,
+            350
+          ],
+          "native_size": [
+            261,
+            336
+          ],
+          "lift_source_px": 0
+        }
+      ],
+      "sha256": "cbb849a87a1a79ce2c6b408247640489b7df20e476b3aaaa0995dcef47fd040d"
+    },
+    "hit-reaction-02": {
+      "file": "atlases/hit-reaction-02.webp",
+      "source": "abimbola-staging/abimbola-hit-original.png",
+      "scale": 0.9722756570104066,
+      "size": [
+        2400,
+        1360
+      ],
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            800,
+            680
+          ],
+          "source_index": 6,
+          "source_box": [
+            77,
+            379,
+            317,
+            712
+          ],
+          "native_size": [
+            241,
+            334
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            0,
+            800,
+            680
+          ],
+          "source_index": 7,
+          "source_box": [
+            440,
+            381,
+            664,
+            712
+          ],
+          "native_size": [
+            226,
+            333
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            0,
+            800,
+            680
+          ],
+          "source_index": 8,
+          "source_box": [
+            802,
+            381,
+            1016,
+            712
+          ],
+          "native_size": [
+            215,
+            333
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            0,
+            680,
+            800,
+            680
+          ],
+          "source_index": 9,
+          "source_box": [
+            1159,
+            376,
+            1391,
+            712
+          ],
+          "native_size": [
+            232,
+            339
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            680,
+            800,
+            680
+          ],
+          "source_index": 10,
+          "source_box": [
+            1520,
+            376,
+            1762,
+            712
+          ],
+          "native_size": [
+            242,
+            337
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            680,
+            800,
+            680
+          ],
+          "source_index": 11,
+          "source_box": [
+            1867,
+            370,
+            2136,
+            712
+          ],
+          "native_size": [
+            270,
+            344
+          ],
+          "lift_source_px": 0
+        }
+      ],
+      "sha256": "e8d2400bbf5a24760e9d8132877d9777a640679951445f22289c72136c73b3ac"
+    },
+    "knockdown-recovery": {
+      "file": "atlases/knockdown-recovery.webp",
+      "source": "a_clean_high_resolution_comic_anime_style_charac.png",
+      "scale": 0.6780081779970321,
+      "size": [
+        2400,
+        1360
+      ],
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            800,
+            680
+          ],
+          "source_index": 0,
+          "source_box": [
+            24,
+            25,
+            477,
+            511
+          ],
+          "native_size": [
+            455,
+            488
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            0,
+            800,
+            680
+          ],
+          "source_index": 1,
+          "source_box": [
+            486,
+            35,
+            933,
+            457
+          ],
+          "native_size": [
+            448,
+            424
+          ],
+          "lift_source_px": 50
+        },
+        {
+          "rect": [
+            1600,
+            0,
+            800,
+            680
+          ],
+          "source_index": 2,
+          "source_box": [
+            977,
+            161,
+            1516,
+            463
+          ],
+          "native_size": [
+            540,
+            302
+          ],
+          "lift_source_px": 10
+        },
+        {
+          "rect": [
+            0,
+            680,
+            800,
+            680
+          ],
+          "source_index": 3,
+          "source_box": [
+            10,
+            788,
+            621,
+            951
+          ],
+          "native_size": [
+            612,
+            164
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            800,
+            680,
+            800,
+            680
+          ],
+          "source_index": 4,
+          "source_box": [
+            614,
+            567,
+            1016,
+            962
+          ],
+          "native_size": [
+            403,
+            397
+          ],
+          "lift_source_px": 0
+        },
+        {
+          "rect": [
+            1600,
+            680,
+            800,
+            680
+          ],
+          "source_index": 5,
+          "source_box": [
+            1087,
+            504,
+            1523,
+            993
+          ],
+          "native_size": [
+            438,
+            490
+          ],
+          "lift_source_px": 0
+        }
+      ],
+      "sha256": "07210ff785655076dccb9fb118d61730f339da13ff0fabd24b30243ab62dbe5c"
+    },
+    "high-kick": {
+      "file": "atlases/high-kick.webp",
+      "scale": 0.751804986486505,
+      "size": [
+        2400,
+        1360
+      ],
+      "source": "abimbola_s_six_pose_high_kick_sequence.png",
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            800,
+            680
+          ],
+          "source_index": 0,
+          "native_size": [
+            391,
+            441
+          ],
+          "source_box": [
+            71,
+            19,
+            462,
+            460
+          ]
+        },
+        {
+          "rect": [
+            800,
+            0,
+            800,
+            680
+          ],
+          "source_index": 1,
+          "native_size": [
+            289,
+            475
+          ],
+          "source_box": [
+            598,
+            6,
+            887,
+            481
+          ]
+        },
+        {
+          "rect": [
+            1600,
+            0,
+            800,
+            680
+          ],
+          "source_index": 2,
+          "native_size": [
+            400,
+            470
+          ],
+          "source_box": [
+            1056,
+            7,
+            1456,
+            477
+          ]
+        },
+        {
+          "rect": [
+            0,
+            680,
+            800,
+            680
+          ],
+          "source_index": 3,
+          "native_size": [
+            441,
+            481
+          ],
+          "source_box": [
+            54,
+            513,
+            495,
+            994
+          ]
+        },
+        {
+          "rect": [
+            800,
+            680,
+            800,
+            680
+          ],
+          "source_index": 4,
+          "native_size": [
+            287,
+            481
+          ],
+          "source_box": [
+            588,
+            513,
+            875,
+            994
+          ]
+        },
+        {
+          "rect": [
+            1600,
+            680,
+            800,
+            680
+          ],
+          "source_index": 5,
+          "native_size": [
+            389,
+            440
+          ],
+          "source_box": [
+            1068,
+            534,
+            1457,
+            974
+          ]
+        }
+      ],
+      "sha256": "2820984d1c3a75a0652d0494b85c4d4b3beceaa62a0752687a29977bdbc2a1b2"
+    },
+    "turning-kick": {
+      "file": "atlases/turning-kick.webp",
+      "scale": 0.6936108766538676,
+      "size": [
+        2400,
+        1360
+      ],
+      "source": "abimbola_s_turning_heel_kick_sequence.png",
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            800,
+            680
+          ],
+          "source_index": 0,
+          "native_size": [
+            428,
+            478
+          ],
+          "source_box": [
+            43,
+            4,
+            471,
+            482
+          ]
+        },
+        {
+          "rect": [
+            800,
+            0,
+            800,
+            680
+          ],
+          "source_index": 1,
+          "native_size": [
+            358,
+            484
+          ],
+          "source_box": [
+            585,
+            2,
+            943,
+            486
+          ]
+        },
+        {
+          "rect": [
+            1600,
+            0,
+            800,
+            680
+          ],
+          "source_index": 2,
+          "native_size": [
+            359,
+            484
+          ],
+          "source_box": [
+            1063,
+            3,
+            1422,
+            487
+          ]
+        },
+        {
+          "rect": [
+            0,
+            680,
+            800,
+            680
+          ],
+          "source_index": 3,
+          "native_size": [
+            493,
+            485
+          ],
+          "source_box": [
+            18,
+            513,
+            511,
+            998
+          ]
+        },
+        {
+          "rect": [
+            800,
+            680,
+            800,
+            680
+          ],
+          "source_index": 4,
+          "native_size": [
+            297,
+            484
+          ],
+          "source_box": [
+            583,
+            513,
+            880,
+            997
+          ]
+        },
+        {
+          "rect": [
+            1600,
+            680,
+            800,
+            680
+          ],
+          "source_index": 5,
+          "native_size": [
+            414,
+            477
+          ],
+          "source_box": [
+            1025,
+            518,
+            1439,
+            995
+          ]
+        }
+      ],
+      "sha256": "a17897289abb82a1ce3d2dfca384f3f99ef047cdfe4a7967a7aec1a3d3688cfd"
+    }
+  }
+}
