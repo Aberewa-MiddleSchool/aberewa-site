@@ -786,7 +786,8 @@ function drawFighter(p){
  if(p.id===ABIMBOLA_ID){abimbola.draw(p);return;}
  if(p.id===14){drawMareFighter(p);return;}
  ctx.fillStyle='#10190f66';ctx.beginPath();ctx.ellipse(p.x,592,Math.max(18,82*(1-p.y/420))*fighterTraits[p.id].build,Math.max(5,14-p.y*.025),0,0,Math.PI*2);ctx.fill();
- const t=fighterTraits[p.id],h=visualHeight(p.id);ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(h*t.build,h);ctx.translate(-p.x,-(590-p.y));
+ const stanceScale=p.id===11?1.11:p.id===13?1.32:1;
+ const t=fighterTraits[p.id],h=visualHeight(p.id)*stanceScale;ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(h*t.build,h);ctx.translate(-p.x,-(590-p.y));
  if(p.id!==COXA_ID&&p.id!==CELINA_ID){
   ctx.imageSmoothingEnabled=true;
   ctx.imageSmoothingQuality='high';
