@@ -32,7 +32,7 @@ const zingaKit=(()=>{
    const m=moveFor(p,p.attack),ph=attackPhase(m,p.at),active=p.at>=m.start&&p.at<m.start+m.active;
    if(p.attackCrouched){sheet='sweeps';const i=ph.pose-36;frame=active&&ph.phaseFrame<9?[7,5,9,11][i]:[1,4,8,10][i];}
    else{sheet='strikes';frame=active&&ph.phaseFrame<8?({4:2,5:3,16:4,6:7,7:9})[ph.pose]:ph.pose===6||ph.pose===7?6:1;}
-  }else frame=p.crouch?2:Math.floor((p.ginga||0)/16)%2;
+  }else frame=p.crouch?2:((Math.floor((p.ginga||0)/16)%2)+2)%2;
   const im=sheets[sheet];if(!im.naturalWidth)return;
   const box=zingaFrames[sheet][frame],scale=287/zingaFrames[sheet][0][3];
   ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(p.dir/fighterTraits[p.id].build,1);
