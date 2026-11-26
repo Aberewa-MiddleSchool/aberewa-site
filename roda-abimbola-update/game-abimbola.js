@@ -165,10 +165,10 @@ function toggleFighterOutfit(){
 outfitButton.onclick=toggleFighterOutfit;
 function updatePick(){
  outfitButton.hidden=pick!==HEATHER_ID&&pick!==COXA_ID&&pick!==CINZA_ID;
- outfitButton.textContent=pick===CINZA_ID?'Y · OUTFIT: '+cinzaArt.outfitName.toUpperCase():pick===COXA_ID?'Y · OUTFIT: '+COXA_COLORS[coxaSelected].toUpperCase()+' ('+coxaUnlocked+'/'+COXA_COLORS.length+' UNLOCKED)'+(coxaUnlocked<COXA_COLORS.length?' · ONE COLOR PER 20–0 RUN':''):'Y · OUTFIT: '+(heatherWhiteSelected?'ALL WHITE':'OAKLAND');
+ outfitButton.textContent=pick===CINZA_ID?'Y · OUTFIT: '+cinzaArt.outfitName.toUpperCase():pick===COXA_ID?'Y · OUTFIT: '+coxaOutfitName().toUpperCase()+' ('+(coxaUnlocked+1)+'/'+(COXA_COLORS.length+1)+' AVAILABLE)'+(coxaUnlocked<COXA_COLORS.length?' · ONE COLOR PER 20–0 RUN':''):'Y · OUTFIT: '+(heatherWhiteSelected?'ALL WHITE':'OAKLAND');
  if(pick===CINZA_ID)outfitButton.removeAttribute('aria-pressed');
  else outfitButton.setAttribute('aria-pressed',String(pick===COXA_ID?coxaSelected!==0:heatherWhiteSelected));
- if(pick===HEATHER_ID||pick===CINZA_ID){
+ if(pick===HEATHER_ID||pick===CINZA_ID||pick===COXA_ID){
   const preview=$$('.fightercard')[playableIds.indexOf(pick)]?.querySelector('canvas');
   if(preview)facePortrait(preview,pick);
  }
@@ -258,7 +258,8 @@ const arenas = [
  {name:'CELINA’S HOME · SALVADOR, BAHIA',file:CELINA_ASSET_ROOT+'stage.webp',owner:CELINA_ID},
  {name:'ABIMBOLA’S STUDIO · LAGOS, NIGERIA',file:abimbola.arena.src,owner:ABIMBOLA_ID},
  {name:'LÍDIA’S SOCIAL CLUB · SALVADOR',file:cinza.society,owner:CINZA_ID,
-  theme:{title:'Donna',src:cinza.asset('music/donna.mp3')}}
+  theme:{title:'Donna',src:cinza.asset('music/donna.mp3')}},
+ {name:'HIGGINS HURRICANES QUADRA · SALVADOR, BAHIA',file:COXA_ASSETS+'higgins-quadra.webp'}
 ];
 const stageNames=arenas.map(arena=>arena.name);
 const DEFAULT_STAGE=4;
@@ -829,6 +830,10 @@ const selectFaceBounds={"2":[76,37,39],"0": [75, 40, 41], "1": [76, 38, 39], "3"
 function facePortrait(c,id){
  if(id===CINZA_ID){cinzaArt.face(c);return;}
  if(id===ABIMBOLA_ID){abimbola.portrait(c);return;}
+ if(id===COXA_ID && coxaSelected===COXA_HIGGINS && coxaHiggins.naturalWidth){
+  const g=c.getContext('2d');g.fillStyle='#282c64';g.fillRect(0,0,c.width,c.height);
+  g.drawImage(coxaHiggins,65,40,230,154,0,0,c.width,c.height);return;
+ }
  if(id===COXA_ID){if(!coxaFace.complete||!coxaFace.naturalWidth)return;const g=c.getContext('2d'),w=coxaFace.naturalWidth,h=coxaFace.naturalHeight,scale=Math.max(c.width/w,c.height/h);g.clearRect(0,0,c.width,c.height);g.drawImage(coxaFace,(c.width-w*scale)/2,(c.height-h*scale)/2,w*scale,h*scale);return;}
  const im=id===HEATHER_ID&&heatherWhiteSelected?heatherWhiteCard:portraitImages[id];
  if(!im.complete||!im.naturalWidth){im.addEventListener('load',()=>facePortrait(c,id),{once:true});return}

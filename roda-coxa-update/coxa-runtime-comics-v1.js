@@ -8,13 +8,17 @@ const COXA_LEGACY_STORAGE='aberewa_roda_coxa_outfits_v1',COXA_STORAGE='aberewa_r
 const coxaCombat=new Image(),coxaMask=new Image(),coxaCard=new Image(),coxaFace=new Image();
 coxaCombat.src=COXA_ASSETS+'combat-v3.webp';coxaMask.src=COXA_ASSETS+'suit-mask-v3.png';coxaCard.src=COXA_ASSETS+'card-v2.webp';coxaFace.src=COXA_ASSETS+'face.webp';
 const coxaArt=[coxaCombat];
+const COXA_HIGGINS=5;
+const coxaHiggins=new Image();
+coxaHiggins.src=COXA_ASSETS+'higgins-kit.webp';
+function coxaOutfitName(){return coxaSelected===COXA_HIGGINS?'Higgins Hurricanes':COXA_COLORS[coxaSelected];}
 let coxaUnlocked=1,coxaSelected=0,coxaRun=null;
 // Migrate the old per-bout reward only from recorded, distinct undefeated challenges.
 function coxaPerfectRun(r){return r?.mode==='Coxa Mode'&&r.complete===true&&r.wins===COXA_LIMIT&&r.losses===0;}
 function coxaLoadOutfits(){
  try{
   const v=JSON.parse(localStorage.getItem(COXA_STORAGE)||'null');
-  if(v){coxaUnlocked=Math.max(1,Math.min(COXA_COLORS.length,Math.floor(Number(v.unlocked)||1)));coxaSelected=Math.max(0,Math.min(coxaUnlocked-1,Math.floor(Number(v.selected)||0)));return;}
+  if(v){coxaUnlocked=Math.max(1,Math.min(COXA_COLORS.length,Math.floor(Number(v.unlocked)||1)));coxaSelected=v.selected===COXA_HIGGINS?COXA_HIGGINS:Math.max(0,Math.min(coxaUnlocked-1,Math.floor(Number(v.selected)||0)));return;}
   const rows=JSON.parse(localStorage.getItem(COXA_HISTORY)||'[]');
   const earned=new Set((Array.isArray(rows)?rows:[]).filter(r=>coxaPerfectRun(r)&&r.id).map(r=>r.id));
   coxaUnlocked=Math.min(COXA_COLORS.length,1+earned.size);
@@ -26,7 +30,8 @@ function coxaLoadOutfits(){
 coxaLoadOutfits();
 const coxaMoney=n=>new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format((Number(n)||0)/100);
 function coxaSaveOutfits(){try{localStorage.setItem(COXA_STORAGE,JSON.stringify({unlocked:coxaUnlocked,selected:coxaSelected}));return true;}catch{return false;}}
-function coxaCycleOutfit(){coxaSelected=(coxaSelected+1)%coxaUnlocked;coxaSaveOutfits();}
+function coxaCycleOutfit(){const available=[0,COXA_HIGGINS,...Array.from({length:coxaUnlocked-1},(_,i)=>i+1)];
+ coxaSelected=available[(available.indexOf(coxaSelected)+1)%available.length];coxaSaveOutfits();}
 function coxaUnlockNext(){if(coxaUnlocked>=COXA_COLORS.length)return null;coxaSelected=coxaUnlocked++;coxaSaveOutfits();return COXA_COLORS[coxaSelected];}
 function coxaStagePool(count,previous,random=Math.random){const n=Math.max(1,Math.floor(count));const pool=Array.from({length:n},(_,i)=>i).filter(i=>n===1||i!==previous);return pool[Math.min(pool.length-1,Math.max(0,Math.floor(random()*pool.length)))];}
 function coxaDamagePercent(maxHp,phase){return Math.max(0,maxHp)*phase.damage/100;}
@@ -89,7 +94,7 @@ function coxaPose(p){
  return 0;
 }
 function drawCoxa(p){
- const pose=coxaPose(p),im=coxaArt[p.coxaColor??0]||coxaCombat;if(!im||(!im.width&&!im.naturalWidth))return;
+ const pose=coxaPose(p),im=p.coxaColor===COXA_HIGGINS&&coxaHiggins.naturalWidth?coxaHiggins:(coxaArt[p.coxaColor??0]||coxaCombat);if(!im||(!im.width&&!im.naturalWidth))return;
  // One calibrated lens for every pose, no pose-specific rescale, rotation or sprite-body translation.
  const f=1.16,dir=(p.rollTime>0?(p.coxaRollFacing??p.dir):p.dir)*(pose===5||pose===6?-1:1);
  ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(dir,1);ctx.drawImage(im,(pose%4)*384,Math.floor(pose/4)*320,384,320,-192*f,-300*f,384*f,320*f);ctx.restore();
