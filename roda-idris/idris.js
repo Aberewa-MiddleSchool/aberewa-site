@@ -90,7 +90,7 @@ const idris = (() => {
     return frame === phase.contact && Math.abs(p.x - opponent.x) <= phase.range;
   }
   function draw(p) {
-    let clip = 'ginga', frame = Math.floor(tick / 11) % 6;
+    let clip = 'ginga', frame = 0;
     let face = p.dir;
     if (p.hp <= 0 || p.down > 0) {
       clip = 'knockdown';
@@ -130,7 +130,26 @@ const idris = (() => {
     ctx.fill();
     ctx.translate(p.x, 590 - p.y);
     ctx.scale(face, 1);
-    ctx.drawImage(image, frame % 3 * 512, Math.floor(frame / 3) * 512, 512, 512, -256, -476, 512, 512);
+    if (clip === 'ginga' && !p.block) {
+      // Keep both feet fixed in the planted first pose; deform only above the ankles.
+      const phase = tick * Math.PI / 66;
+      const sway = Math.sin(phase);
+      const breath = (1 - Math.cos(phase * 2)) * .5;
+      const weight = y => {
+        const t = Math.max(0, Math.min(1, (420 - y) / 250));
+        return t * t * (3 - 2 * t);
+      };
+      const dy = y => y + weight(y) * (3.5 * breath + 2 * sway);
+      for (let y = 0; y < 420; y += 4) {
+        const h = Math.min(4, 420 - y);
+        const top = dy(y), bottom = dy(y + h);
+        ctx.drawImage(image, 0, y, 512, h,
+          -256 + 6 * sway * weight(y + h / 2), -476 + top, 512, bottom - top);
+      }
+      ctx.drawImage(image, 0, 420, 512, 92, -256, -56, 512, 92);
+    } else {
+      ctx.drawImage(image, frame % 3 * 512, Math.floor(frame / 3) * 512, 512, 512, -256, -476, 512, 512);
+    }
     ctx.restore();
   }
   function face(canvas) {
