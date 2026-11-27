@@ -67,8 +67,8 @@ items=stage%5===1&&!save.moves.includes(Math.floor((stage-1)/5))?[{x:layout.embl
 let chainAge=0;
 function say(s){tip=s;tipTime=2.2}
 function waveCount(){return 26+Math.floor((stage-1)/10)}
-function spawn(){wave++;const count=2+(stage>10?1:0)+(wave===waveCount()&&stage>30?1:0);
-for(let i=0;i<count;i++){let boss=wave===waveCount()&&stage%5===0&&i===count-1,kind=(stage+wave+i+layout.enemy)%3;let life=boss?120+stage:24+kind*7+Math.floor(stage*.5);const side=(i%2===0?1:-1)*(layout.rearFirst?-1:1);const entry=Math.max(12,Math.min(length-12,x+side*(198+layout.space+i*31)));enemies.push({x:entry,hp:life,max:life,boss,kind,wind:0,beat:i+wave,move:kind,kickTime:0,rest:.4+i*.3,stun:0,dir:-side})}say(wave===waveCount()&&stage%5===0?"District boss · "+bossProfile()[0]:"Dealers closing in · both sides")}
+function spawn(){wave++;const finale=stage===50&&wave===waveCount();const count=finale?1:2+(stage>10?1:0)+(wave===waveCount()&&stage>30?1:0);
+for(let i=0;i<count;i++){let boss=wave===waveCount()&&stage%5===0&&i===count-1,kind=(stage+wave+i+layout.enemy)%3;let life=boss?120+stage:24+kind*7+Math.floor(stage*.5);const side=(i%2===0?1:-1)*(layout.rearFirst?-1:1);const entry=Math.max(12,Math.min(length-12,x+side*(198+layout.space+i*31)));enemies.push({x:entry,hp:life,max:life,boss,kind,wind:0,beat:i+wave,move:kind,kickTime:0,rest:.4+i*.3,stun:0,dir:-side})}say(finale?"Final boss · Regente":wave===waveCount()&&stage%5===0?"District boss · "+bossProfile()[0]:"Dealers closing in · both sides")}
 function burst(px,y,color,n){y+=ground(px)-373;for(let i=0;i<n;i++)fx.push({x:px,y,vx:Math.cos(i*2.4)*120,vy:-60+Math.sin(i*2.4)*90,t:.45,color})}
 const starters = {
   kick:  { name:'Chapa dupla', keys:'K', beats:['straight','rising'] },
@@ -110,13 +110,14 @@ function advanceAttack(dt){
   const hadEnemies=enemies.length>0;
   for(const e of enemies){
     const dx=e.x-x;
-    if(reach(x,e.x)>radius||(!powered&&dx*face< -18))continue;
-    e.hp-=damage;sfx(e.hp<=0?'fall':'hit');e.stun=beat==='sweep'?.58:.28;e.wind=0;e.kickTime=0;e.hitPending=false;e.rest=.42;
-    const heavy=powered||e.hp<=0, dir=Math.sign(dx||face);
-    e.impact={age:0,duration:heavy?.58:last?.29:.17,dir,travel:heavy?155:last?40:7,height:heavy?64:last?11:3};
+    if(e.impact?.height>0||reach(x,e.x)>radius||(!powered&&dx*face< -18))continue;
+    e.hp=last?e.hp-damage:Math.max(1,e.hp-damage);sfx(e.hp<=0?'fall':'hit');e.stun=beat==='sweep'?.58:.28;e.wind=0;e.kickTime=0;e.hitPending=false;e.rest=.42;
+    const dir=Math.sign(dx||face);
+    const distance=powered?180:sequence.bonus?145:110;
+    e.impact={age:0,duration:last?.56:.16,dir,travel:last?distance:0,height:last?(powered?80:55):0};
     e.stun=Math.max(e.stun,e.impact.duration);
-    hitStop=Math.max(hitStop,heavy?.075:.035);
-    burst(e.x,300,heavy?gold:'#edffda',heavy?20:10);
+    hitStop=Math.max(hitStop,last?.075:.035);
+    burst(e.x,300,last?gold:'#edffda',last?20:10);
     if(e.hp<=0)defeated.push(e);
     if(e.hp<=0){kills++;stageReais+=e.boss?250:25;}
   }
@@ -154,7 +155,7 @@ else if(Math.abs(dx)>50)e.x+=stride(e.x,e.dir,64+e.kind*11+stage*.4)*dt;
 else if(e.rest<=0){e.move=(e.move+1)%moveset.length;e.wind=e.move===1?.78:.56}}
 
 if(hp<=0){save.deaths=(Number(save.deaths)||0)+1;persist();vocalize(true);panel('lost','STAGE '+stage,'Regroup',playerName+' · '+mode+' · Deaths: '+save.deaths+'. Jump over low sweeps or move out of kick range.','Retry stage');return}
-if(x>=length-2&&wave===waveCount()&&!enemies.length){save.reais=(Number(save.reais)||0)+stageReais;stageReais=0;save.stage=Math.min(50,stage+1);save.done=stage===50;persist();panel(stage===50?'won':'clear','STAGE '+stage+' / 50',stage===50?'Network dismantled':'Street cleared',stage===50?'The last boss falls, and the drug network loses its hold on all ten districts. At sunrise, Guardiã Verde returns to her classroom.':(stage%5===0?bossProfile()[0]+' defeated. ':'')+kills+' dealers stopped · '+comboHits+' combinations landed. Next stop: '+districts[Math.floor(stage/5)]+'.',stage===50?'Title screen':'Next stage')}
+if(x>=length-2&&wave===waveCount()&&!enemies.length){save.reais=(Number(save.reais)||0)+stageReais;stageReais=0;save.stage=Math.min(50,stage+1);save.done=stage===50;persist();panel(stage===50?'won':'clear','STAGE '+stage+' / 50',stage===50?'Network dismantled':'Street cleared',stage===50?'Regente falls, and the drug network loses its hold on all ten districts. At sunrise, Guardiã Verde returns to her classroom.':(stage%5===0?bossProfile()[0]+' defeated. ':'')+kills+' dealers stopped · '+comboHits+' combinations landed. Next stop: '+districts[Math.floor(stage/5)]+'.',stage===50?'Title screen':'Next stage')}
 camera=Math.max(0,Math.min(length-740,x-310));
 for(const p of fx){p.t-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=dt*260}fx=fx.filter(p=>p.t>0)}
 function rect(x,y,w,h,c){g.fillStyle=c;g.fillRect(x,y,w,h)}
