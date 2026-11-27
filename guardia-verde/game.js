@@ -11,7 +11,7 @@ function load(){save=read()[mode]||{};stage=Math.min(50,Math.max(1,Number(save.s
 function persist(){try{let data=read();data[mode]=save;localStorage.setItem('guardia-verde-v1',JSON.stringify(data))}catch{}}
 function title(){return districts[Math.floor((stage-1)/5)]+' · '+missions[(stage-1)%5]}
 function panel(s,t,h,d,b){state=s;held.clear();$('panel').hidden=false;$('tag').textContent=t;$('title').textContent=h;$('desc').textContent=d;$('primary').textContent=b;$('difficulty').hidden=s!=='menu';$('pause').textContent=s==='paused'?'Resume':'Pause'}
-function menu(){load();panel('menu','ABEREWA ARCADE  /  SIDE-SCROLLING ADVENTURE','Guardiã Verde','A blind Afro-Brazilian capoeirista follows the machines’ footfalls across ten districts. Recover the lost combinations and reclaim the coastal beacon.',save.done?'Replay final stage':stage>1?'Continue · Stage '+stage:'Begin stage 1')}
+function menu(){load();panel('menu','ABEREWA ARCADE  /  SIDE-SCROLLING ADVENTURE','Guardiã Verde','Guardiã Verde is a blind Afro-Brazilian woman who teaches blind middle school students. Tonight, she follows the machines’ footfalls through the harbor to reclaim the coastal beacon.',save.done?'Replay final stage':stage>1?'Continue · Stage '+stage:'Begin stage 1')}
 function play(){state='play';$('panel').hidden=true;$('book').hidden=true;$('pause').textContent='Pause'}
 function start(){x=90;face=1;hp=100;energy=100;camera=0;enemies=[];fx=[];wave=0;gate=480;length=1580+((stage-1)%5)*140;
 items=stage%5===1&&!save.moves.includes(Math.floor((stage-1)/5))?[{x:275,id:Math.floor((stage-1)/5)}]:[];action='';timer=cool=inv=chainAge=0;chain='';lastHit=-10;kills=comboHits=0;play();say(title())}
@@ -25,7 +25,7 @@ action=type;timer=type==='power'?.5:.32;cool=timer;let damage=type==='power'?60:
 if(type==='power'){energy-=40;chain='';burst(x,358,gold,32);say('Super-strength shockwave')}
 else {chain=(chainAge>0?chain:'')+(type==='kick'?'K':'S');chain=chain.slice(-3);chainAge=.95;
 let match=[...save.moves].sort((a,b)=>combinations[b][1].length-combinations[a][1].length).find(i=>chain.endsWith(combinations[i][1]));
-if(match!==undefined){damage+=24;radius+=50;comboHits++;say(combinations[match][0]+' combination!');burst(x+face*45,347,gold,14);chain=''}}
+if(match!==undefined){damage+=24;radius+=50;comboHits++;say(combinations[match][0]+' combination!');burst(x+face*45,347,gold,14);chain=chain.slice(-2)}}
 for(const e of enemies){let dx=e.x-x;if(Math.abs(dx)>radius||(type!=='power'&&dx*face< -22))continue;e.hp-=damage;e.stun=type==='sweep'?.67:.38;e.wind=0;e.rest=.45;e.x+=Math.sign(dx||face)*(type==='power'?90:18);burst(e.x,345,e.hp<=0?gold:'#ccf6d4',9);if(e.hp<=0)kills++}
 enemies=enemies.filter(e=>e.hp>0)}
 function step(dt){clock+=dt;if(state!=='play')return;
