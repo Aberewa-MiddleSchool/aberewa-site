@@ -63,13 +63,30 @@ function stageLayout(){
 function travel(){return stage%2?1:-1}
 let defeated=[],hitStop=0,bossDefeated=false;
 const stageBossNames=["Âncora","Vela","Sirene","Maré Alta","Doca","Safira","Mosaica","Faísca","Calçada","Vitral","Vereda","Jatobá","Copa","Folhagem","Palma","Catraca","Linha Rubra","Bitola","Volta","Condutora","Sentinela","Torre","Guarita","Baluarte","Muralha","Hera","Dália","Urtiga","Bromélia","Espinha","Escória","Forja","Brasa","Bigorna","Cobre","Sintonia","Antena","Onda Curta","Frequência","Estática","Minuta","Espiral","Corda","Engrenagem","Pêndula","Centelha","Vigia","Aurora Negra","Coroa","Regente"];
-function start(){bossDefeated=false;defeated=[];hitStop=0;stageReais=0;moveClock=0;held.clear();layout=stageLayout();sequence=null;airTime=poseTime=0;midpoint=false;arrowTime=0;x=90;face=1;hp=100;energy=100;camera=0;enemies=[];fx=[];wave=0;gate=layout.first;length=waveCount()*1850+layout.span+((stage-1)%5)*140;
-items=stage%5===1&&!save.moves.includes(Math.floor((stage-1)/5))?[{x:layout.emblem,id:Math.floor((stage-1)/5)}]:[];action='';timer=cool=inv=chainAge=0;chain='';lastHit=-10;kills=comboHits=0;play();say(title()+' · '+(travel()>0?'Go right →':'← Go left'))}
+const districtCaptions=[
+  'The last bell has rung. Outside her school, Guardiã Verde hears a case latch snap shut.',
+  'In the tile market, shutters slam one after another. Someone warned the dealers she was coming.',
+  'The trams stopped an hour ago. Heavy carts still rattle down Palm Boulevard.',
+  'Behind the depot gates, an empty tram waits with its cargo doors open.',
+  'At the old fort, boots scrape stone. The dealers have pulled their guards off the waterfront.',
+  'Above the gardens, a freight lift groans. The sound carries all the way down the hill.',
+  'In the foundry, the furnaces are cold. The freight lift is still running.',
+  'A voice on the radio orders every crew back. For the first time tonight, it sounds afraid.',
+  'The clock strikes four. A second bell answers from the citadel.',
+  'Under the beacon, the retreating footsteps converge. Regente has called her crews home.'
+];
+let captionSeconds=0,caseDiscovered=false;
+function narrate(words){
+  const box=$('narrator');box.textContent=words;box.hidden=false;
+  captionSeconds=Math.max(5,words.split(/\s+/).length*.34);
+}
+function start(){captionSeconds=0;caseDiscovered=false;$('narrator').hidden=true;bossDefeated=false;defeated=[];hitStop=0;stageReais=0;moveClock=0;held.clear();layout=stageLayout();sequence=null;airTime=poseTime=0;midpoint=false;arrowTime=0;x=90;face=1;hp=100;energy=100;camera=0;enemies=[];fx=[];wave=0;gate=layout.first;length=waveCount()*1850+layout.span+((stage-1)%5)*140;
+items=stage%5===1&&!save.moves.includes(Math.floor((stage-1)/5))?[{x:layout.emblem,id:Math.floor((stage-1)/5)}]:[];action='';timer=cool=inv=chainAge=0;chain='';lastHit=-10;kills=comboHits=0;play();if(stage%5===1)narrate(districtCaptions[Math.floor((stage-1)/5)]);say(title()+' · '+(travel()>0?'Go right →':'← Go left'))}
 let chainAge=0;
 function say(s){tip=s;tipTime=2.2}
 function waveCount(){return 26+Math.floor((stage-1)/10)}
 function spawn(){wave++;const bossWave=wave===waveCount();const count=bossWave?1:2+(stage>10?1:0);
-for(let i=0;i<count;i++){let boss=bossWave,kind=(stage+wave+i+layout.enemy)%3;let life=boss?(stage%5===0?120:83)+stage:24+kind*7+Math.floor(stage*.5);const side=(i%2===0?1:-1)*(layout.rearFirst?-1:1);const entry=Math.max(12,Math.min(length-12,x+side*(198+layout.space+i*31)));enemies.push({x:entry,hp:life,max:life,boss,patternIndex:0,taunt:0,kind,wind:0,beat:i+wave,move:kind,kickTime:0,rest:.4+i*.3,stun:0,dir:-side})}say(bossWave?(stage===50?"Final boss":stage%5===0?"District boss":"Stage boss")+" · "+stageBossNames[stage-1]:"Dealers closing in · both sides")}
+for(let i=0;i<count;i++){let boss=bossWave,kind=(stage+wave+i+layout.enemy)%3;let life=boss?(stage%5===0?120:83)+stage:24+kind*7+Math.floor(stage*.5);const side=(i%2===0?1:-1)*(layout.rearFirst?-1:1);const entry=Math.max(12,Math.min(length-12,x+side*(198+layout.space+i*31)));enemies.push({x:entry,hp:life,max:life,boss,patternIndex:0,taunt:0,kind,wind:0,beat:i+wave,move:kind,kickTime:0,rest:.4+i*.3,stun:0,dir:-side})}if(bossWave&&stage%5===0)narrate(stage===50?'One pair of footsteps stays put. Regente has sent everyone else away.':stageBossNames[stage-1]+' steps onto the sidewalk. The rest of her crew gives her room.');say(bossWave?(stage===50?"Final boss":stage%5===0?"District boss":"Stage boss")+" · "+stageBossNames[stage-1]:"Dealers closing in · both sides")}
 function burst(px,y,color,n){y+=ground(px)-373;for(let i=0;i<n;i++)fx.push({x:px,y,vx:Math.cos(i*2.4)*120,vy:-60+Math.sin(i*2.4)*90,t:.45,color})}
 const starters = {
   kick:  { name:'Chapa dupla', keys:'K', beats:['straight','rising'] },
@@ -120,13 +137,15 @@ function advanceAttack(dt){
     hitStop=Math.max(hitStop,last?.075:.035);
     burst(e.x,300,last?gold:'#edffda',last?20:10);
     if(e.hp<=0)defeated.push(e);
-    if(e.hp<=0){if(e.boss)bossDefeated=true;kills++;stageReais+=e.boss?250:25;}
+    if(e.hp<=0){if(e.boss){bossDefeated=true;if(stage===50)narrate('Regente hits the pavement. Her radio calls for backup. Nobody answers.');}kills++;stageReais+=e.boss?250:25;}
   }
   enemies=enemies.filter(e=>e.hp>0);
   if(hadEnemies&&!enemies.length&&wave<waveCount())gate=layout.first+wave*(length-layout.final-layout.first)/(waveCount()-1);
   if(last)sequence=null;else{sequence.index++;sequence.wait=.23}
 }
 function step(dt){clock+=dt;if(state!=='play')return;
+if(captionSeconds>0){captionSeconds-=dt;if(captionSeconds<=0)$('narrator').hidden=true}
+if(stage===1&&!caseDiscovered&&x>=layout.first+100){caseDiscovered=true;narrate('The case knocks against a second one. A lookout whispers “market,” and the cart starts rolling.')}
 if(hitStop>0){hitStop-=dt;return}
 for(const e of [...enemies,...defeated]){
   const r=e.impact;if(!r)continue;
