@@ -61,11 +61,11 @@ function stageLayout(){
     view:Math.floor(random()*4),rearFirst:random()>.5};
 }
 function travel(){return stage%2?1:-1}
-function start(){stageReais=0;moveClock=0;held.clear();layout=stageLayout();sequence=null;airTime=poseTime=0;midpoint=false;arrowTime=0;x=90;face=1;hp=100;energy=100;camera=0;enemies=[];fx=[];wave=0;gate=layout.first;length=waveCount()*1150+layout.span+((stage-1)%5)*140;
+function start(){stageReais=0;moveClock=0;held.clear();layout=stageLayout();sequence=null;airTime=poseTime=0;midpoint=false;arrowTime=0;x=90;face=1;hp=100;energy=100;camera=0;enemies=[];fx=[];wave=0;gate=layout.first;length=waveCount()*1850+layout.span+((stage-1)%5)*140;
 items=stage%5===1&&!save.moves.includes(Math.floor((stage-1)/5))?[{x:layout.emblem,id:Math.floor((stage-1)/5)}]:[];action='';timer=cool=inv=chainAge=0;chain='';lastHit=-10;kills=comboHits=0;play();say(title()+' · '+(travel()>0?'Go right →':'← Go left'))}
 let chainAge=0;
 function say(s){tip=s;tipTime=2.2}
-function waveCount(){return 8+Math.floor((stage-1)/10)}
+function waveCount(){return 26+Math.floor((stage-1)/10)}
 function spawn(){wave++;const count=2+(stage>10?1:0)+(wave===waveCount()&&stage>30?1:0);
 for(let i=0;i<count;i++){let boss=wave===waveCount()&&stage%5===0&&i===count-1,kind=(stage+wave+i+layout.enemy)%3;let life=boss?120+stage:24+kind*7+Math.floor(stage*.5);const side=(i%2===0?1:-1)*(layout.rearFirst?-1:1);const entry=Math.max(12,Math.min(length-12,x+side*(198+layout.space+i*31)));enemies.push({x:entry,hp:life,max:life,boss,kind,wind:0,beat:i+wave,move:kind,kickTime:0,rest:.4+i*.3,stun:0,dir:-side})}say(wave===waveCount()&&stage%5===0?"District boss · "+bossProfile()[0]:"Dealers closing in · both sides")}
 function burst(px,y,color,n){y+=ground(px)-373;for(let i=0;i<n;i++)fx.push({x:px,y,vx:Math.cos(i*2.4)*120,vy:-60+Math.sin(i*2.4)*90,t:.45,color})}
@@ -506,3 +506,4 @@ function autoContinue(dt){
 }
 
 window.addEventListener('blur',()=>{if(state==='play')pause()});menu();let last=0;function frame(now){const dt=Math.min(.04,(now-last)/1000);pollController();autoContinue(dt);if(watchMode&&state==='play')cpuPlayer();step(dt);last=now;draw();requestAnimationFrame(frame)}requestAnimationFrame(frame);
+
