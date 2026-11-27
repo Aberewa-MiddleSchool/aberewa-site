@@ -72,7 +72,7 @@ const idris = (() => {
       win: 'Until the next roda.', lose: 'Until the next roda.', pitch: 116
     };
     fighterTraits[IDRIS_ID] = {
-      height: 183, build: 1, speed: 4.2, tempo: 1, reach: 1, power: 1,
+      height: 183, build: 1, speed: 3.5, tempo: 1, reach: 1, power: 1,
       style: 'Capoeira Angola', accent: '#b28ad2', variant: 0
     };
     const regular = standing.map((keys, slot) => build(keys, slot, false));
@@ -90,7 +90,7 @@ const idris = (() => {
     return frame === phase.contact && Math.abs(p.x - opponent.x) <= phase.range;
   }
   function draw(p) {
-    let clip = 'ginga', frame = Math.floor(tick / 7) % 6;
+    let clip = 'ginga', frame = Math.floor(tick / 11) % 6;
     let face = p.dir;
     if (p.hp <= 0 || p.down > 0) {
       clip = 'knockdown';
