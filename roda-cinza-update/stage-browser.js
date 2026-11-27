@@ -66,7 +66,8 @@
       queued = false;
       if (scene === 'fight' || scene === 'pause' || scene === 'result' ||
           scene === 'story' || scene === 'ending') return;
-      const index = selected(current());
+      const candidate = selected(current());
+      const index = arenaAvailable(candidate) ? candidate : defaultStage;
       const art=arenaArt(arenas[index].file);
       if (!art.complete) art.addEventListener('load',()=>{if(selected(current())===index)preview();},{once:true});
       activeStage = index;
@@ -82,7 +83,8 @@
   }
   function sync() {
     addStages();
-    const id = selected(current());
+    const candidate = selected(current());
+    const id = arenaAvailable(candidate) ? candidate : defaultStage;
     const locked = story();
     stages.hidden=locked;
     if(locked)stages.open=false;
@@ -99,13 +101,16 @@
     for (const btn of grid.children) {
       const which = Number(btn.dataset.stage);
       btn.setAttribute('aria-current',String(which === id));
-      btn.disabled = locked;
+      btn.hidden = !arenaAvailable(which);
+      btn.disabled = locked || btn.hidden;
     }
     preview();
   }
   function chooseStage(i) {
     if (story()) {sync();return;}
-    stageChoice = selected(i);
+    const target = selected(i);
+    if (!arenaAvailable(target) && i >= 0 && i < count() && Math.abs(i-stageChoice)>1) return;
+    stageChoice = arenaAvailable(target) ? target : stepArena(stageChoice, i < stageChoice ? -1 : 1);
     activeStage = stageChoice;
     if (typeof window.updatePick === 'function' && scene === 'select') window.updatePick();
     sync();

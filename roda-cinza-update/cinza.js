@@ -44,7 +44,7 @@ const cinza = (() => {
   function route(player,rotate){
     const final = player===COXA_ID || !playableIds.includes(COXA_ID) ? (player===14?7:14) : COXA_ID;
     const opening = player===COXA_ID ? [HEATHER_ID] : [];
-    const pool = playableIds.filter(id=>id!==CONSTANCA_ID && id!==player && id!==final && id!==CINZA_ID && !isProtagonist(id) && !opening.includes(id));
+    const pool = playableIds.filter(id=>id!==CONSTANCA_ID && id!==player && id!==IDRIS_ID && id!==final && id!==CINZA_ID && !isProtagonist(id) && !opening.includes(id));
     const start = rotate ? Math.floor(Math.random()*pool.length) : 0;
     const regular = [...opening,...pool.slice(start),...pool.slice(0,start),final];
     const result = [];
@@ -52,6 +52,7 @@ const cinza = (() => {
       result.push(id);
       if(player!==CINZA_ID && (i+1)%2===0)result.push(CINZA_ID);
     });
+    if (playableIds.includes(IDRIS_ID)) result.splice(Math.max(0,result.length-2), 0, IDRIS_ID);
     return [CONSTANCA_ID,...result];
   }
   const chapters = [
