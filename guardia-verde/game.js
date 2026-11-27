@@ -10,9 +10,9 @@ function read(){try{return JSON.parse(localStorage.getItem('guardia-verde-v1'))|
 function load(){save=read()[mode]||{};stage=Math.min(50,Math.max(1,Number(save.stage)||1));save.moves=Array.isArray(save.moves)?save.moves:[]}
 function persist(){try{let data=read();data[mode]=save;localStorage.setItem('guardia-verde-v1',JSON.stringify(data))}catch{}}
 function title(){return districts[Math.floor((stage-1)/5)]+' · '+missions[(stage-1)%5]}
-function panel(s,t,h,d,b){state=s;held.clear();$('panel').hidden=false;$('tag').textContent=t;$('title').textContent=h;$('desc').textContent=d;$('primary').textContent=b;$('difficulty').hidden=s!=='menu';$('pause').textContent=s==='paused'?'Resume':'Pause'}
+function panel(s,t,h,d,b){state=s;held.clear();$('panel').hidden=false;$('tag').textContent=t;$('title').textContent=h;$('desc').textContent=d;$('primary').textContent='A / Start · '+b;$('difficulty').textContent='◀ '+mode+' ▶';$('difficulty').hidden=s!=='menu'}
 function menu(){load();panel('menu','ABEREWA ARCADE  /  SIDE-SCROLLING ADVENTURE','Guardiã Verde','Guardiã Verde is a blind Afro-Brazilian woman who teaches blind middle school students. In a future Brazil under machine surveillance, she follows their footfalls through the harbor to reclaim the coastal beacon.',save.done?'Begin a new remix':stage>1?'Continue · Stage '+stage:'Begin stage 1')}
-function play(){state='play';$('panel').hidden=true;$('book').hidden=true;$('pause').textContent='Pause'}
+function play(){state='play';$('panel').hidden=true;$('book').hidden=true}
 let midpoint=false,arrowTime=0,worldLayer=false;
 let sessionSeed=(Math.random()*4294967296)>>>0,layout;
 function stageLayout(){
@@ -24,7 +24,7 @@ function stageLayout(){
     view:Math.floor(random()*4),rearFirst:random()>.5};
 }
 function travel(){return stage%2?1:-1}
-function start(){layout=stageLayout();sequence=null;airTime=poseTime=0;midpoint=false;arrowTime=0;x=90;face=1;hp=100;energy=100;camera=0;enemies=[];fx=[];wave=0;gate=layout.first;length=1580+layout.span+((stage-1)%5)*140;
+function start(){held.clear();layout=stageLayout();sequence=null;airTime=poseTime=0;midpoint=false;arrowTime=0;x=90;face=1;hp=100;energy=100;camera=0;enemies=[];fx=[];wave=0;gate=layout.first;length=1580+layout.span+((stage-1)%5)*140;
 items=stage%5===1&&!save.moves.includes(Math.floor((stage-1)/5))?[{x:layout.emblem,id:Math.floor((stage-1)/5)}]:[];action='';timer=cool=inv=chainAge=0;chain='';lastHit=-10;kills=comboHits=0;play();say(title()+' · '+(travel()>0?'Go right →':'← Go left'))}
 let chainAge=0;
 function say(s){tip=s;tipTime=2.2}
@@ -45,7 +45,7 @@ function strike(type){
   if(!starter)return;
   if(type==='power'&&energy<40){say('Strength recharging');return}
   if(type==='power')energy-=40;
-  if(type==='jump')airTime=.66;
+  if(type==='jump'&&airTime<=0)airTime=.66;
   sequence={type,index:0,wait:type==='jump'?.09:.04};
   cool=type==='power'?.85:type==='jump'?.67:.47;
   action=type;
@@ -83,7 +83,7 @@ function advanceAttack(dt){
 function step(dt){clock+=dt;if(state!=='play')return;
 cool=Math.max(0,cool-dt);timer=Math.max(0,timer-dt);inv=Math.max(0,inv-dt);energy=Math.min(100,energy+dt*9);chainAge-=dt;tipTime-=dt;advanceAttack(dt);
 arrowTime=Math.max(0,arrowTime-dt);let move=travel()*(Number(held.has('right'))-Number(held.has('left')));if(move)face=move;
-x=Math.max(25,Math.min(enemies.length?gate+40:length,x+dt*stride(x,move,held.has('duck')?85:held.has('sprint')?385:235)));
+x=Math.max(25,Math.min(enemies.length?gate+40:length,x+dt*stride(x,move,held.has('sprint')?385:235)));
 if(!midpoint&&x>=length*.5){midpoint=true;arrowTime=3.2;midpointBeep()}
 for(const it of items)if(!it.got&&Math.abs(x-it.x)<37){it.got=true;save.moves.push(it.id);persist();say('Collected '+combinations[it.id].join(' · '));burst(x,330,gold,20)}
 if(!enemies.length&&wave<3&&x>=gate-180)spawn();
@@ -92,7 +92,7 @@ if(e.wind>0){e.wind-=dt;if(e.wind<=0){e.kickTime=.48;e.hitPending=true;e.rest=mo
 else if(e.kickTime>0){
   if(e.hitPending&&e.kickTime<=.29){
     e.hitPending=false;
-    if(reach(x,e.x)<78&&inv<=0&&!(e.move===1&&lift()>22)&&(!held.has('duck')||e.move===1)){
+    if(reach(x,e.x)<78&&inv<=0&&!(e.move===1&&lift()>22)){
       hp=Math.max(0,hp-(mode==='Easy'?5:10)*(e.boss?1.5:1));inv=.75;burst(x,333,'#ff8264',7);
     }
   }
@@ -100,7 +100,7 @@ else if(e.kickTime>0){
 else if(Math.abs(dx)>50)e.x+=stride(e.x,e.dir,64+e.kind*11+stage*.4)*dt;
 else if(e.rest<=0){e.move=(e.move+1)%moveset.length;e.wind=e.move===1?.78:.56}}
 
-if(hp<=0){panel('lost','STAGE '+stage,'Regroup','The machines held the street. Duck under amber strikes and step away from red low strikes.','Retry stage');return}
+if(hp<=0){panel('lost','STAGE '+stage,'Regroup','The machines held the street. Jump over low sweeps or move out of kick range.','Retry stage');return}
 if(x>=length-2&&wave===3&&!enemies.length){save.stage=Math.min(50,stage+1);save.done=stage===50;persist();panel(stage===50?'won':'clear','STAGE '+stage+' / 50',stage===50?'Beacon restored':'Street cleared',stage===50?'Light returns to the bay. Guardiã Verde has freed all ten districts.':kills+' machines stopped · '+comboHits+' combinations landed. Next stop: '+districts[Math.floor(stage/5)]+'.',stage===50?'Title screen':'Next stage')}
 camera=Math.max(0,Math.min(length-740,x-310));
 for(const p of fx){p.t-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=dt*260}fx=fx.filter(p=>p.t>0)}
@@ -110,7 +110,7 @@ function poly(c,...p){g.fillStyle=c;g.beginPath();g.moveTo(p[0],p[1]);for(let i=
 function limb(x,y,a,b,w,c){g.lineCap='round';g.strokeStyle=c;g.lineWidth=w;g.beginPath();g.moveTo(x,y);g.lineTo(a,b);g.stroke()}
 function label(s,x,y,size,c){if(worldLayer&&travel()<0){g.save();g.translate(x,y);g.scale(-1,1);g.fillStyle=c;g.font='bold '+size+'px monospace';g.textAlign='right';g.fillText(s,0,0);g.restore();return}g.fillStyle=c;g.font='bold '+size+'px monospace';g.fillText(s,x,y)}
 const panorama = new Image();
-panorama.src = 'future-brasil.webp';
+panorama.src = 'night-brasil.webp';
 const districtViews = [0,2,1,1,0,2,3,2,1,3];
 const checkpointNames = ['PORTO','MERCADO','AVENIDA','ESTAÇÃO','FORTE','JARDINS','FUNDIÇÃO','ANTENAS','RELÓGIO','CIDADELA'];
 
@@ -137,14 +137,27 @@ function scene() {
     g.drawImage(panorama, (view % 2) * w, Math.floor(view / 2) * h, w, h,
       -camera * .15, 0, 1240, 480);
   }
+  // Elevated traffic glides through the skyline behind the combat lane.
+  for(let i=0;i<4;i++){
+    const lane=i%2===0?1:-1;
+    const pos=((i*261+lane*clock*(14+i*3)-camera*.26)%1120+1120)%1120-70;
+    const y=91+i*35;
+    poly('#162a36',pos-20,y,pos-11,y-4,pos+10,y-4,pos+20,y,pos+13,y+4,pos-14,y+4);
+    rect(pos-8,y-3,14,2,'#7bc6d5');rect(pos-18*lane,y+1,4,2,'#ff8a64');
+    rect(pos+14*lane,y,4,2,'#e8ffbd');
+  }
   const start = Math.floor(camera / 16) * 16;
   for (let world = start; world < camera + 960; world += 16) {
     const sx = world - camera, a = ground(world), b = ground(world + 16);
-    poly('#435456',sx,a-5,sx+17,b-5,sx+17,480,sx,480);
-    poly('#adc0ae',sx,a-5,sx+17,b-5,sx+17,b-2,sx,a-2);
-    poly('#344447',sx,a+13,sx+17,b+13,sx+17,b+16,sx,a+16);
-    poly('#28393d',sx,a+48,sx+17,b+48,sx+17,480,sx,480);
-    if (world % 128 === 0) poly('#bc9952',sx,a+18,sx+12,b+18,sx+6,b+25,sx-6,a+25);
+    // Raised stone sidewalk, vertical curb face, and the lower vehicle lane.
+    poly('#26333d',sx,a-16,sx+17,b-16,sx+17,480,sx,480);
+    poly('#647477',sx,a-16,sx+17,b-16,sx+17,b+13,sx,a+13);
+    poly('#8c9690',sx,a-15,sx+17,b-15,sx+17,b-13,sx,a-13);
+    if(world%48===0)poly('#4a5a60',sx,a-14,sx+2,a-14,sx-4,a+12,sx-6,a+12);
+    poly('#a1a898',sx,a+12,sx+17,b+12,sx+17,b+16,sx,a+16);
+    poly('#414f53',sx,a+16,sx+17,b+16,sx+17,b+25,sx,a+25);
+    if(world%96===0)poly('#8ae2d3',sx,a+18,sx+10,b+18,sx+10,b+20,sx,a+20);
+    if(world%96<48)poly('#717264',sx,a+60,sx+17,b+60,sx+17,b+63,sx,a+63);
   }
   for (let world = 640; world < length; world += 700) {
     const sx = world-camera, y = ground(world);
@@ -155,7 +168,7 @@ function scene() {
   const end = length-camera, y = ground(length);
   rect(end,y-135,7,132,ink);poly(gold,end+7,y-135,end+80,y-135,end+62,y-116,end+7,y-116);
 }
-function hero(){g.save();const height=lift();oval(x-camera,ground(x)+1,Math.max(16,42-height*.21),5,'#293e3d');g.translate(x-camera,ground(x)-height);g.scale(face,1);let t=Math.sin(clock*(held.has('left')||held.has('right')?(held.has('sprint')?18:11):4)),low=held.has('duck')&&!airTime?22:0,k=poseTime>0,s=k&&pose==='sweep',kick=k&&!s;if(s)low=26;let hip=-51+low+t*2,sh=hip-32;
+function hero(){g.save();const height=lift();oval(x-camera,ground(x)+1,Math.max(16,42-height*.21),5,'#293e3d');g.translate(x-camera,ground(x)-height);g.scale(face,1);let t=Math.sin(clock*(held.has('left')||held.has('right')?(held.has('sprint')?18:11):4)),low=0,k=poseTime>0,s=k&&pose==='sweep',kick=k&&!s;if(s)low=26;let hip=-51+low+t*2,sh=hip-32;
 if(inv>0)g.globalAlpha=.72;
 function leg(h,kx,ky,ax,ay,shade){if(ay===-4)ay+=airTime?-12:ground(x+face*ax)-ground(x);limb(h,hip,kx,ky,22,ink);limb(h,hip,kx,ky,18,shade);limb(kx,ky,ax,ay,15,ink);limb(kx,ky,ax,ay,12,shade);limb(ax,ay,ax+11,ay+1,10,'#161f25')}
 const run=held.has('sprint')&&(held.has('left')||held.has('right'))?t*13:0;
@@ -208,16 +221,14 @@ function robot(e) {
   if(e.wind>0){const cue=moveset[e.move];const width=cue.length*8+10;rect(barX,barY-22,width,18,ink);label(cue,barX+4,barY-9,13,sweep?'#ffad98':gold)}
 }
 function draw(){if(state==='menu'&&cover.complete&&cover.naturalWidth){g.drawImage(cover,0,0,960,480);return}if(x===undefined)return;g.save();worldLayer=true;if(travel()<0){g.translate(960,0);g.scale(-1,1)}scene();for(let it of items)if(!it.got){let y=ground(it.x)-51+Math.sin(clock*4)*6;oval(it.x-camera,y,16,16,ink);oval(it.x-camera,y,13,13,gold);label('✦',it.x-camera-8,y+6,18,ink)}enemies.forEach(robot);hero();fx.forEach(p=>rect(p.x-camera,p.y,5,5,p.color));worldLayer=false;g.restore();rect(0,0,960,53,ink);label('GUARDIÃ VERDE',16,21,15,'#fff4d0');rect(16,30,150,8,'#526460');rect(16,30,hp*1.5,8,'#57d292');label('STRENGTH',196,21,13,gold);rect(196,30,92,7,'#526460');rect(196,30,energy*.92,7,gold);label('STAGE '+stage+'/50   '+title(),322,32,16,'#fff4d0');label(enemies.length?'MACHINES '+enemies.length:(travel()>0?'ADVANCE →':'← ADVANCE'),805,31,16,gold);if(arrowTime>0){const right=travel()>0;g.save();g.translate(right?850:110,100);g.scale(right?1:-1,1);poly(ink,-76,-17,17,-17,17,-36,75,0,17,36,17,17,-76,17);poly(gold,-69,-11,23,-11,23,-24,62,0,23,24,23,11,-69,11);g.restore();label('HALFWAY',right?810:70,153,17,gold)}if(tipTime>0){g.font='bold 18px monospace';let w=g.measureText(tip).width;rect(480-w/2-12,63,w+24,31,ink);label(tip,480-w/2,85,18,gold)}}
-$('primary').onclick=()=>{if(state==='paused')play();else if(state==='won')menu();else{if(state==='clear')stage=save.stage;else if(state==='menu'&&save.done){stage=1;save={stage:1,moves:[]};sessionSeed=(Math.random()*4294967296)>>>0;persist()}start()}};
-$('difficulty').onchange=e=>{mode=e.target.value;menu()};function pause(){if(state==='play')panel('paused','STAGE '+stage,title(),'Take a breath. Your fight resumes here.','Resume');else if(state==='paused')play()}
-$('pause').onclick=pause;$('moves').onclick=()=>{if(state==='play')pause();$('book').hidden=!$('book').hidden;$('list').replaceChildren(...(save.moves.length?save.moves.map(i=>combinations[i].join(' · ')):['Find the first gold disc near the harbor entrance.']).map(s=>{let li=document.createElement('li');li.textContent=s;return li}))};
-const mapping={ArrowLeft:'left',ArrowRight:'right',ArrowDown:'duck',Space:'jump',ShiftLeft:'sprint',ShiftRight:'sprint',KeyV:'listen',KeyZ:'kick',KeyX:'sweep',KeyC:'power'};
+function choose(){if(state==='paused')play();else if(state==='won')menu();else{if(state==='clear')stage=save.stage;else if(state==='menu'&&save.done){stage=1;save={stage:1,moves:[]};sessionSeed=(Math.random()*4294967296)>>>0;persist()}start()}};
+function pause(){if(state==='play')panel('paused','STAGE '+stage,title(),'Take a breath. Your fight resumes here.','Resume');else if(state==='paused')play()}
+function toggleBook(){if(state==='play')pause();$('book').hidden=!$('book').hidden;$('list').replaceChildren(...(save.moves.length?save.moves.map(i=>combinations[i].join(' · ')):['Find the first gold disc near the harbor entrance.']).map(s=>{let li=document.createElement('li');li.textContent=s;return li}))};
 let audio;
 function unlockAudio(){
   try{audio=audio||new AudioContext();if(audio.state==='suspended')audio.resume().catch(()=>{})}catch{}
 }
-window.addEventListener('pointerdown',unlockAudio,{capture:true});
-window.addEventListener('keydown',unlockAudio,{capture:true});
+$('sound').onclick=()=>{unlockAudio();if(audio)audio.resume().then(()=>{$('sound').hidden=true}).catch(()=>{})};
 function midpointBeep(){
   if(!audio||audio.state!=='running')return;
   for(let i=0;i<2;i++){
@@ -244,7 +255,42 @@ function listen(){
     tone.connect(gain).connect(pan).connect(audio.destination);tone.start(now);tone.stop(now+.21);
   }catch{}
 }
-function down(k){if(state!=='play')return;held.add(k);if(k==='listen')listen();if(Object.hasOwn(starters,k))strike(k)}
-window.addEventListener('keydown',e=>{if(e.code==='KeyP'&&!e.repeat){pause();return}let k=mapping[e.code];if(k&&state==='play'){e.preventDefault();if(!e.repeat)down(k)}});window.addEventListener('keyup',e=>held.delete(mapping[e.code]));
-document.querySelectorAll('[data-key]').forEach(b=>{b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);down(b.dataset.key)};b.onlostpointercapture=()=>held.delete(b.dataset.key)});
-window.addEventListener('blur',()=>{if(state==='play')pause()});menu();let last=0;function frame(now){step(Math.min(.04,(now-last)/1000));last=now;draw();requestAnimationFrame(frame)}requestAnimationFrame(frame);
+let controllerIndex=null,previous=[],lastStatus='',confirmedGeneric=null;
+function showStatus(message){
+  if(message!==lastStatus){$('padStatus').textContent=message;lastStatus=message}
+}
+function pollController(){
+  let pads=[];
+  try{pads=Array.from(navigator.getGamepads?.()||[]).filter(p=>p&&p.connected!==false)}catch{}
+  const named=p=>/logitech|046d|f310/i.test(p.id)&&p.buttons.length>=16;
+  const generic=p=>/xinput|standard gamepad|generic gamepad/i.test(p.id)&&p.buttons.length>=16;
+  const confirm=p=>generic(p)&&p.buttons[8]?.pressed&&p.buttons[9]?.pressed;
+  let pad=pads.find(named)||pads.find(p=>generic(p)&&p.index===confirmedGeneric)||pads.find(confirm);
+  if(!pad){
+    if(controllerIndex!==null&&state==='play')pause();
+    controllerIndex=confirmedGeneric=null;previous=[];held.clear();
+    showStatus(pads.some(generic)?'Using an F310 in X mode? Hold Back + Start to confirm.':'Connect your Logitech F310 in X mode and press a controller button.');
+    return;
+  }
+  if(!named(pad))confirmedGeneric=pad.index;
+  const pressed=pad.buttons.map(b=>b.pressed||b.value>.55);
+  const axis=pad.axes[0]||0;
+  pressed[14]=pressed[14]||axis<-.34;pressed[15]=pressed[15]||axis>.34;
+  pressed[13]=pressed[13]||(pad.axes[1]||0)>.55;
+  const edge=i=>pressed[i]&&!previous[i];
+  if(controllerIndex!==pad.index){controllerIndex=pad.index;previous=pressed;showStatus('F310 connected · Press Start or A');return}
+  showStatus('F310 connected');
+  if(edge(8))toggleBook();
+  else if(!$('book').hidden){if(edge(9)||edge(0)){$('book').hidden=true;if(state==='paused')play()}}
+  else if(state==='play'){
+    held.clear();
+    for(const [i,k] of [[14,'left'],[15,'right'],[4,'sprint']])if(pressed[i])held.add(k);
+    if(edge(9))pause();
+    else if(edge(5))listen();
+    else if(edge(7)&&airTime===0&&!sequence){airTime=.66;}
+    else for(const [i,k] of [[2,'kick'],[0,'sweep'],[1,'jump'],[3,'power']])if(edge(i)){strike(k);break}
+  }else if(state==='menu'&&(edge(14)||edge(15))){mode=mode==='Easy'?'Normal':'Easy';menu()}
+  else if(edge(9)||edge(0)){unlockAudio();choose()}
+  previous=pressed;
+}
+window.addEventListener('blur',()=>{if(state==='play')pause()});menu();let last=0;function frame(now){pollController();step(Math.min(.04,(now-last)/1000));last=now;draw();requestAnimationFrame(frame)}requestAnimationFrame(frame);
