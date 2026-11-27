@@ -69,7 +69,7 @@ let chainAge=0;
 function say(s){tip=s;tipTime=2.2}
 function waveCount(){return 26+Math.floor((stage-1)/10)}
 function spawn(){wave++;const bossWave=wave===waveCount();const count=bossWave?1:2+(stage>10?1:0);
-for(let i=0;i<count;i++){let boss=bossWave,kind=(stage+wave+i+layout.enemy)%3;let life=boss?(stage%5===0?120:83)+stage:24+kind*7+Math.floor(stage*.5);const side=(i%2===0?1:-1)*(layout.rearFirst?-1:1);const entry=Math.max(12,Math.min(length-12,x+side*(198+layout.space+i*31)));enemies.push({x:entry,hp:life,max:life,boss,kind,wind:0,beat:i+wave,move:kind,kickTime:0,rest:.4+i*.3,stun:0,dir:-side})}say(bossWave?(stage===50?"Final boss":stage%5===0?"District boss":"Stage boss")+" · "+stageBossNames[stage-1]:"Dealers closing in · both sides")}
+for(let i=0;i<count;i++){let boss=bossWave,kind=(stage+wave+i+layout.enemy)%3;let life=boss?(stage%5===0?120:83)+stage:24+kind*7+Math.floor(stage*.5);const side=(i%2===0?1:-1)*(layout.rearFirst?-1:1);const entry=Math.max(12,Math.min(length-12,x+side*(198+layout.space+i*31)));enemies.push({x:entry,hp:life,max:life,boss,patternIndex:0,taunt:0,kind,wind:0,beat:i+wave,move:kind,kickTime:0,rest:.4+i*.3,stun:0,dir:-side})}say(bossWave?(stage===50?"Final boss":stage%5===0?"District boss":"Stage boss")+" · "+stageBossNames[stage-1]:"Dealers closing in · both sides")}
 function burst(px,y,color,n){y+=ground(px)-373;for(let i=0;i<n;i++)fx.push({x:px,y,vx:Math.cos(i*2.4)*120,vy:-60+Math.sin(i*2.4)*90,t:.45,color})}
 const starters = {
   kick:  { name:'Chapa dupla', keys:'K', beats:['straight','rising'] },
@@ -143,7 +143,8 @@ if(!midpoint&&x>=length*.5){midpoint=true;arrowTime=3.2;midpointBeep()}
 for(const it of items)if(!it.got&&Math.abs(x-it.x)<37){it.got=true;save.moves.push(it.id);persist();say('Collected '+combinations[it.id].join(' · '));burst(x,330,gold,20)}
 if(!enemies.length&&wave<waveCount()&&x>=gate-180)spawn();
 for(const e of enemies){let dx=x-e.x;e.dir=Math.sign(dx)||1;e.stun-=dt;e.rest-=dt;e.kickTime=Math.max(0,e.kickTime-dt);if(e.stun>0)continue;
-if(e.wind>0){e.wind-=dt;if(e.wind<=0){sfx('swing');e.kickTime=.48;e.hitPending=true;e.rest=mode==='Easy'?1.3:.9}}
+if(e.taunt>0){e.taunt=Math.max(0,e.taunt-dt);continue}
+if(e.wind>0){e.wind-=dt;if(e.wind<=0){if(e.boss)e.patternIndex=(e.patternIndex+1)%bossPattern.length;sfx('swing');e.kickTime=.48;e.hitPending=true;e.rest=mode==='Easy'?1.3:.9}}
 else if(e.kickTime>0){
   if(e.hitPending&&e.kickTime<=.29){
     e.hitPending=false;
@@ -153,7 +154,14 @@ else if(e.kickTime>0){
   }
 }
 else if(Math.abs(dx)>50)e.x+=stride(e.x,e.dir,64+e.kind*11+stage*.4)*dt;
-else if(e.rest<=0){e.move=(e.move+1)%moveset.length;e.wind=e.move===1?.78:.56}}
+else if(e.rest<=0){
+  if(e.boss){
+    const next=bossPattern[e.patternIndex];
+    if(next===0){e.taunt=1.2;e.patternIndex=(e.patternIndex+1)%bossPattern.length;continue}
+    e.move=bossMoveNumbers.indexOf(next);
+  }else e.move=(e.move+1)%moveset.length;
+  e.wind=e.move===1?.78:.56;
+}}
 
 if(hp<=0){save.deaths=(Number(save.deaths)||0)+1;persist();vocalize(true);panel('lost','STAGE '+stage,'Regroup',playerName+' · '+mode+' · Deaths: '+save.deaths+'. Jump over low sweeps or move out of kick range.','Retry stage');return}
 if(bossDefeated&&x>=length-2&&wave===waveCount()&&!enemies.length){save.reais=(Number(save.reais)||0)+stageReais;stageReais=0;save.stage=Math.min(50,stage+1);save.done=stage===50;persist();panel(stage===50?'won':'clear','STAGE '+stage+' / 50',stage===50?'Network dismantled':'Street cleared',stage===50?'Regente falls, and the drug network loses its hold on all ten districts. At sunrise, Guardiã Verde returns to her classroom.':stageBossNames[stage-1]+' defeated. '+kills+' dealers stopped · '+comboHits+' combinations landed. Next stop: '+districts[Math.floor(stage/5)]+'.',stage===50?'Title screen':'Next stage')}
@@ -308,6 +316,8 @@ limb(-4,sh+3,-20,sh+16,10,green);limb(-20,sh+16,-34,sh+10+t*3,8,green);oval(-35,
 limb(11,sh+7,24,sh+14,11,green);limb(24,sh+14,32,sh-2+t*2,8,green);oval(33,sh-4+t*2,5,6,ink);
 limb(23,sh+12,30,sh+2+t*2,3,'#70eace');poly('#143d35',7,sh+1,12,sh-1,17,sh+4,15,sh+9);oval(6,sh+7,8,8,ink);oval(6,sh+7,7,7,'#138550');poly(gold,-1,sh+7,6,sh+2,13,sh+7,6,sh+12);oval(6,sh+7,3.1,3.1,'#265ca1');
 if(k&&pose==='strength'){g.strokeStyle=gold;g.lineWidth=4;g.beginPath();g.ellipse(0,-12,10+(1-poseTime/.2)*160,10+18*(1-poseTime/.2),0,0,7);g.stroke()}g.restore()}
+const bossMoveNumbers=[1,4,6];
+const bossPattern=[1,4,6,0,4,6,1,0];
 const moveset = ['Meia-lua de frente','Rasteira','Meia-lua de compasso'];
 const bosses=[
   ['Doca','#ba584c','#663b31',1.56,1.14],['Vitral','#7976bd','#ad7051',1.49,1.22],
@@ -332,6 +342,7 @@ function rival(e) {
   oval(e.x-camera,floor,32,4,'#27373b');
   g.save();g.translate(e.x-camera,floor-(r?r.height*arc:0));g.rotate(Math.atan(grade(e.x))+(r?r.dir*(e.hp<=0?phase*1.3:arc*.44):0));
   g.scale(e.dir*size*(e.boss?chief[4]:1),size);
+  if(e.taunt>0&&!r){const gesture=Math.sin(Math.PI*(1-e.taunt/1.2));g.rotate(-.14*gesture);g.scale(1,1+.045*gesture)}
   const art=e.boss?rivalArt:streetArt;
   if(art.complete&&art.naturalWidth){
     const column=e.kickTime>0?(sweep?2:1):0;
@@ -393,12 +404,13 @@ function hud(){
   g.save();g.textAlign='center';label('REAIS',480,17,12,'#b9d0c3');label(reais.format((save.reais||0)+stageReais),480,41,23,gold);
   g.textAlign='right';label('STAGE '+stage+' / 50',944,20,15,'#fff4d0');
   label(enemies.length?'DEALERS '+enemies.length:travel()>0?'ADVANCE →':'← ADVANCE',944,41,14,gold);g.restore();
-  const warning=enemies.find(e=>e.wind>0);
+  const warning=enemies.find(e=>e.wind>0||e.taunt>0);
+  const cue=!warning?'':warning.taunt>0?'Boss · Taunt':warning.boss?'Boss '+bossMoveNumbers[warning.move]+' · '+moveset[warning.move]:'Rival · '+moveset[warning.move];
   const current=moveClock>0?moveCaption:airTime>0?'Jump':'Ginga';
   g.save();g.textAlign='center';g.font='bold 17px monospace';
-  const wide=Math.max(130,g.measureText(current).width+28,warning?g.measureText(moveset[warning.move]).width+85:0);
+  const wide=Math.max(130,g.measureText(current).width+28,warning?g.measureText(cue).width+28:0);
   rect(480-wide/2,warning?420:440,wide,warning?56:36,'#102328ed');
-  if(warning)label('Rival · '+moveset[warning.move],480,437,13,'#ffae89');
+  if(warning)label(cue,480,437,13,'#ffae89');
   label(current,480,464,17,'#e1ffdf');g.restore();
 }
 
@@ -507,4 +519,5 @@ function autoContinue(dt){
 }
 
 window.addEventListener('blur',()=>{if(state==='play')pause()});menu();let last=0;function frame(now){const dt=Math.min(.04,(now-last)/1000);pollController();autoContinue(dt);if(watchMode&&state==='play')cpuPlayer();step(dt);last=now;draw();requestAnimationFrame(frame)}requestAnimationFrame(frame);
+
 
