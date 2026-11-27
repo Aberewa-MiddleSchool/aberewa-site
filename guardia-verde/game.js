@@ -61,14 +61,15 @@ function stageLayout(){
     view:Math.floor(random()*4),rearFirst:random()>.5};
 }
 function travel(){return stage%2?1:-1}
-let defeated=[],hitStop=0;
-function start(){defeated=[];hitStop=0;stageReais=0;moveClock=0;held.clear();layout=stageLayout();sequence=null;airTime=poseTime=0;midpoint=false;arrowTime=0;x=90;face=1;hp=100;energy=100;camera=0;enemies=[];fx=[];wave=0;gate=layout.first;length=waveCount()*1850+layout.span+((stage-1)%5)*140;
+let defeated=[],hitStop=0,bossDefeated=false;
+const stageBossNames=["Âncora","Vela","Sirene","Maré Alta","Doca","Safira","Mosaica","Faísca","Calçada","Vitral","Vereda","Jatobá","Copa","Folhagem","Palma","Catraca","Linha Rubra","Bitola","Volta","Condutora","Sentinela","Torre","Guarita","Baluarte","Muralha","Hera","Dália","Urtiga","Bromélia","Espinha","Escória","Forja","Brasa","Bigorna","Cobre","Sintonia","Antena","Onda Curta","Frequência","Estática","Minuta","Espiral","Corda","Engrenagem","Pêndula","Centelha","Vigia","Aurora Negra","Coroa","Regente"];
+function start(){bossDefeated=false;defeated=[];hitStop=0;stageReais=0;moveClock=0;held.clear();layout=stageLayout();sequence=null;airTime=poseTime=0;midpoint=false;arrowTime=0;x=90;face=1;hp=100;energy=100;camera=0;enemies=[];fx=[];wave=0;gate=layout.first;length=waveCount()*1850+layout.span+((stage-1)%5)*140;
 items=stage%5===1&&!save.moves.includes(Math.floor((stage-1)/5))?[{x:layout.emblem,id:Math.floor((stage-1)/5)}]:[];action='';timer=cool=inv=chainAge=0;chain='';lastHit=-10;kills=comboHits=0;play();say(title()+' · '+(travel()>0?'Go right →':'← Go left'))}
 let chainAge=0;
 function say(s){tip=s;tipTime=2.2}
 function waveCount(){return 26+Math.floor((stage-1)/10)}
-function spawn(){wave++;const finale=stage===50&&wave===waveCount();const count=finale?1:2+(stage>10?1:0)+(wave===waveCount()&&stage>30?1:0);
-for(let i=0;i<count;i++){let boss=wave===waveCount()&&stage%5===0&&i===count-1,kind=(stage+wave+i+layout.enemy)%3;let life=boss?120+stage:24+kind*7+Math.floor(stage*.5);const side=(i%2===0?1:-1)*(layout.rearFirst?-1:1);const entry=Math.max(12,Math.min(length-12,x+side*(198+layout.space+i*31)));enemies.push({x:entry,hp:life,max:life,boss,kind,wind:0,beat:i+wave,move:kind,kickTime:0,rest:.4+i*.3,stun:0,dir:-side})}say(finale?"Final boss · Regente":wave===waveCount()&&stage%5===0?"District boss · "+bossProfile()[0]:"Dealers closing in · both sides")}
+function spawn(){wave++;const bossWave=wave===waveCount();const count=bossWave?1:2+(stage>10?1:0);
+for(let i=0;i<count;i++){let boss=bossWave,kind=(stage+wave+i+layout.enemy)%3;let life=boss?(stage%5===0?120:83)+stage:24+kind*7+Math.floor(stage*.5);const side=(i%2===0?1:-1)*(layout.rearFirst?-1:1);const entry=Math.max(12,Math.min(length-12,x+side*(198+layout.space+i*31)));enemies.push({x:entry,hp:life,max:life,boss,kind,wind:0,beat:i+wave,move:kind,kickTime:0,rest:.4+i*.3,stun:0,dir:-side})}say(bossWave?(stage===50?"Final boss":stage%5===0?"District boss":"Stage boss")+" · "+stageBossNames[stage-1]:"Dealers closing in · both sides")}
 function burst(px,y,color,n){y+=ground(px)-373;for(let i=0;i<n;i++)fx.push({x:px,y,vx:Math.cos(i*2.4)*120,vy:-60+Math.sin(i*2.4)*90,t:.45,color})}
 const starters = {
   kick:  { name:'Chapa dupla', keys:'K', beats:['straight','rising'] },
@@ -119,7 +120,7 @@ function advanceAttack(dt){
     hitStop=Math.max(hitStop,last?.075:.035);
     burst(e.x,300,last?gold:'#edffda',last?20:10);
     if(e.hp<=0)defeated.push(e);
-    if(e.hp<=0){kills++;stageReais+=e.boss?250:25;}
+    if(e.hp<=0){if(e.boss)bossDefeated=true;kills++;stageReais+=e.boss?250:25;}
   }
   enemies=enemies.filter(e=>e.hp>0);
   if(hadEnemies&&!enemies.length&&wave<waveCount())gate=layout.first+wave*(length-layout.final-layout.first)/(waveCount()-1);
@@ -155,7 +156,7 @@ else if(Math.abs(dx)>50)e.x+=stride(e.x,e.dir,64+e.kind*11+stage*.4)*dt;
 else if(e.rest<=0){e.move=(e.move+1)%moveset.length;e.wind=e.move===1?.78:.56}}
 
 if(hp<=0){save.deaths=(Number(save.deaths)||0)+1;persist();vocalize(true);panel('lost','STAGE '+stage,'Regroup',playerName+' · '+mode+' · Deaths: '+save.deaths+'. Jump over low sweeps or move out of kick range.','Retry stage');return}
-if(x>=length-2&&wave===waveCount()&&!enemies.length){save.reais=(Number(save.reais)||0)+stageReais;stageReais=0;save.stage=Math.min(50,stage+1);save.done=stage===50;persist();panel(stage===50?'won':'clear','STAGE '+stage+' / 50',stage===50?'Network dismantled':'Street cleared',stage===50?'Regente falls, and the drug network loses its hold on all ten districts. At sunrise, Guardiã Verde returns to her classroom.':(stage%5===0?bossProfile()[0]+' defeated. ':'')+kills+' dealers stopped · '+comboHits+' combinations landed. Next stop: '+districts[Math.floor(stage/5)]+'.',stage===50?'Title screen':'Next stage')}
+if(bossDefeated&&x>=length-2&&wave===waveCount()&&!enemies.length){save.reais=(Number(save.reais)||0)+stageReais;stageReais=0;save.stage=Math.min(50,stage+1);save.done=stage===50;persist();panel(stage===50?'won':'clear','STAGE '+stage+' / 50',stage===50?'Network dismantled':'Street cleared',stage===50?'Regente falls, and the drug network loses its hold on all ten districts. At sunrise, Guardiã Verde returns to her classroom.':stageBossNames[stage-1]+' defeated. '+kills+' dealers stopped · '+comboHits+' combinations landed. Next stop: '+districts[Math.floor(stage/5)]+'.',stage===50?'Title screen':'Next stage')}
 camera=Math.max(0,Math.min(length-740,x-310));
 for(const p of fx){p.t-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=dt*260}fx=fx.filter(p=>p.t>0)}
 function rect(x,y,w,h,c){g.fillStyle=c;g.fillRect(x,y,w,h)}
