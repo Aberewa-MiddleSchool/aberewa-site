@@ -461,7 +461,7 @@ const arenas = [
  {name:'MEILIN’S ALTAR',file:'meilin-altar.png'},
  {name:'MEILIN’S COURTYARD',file:'comic/courtyard.jpg',owner:7},
  {name:'SKULL STUDIO',file:'skull-studio-v26.webp',owner:11},
- {name:'WEATHERED CAPOEIRA STUDIO',file:'arenas/weathered-studio.webp',owner:1},
+ {name:'WEATHERED CAPOEIRA STUDIO',file:'arenas/weathered-studio.webp'},
  {name:'CACHOEIRA HERITAGE SQUARE',file:'brazil-arenas-2.webp',tile:2},
  {name:'SOLAR STUDIO',file:'arenas/solar-studio.webp',owner:3},
  {name:'BELÉM WATERFRONT',file:'brazil-arenas.webp',tile:3,owner:4},
@@ -475,7 +475,7 @@ const arenas = [
  {name:'ABIMBOLA’S STUDIO · LAGOS, NIGERIA',file:abimbola.arena.src,owner:ABIMBOLA_ID},
  {name:'LÍDIA’S SOCIAL CLUB · SALVADOR',file:cinza.society,owner:CINZA_ID,
   theme:{title:'Donna',src:cinza.asset('music/donna.mp3')}},
- {name:'HIGGINS HURRICANES QUADRA · SALVADOR, BAHIA',file:COXA_ASSETS+'higgins-quadra.webp?v=flags2',
+ {name:'HIGGINS HURRICANES QUADRA · SALVADOR, BAHIA',file:COXA_ASSETS+'higgins-quadra.webp?v=flags2',owner:1,
   theme:{title:'Higgins Pep Band',src:COXA_ASSETS+'higgins-pep-band.mp3'}},
  {name:'RED MOON COURTYARD · TRANSYLVANIA',file:'https://aberewamiddleschool.org/roda-constanca/red-moon-courtyard.webp',owner:CONSTANCA_ID,
   theme:{title:'Red Moon Yard',src:'https://aberewamiddleschool.org/roda-constanca/red-moon-yard.ogg'}}
