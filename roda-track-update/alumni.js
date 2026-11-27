@@ -5,6 +5,7 @@ const trackArt=(()=>{
   const image=new Image();image.src=new URL('alumnus-'+i+'.webp',root);return image;
  });
  function ready(){return sheets.every(image=>image.complete&&image.naturalWidth>0);}
+ function failed(){return sheets.some(image=>image.complete&&!image.naturalWidth);}
  function pose(p){
   if(p.hp<=0||p.down>0){
    if(p.hp>0&&p.down<12)return 1;
@@ -30,7 +31,7 @@ const trackArt=(()=>{
   const g=c.getContext('2d');g.fillStyle='#211b31';g.fillRect(0,0,240,300);
   const h=box[3]*.72,w=h*.8;
   g.drawImage(sheets[i],box[0]+(box[2]-w)/2,box[1],w,h,0,0,240,300);
-  return c.toDataURL();
+  return c;
  }
- return {ready,draw,portrait};
+ return {ready,failed,draw,portrait};
 })();

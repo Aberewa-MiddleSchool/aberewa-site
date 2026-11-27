@@ -349,7 +349,14 @@ $$('[data-rounds]').forEach(b=>b.onclick=()=>setRounds(b.dataset.rounds));
 $$('[data-mode]').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));$$('[data-diff]').forEach(b=>b.onclick=()=>setDifficulty(b.dataset.diff));
 function show(id){if(id)rodaAnnouncer.stop();['title','menu','select','pause','setup','result','story','ending','score','coxa-complete','track-complete'].forEach(n=>$('#'+n)?.classList.toggle('hidden',n!==id))}
 function connected(){return [...(navigator.getGamepads?.()||[])].filter(p=>p&&p.connected)}
-function choose(){stopResultSound();if(!loaded){$('#padhelp').textContent='Loading fighter artwork…';return}if(mode==='track'){trackIndex=0;trackWins=0;startTrackBout();return}if(mode==='coxa'){beginCoxaRun();return}if(mode==='watcharcade'){mode='solo';arcadeAutoplay=true;}scene='select';pickStage=0;pick=mode==='training'?CONSTANCA_ID:selectionRoster().includes(chosen[0])?chosen[0]:selectionRoster()[0];show('select');updatePick()}
+function choose(){stopResultSound();if(!loaded){$('#padhelp').textContent='Loading fighter artwork…';return}if(mode==='track'){
+ if(typeof trackArt==='undefined'||!trackArt.ready()){
+  $('#padhelp').textContent=typeof trackArt==='undefined'||trackArt.failed()
+   ?'Higgins alumni artwork could not load. Reload the page to retry.'
+   :'Loading Higgins alumni artwork… Select Start again when ready.';
+  return;
+ }
+ trackIndex=0;trackWins=0;startTrackBout();return}if(mode==='coxa'){beginCoxaRun();return}if(mode==='watcharcade'){mode='solo';arcadeAutoplay=true;}scene='select';pickStage=0;pick=mode==='training'?CONSTANCA_ID:selectionRoster().includes(chosen[0])?chosen[0]:selectionRoster()[0];show('select');updatePick()}
 $('#choose').onclick=choose;$('#backmenu').onclick=()=>{if(cancelPauseSelection())return;if(mode===cinzaRewards.versus)setMode('cinza');scene='menu';show('menu')};$('#confirm').onclick=confirmPick;
 let heatherWhiteSelected=false;
 const outfitButton=document.createElement('button');
@@ -409,6 +416,7 @@ function startRound(newBout=round===1){
  activeStage=mode==='track'?homeStageFor(1):mode==='coxa'?(coxaRun?.arena??DEFAULT_STAGE):mode==='solo'?(arcadeStages[arcadeIndex]??DEFAULT_STAGE):stageChoice;
  if(activeStage<0||activeStage>=stageNames.length)activeStage=DEFAULT_STAGE;
  setStageMusic(activeStage);const brideRight=chosen[0]===CONSTANCA_ID;players=[fighter(chosen[0],brideRight?890:390,brideRight?-1:1),fighter(chosen[1],brideRight?390:890,brideRight?1:-1)];
+ if(mode==='track')players[1].trackAthlete=trackIndex;
  if(chosen[0]===CINZA_ID)players[0].cinzaCostume=cinzaArt.selected;
  players.forEach(p=>{if(p.id===COXA_ID)p.coxaColor=coxaSelected;});
  players[0].whiteUniform=chosen[0]===HEATHER_ID&&heatherWhiteSelected;
@@ -859,6 +867,14 @@ function drawHighHit(p){if(p.id===14){drawLeanMestre(ctx,'extra',0,p.x,590-p.y,p
 }
 // Use a document-qualified fragment because the school page has an external base URL.
 const fighterInkFilter = 'url("' + location.href.split('#')[0] + '#roda-fighter-ink")';
+// Dispatch alumni before the roster renderer and its character-specific wrappers.
+function drawCombatant(p){
+ if(p.trackAthlete!==undefined){
+  trackArt.draw(p);
+  return;
+ }
+ drawFighter(p);
+}
 function drawFighter(p){
  if(p.id===CONSTANCA_ID){constanca.draw(p);return;}
  if(p.id===CINZA_ID){cinzaArt.draw(p);return;}
@@ -970,7 +986,7 @@ function drawAttack(p,t){
 }
 
 function hud(){if(mode==='solo'||mode==='coxa'){text('SCORE '+arcadeScore.total.toLocaleString(),640,26,20,'#ffdb6e','center');if(scoreToast&&tick<scoreToast.until)text(scoreToast.text,640,174,20,'#ffdb6e','center');}players.forEach((p,i)=>{let x=i?770:65;let right=i===1;text(fightName(p).toUpperCase(),right?1215:65,46,30,'#fff0cc',right?'right':'left');text(mode===cinzaRewards.versus?'PLAYER '+(i+1):i===0?(arcadeAutoplay?'CPU · WATCH ARCADE':'YOU'):mode==='training'?'TRAINING DUMMY':`CPU · ${difficulty.toUpperCase()}`,right?1215:65,65,12,'#d3d6b5',right?'right':'left');rect(x,78,445,27,'#141f18');rect(x+3,81,439,21,'#6c392c');let w=439*p.hp/p.maxHp;rect(right?x+442-w:x+3,81,w,21,p.hp>30?'#e7c45d':'#e15d3b');for(let j=0;j<winsNeeded();j++){ctx.fillStyle=j<wins[i]?'#f6d76e':'#72715a';ctx.beginPath();ctx.arc(right?1204-j*21:76+j*21,121,5,0,7);ctx.fill()}if(p.id!==14&&p.id!==CINZA_ID&&p.id!==ABIMBOLA_ID&&!isProtagonist(p.id)){rect(x,601,445,12,'#15231c');rect(right?x+445-p.meter*4.45:x,601,p.meter*4.45,12,i?'#72bbc0':'#f1c457');text('AXÉ '+Math.floor(p.meter)+' / 100',right?1215:65,637,13,'#e5d8b0',right?'right':'left');}text(p.moveText,right?1215:65,581,16,'#fff1ca',right?'right':'left')});text(String(Math.ceil(timer)),640,100,70,'#fff0c7','center');text(mode==='coxa'?'STAGE '+coxaRun.stage+'/20 · ROUND '+round:mode==='track'?'ROUND '+round+' · BEST OF 7':roundLimit===1?formatLabel():`ROUND ${round} · BEST OF 5`,640,124,12,'#e4dcb5','center');text(stageNames[activeStage]+([homeStageFor(ABIMBOLA_ID),homeStageFor(CONSTANCA_ID)].includes(activeStage)?'':' · BRASIL'),640,650,13,'#fff5dd','center');if(mode==='training'){rect(28,156,260,217,'#15251ce8');text('MOVEMENT LAB',43,181,20,'#f3cf68');characterMoves[players[0].id].forEach((m,i)=>text(m.button+'  '+(m.signature||m.name),43,208+i*(players[0].id===14?20:25),15,'#efe9d1'));text(players[0].id===CONSTANCA_ID?'DOWN + B/X/Y: HIGH KICKS':players[0].id===CINZA_ID?'A / LB / RB: THREE CLEAN HITS RESTORE 4%':players[0].id===COXA_ID?'DOWN + B ONLY: TWO-LEG LOW KICK':'DOWN + A/B/X/Y: LOW KICKS',43,380,12,'#ffe08a');text('VIEW: DUMMY '+['STAND','GUARD','LOW GUARD'][trainingDummy],43,395,14,'#ffe08a');text(players[0].id===14?'HOLD VIEW + LT: RESET · RT: ARENA':'LT: RESET · RT: NEXT ARENA',43,415,14,'#ffe08a');text(fighterPlans[players[0].id].toUpperCase(),640,160,16,'#ffe08a','center');if(players[0].attack!==null)text(moveFor(players[0],players[0].attack).name,640,188,17,'#fff1cc','center');inputs.forEach((h,i)=>text(h.text,1240,180+i*25,15,i===0?'#ffdc76':'#f1ead3','right'))}}
-function render(dt){if(scene==='foundation'){drawFoundation();return;}watchExit.hidden=!['fight','pause','result','story'].includes(scene)||!arcadeAutoplay;ctx.save();if(shake>0&&scene==='fight'){ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);shake=Math.max(0,shake-dt)}drawArena();drawRoda();if(players.length&&['fight','pause'].includes(scene)){players.forEach(drawFighter);particles=particles.filter(p=>p.life>0);for(let p of particles){if(scene==='fight'){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}ctx.globalAlpha=clamp(p.life/25,0,1);rect(p.x,p.y,5,5,p.color);ctx.globalAlpha=1}hud();if(announceTime>0){drawAnnouncement()}}ctx.restore()}
+function render(dt){if(scene==='foundation'){drawFoundation();return;}watchExit.hidden=!['fight','pause','result','story'].includes(scene)||!arcadeAutoplay;ctx.save();if(shake>0&&scene==='fight'){ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);shake=Math.max(0,shake-dt)}drawArena();drawRoda();if(players.length&&['fight','pause'].includes(scene)){players.forEach(drawCombatant);particles=particles.filter(p=>p.life>0);for(let p of particles){if(scene==='fight'){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}ctx.globalAlpha=clamp(p.life/25,0,1);rect(p.x,p.y,5,5,p.color);ctx.globalAlpha=1}hud();if(announceTime>0){drawAnnouncement()}}ctx.restore()}
 let uiTick=0;let accumulator=0;function frame(now){if(typeof animationReview==='function'){animationReview(now);requestAnimationFrame(frame);return}let elapsed=Math.min(100,Math.max(0,now-last||16.6667));last=now;accumulator+=elapsed;while(accumulator>=16.6667){uiTick++;let states=pollPads();if(scene!=='pause'&&freeze<=0)tick++;update(1,states);accumulator-=16.6667}render(1);requestAnimationFrame(frame)}
 window.addEventListener('blur',()=>{if((scene==='fight'||scene==='result'||scene==='story'))togglePause('Game paused while the window is inactive.')});document.addEventListener('visibilitychange',()=>{if(document.hidden&&(scene==='fight'||scene==='result'||scene==='story'))togglePause('Game paused while the page is hidden.')});
 const motionImages=[1,2,3].map(n=>{let im=new Image();im.src='motion-'+n+'.webp'+(n===3?'?v=3.4.2':'');return im});
@@ -1066,9 +1082,16 @@ function drawGinga(p){
  ctx.save();ctx.translate(p.x,590-p.y);ctx.scale(p.dir,1);ctx.drawImage(im,...r,-160*f,-300*f,320*f,320*f);ctx.restore();
 }
 
-function showResultCard(slot,id,whiteUniform=false){
+function showResultCard(slot,player){
+ const {id,whiteUniform,trackAthlete}=player;
  const card=$('#'+slot+'portrait');
  document.querySelector('[data-track-face="'+slot+'"]')?.remove();card.style.removeProperty('display');
+ if(trackAthlete!==undefined){
+  const face=trackArt.portrait(trackAthlete);
+  face.className=card.className;face.dataset.trackFace=slot;face.setAttribute('role','img');
+  face.setAttribute('aria-label',trackTeam[trackAthlete][1]);
+  card.style.display='none';card.after(face);return;
+ }
  card.src=whiteUniform?heatherWhiteCard.src:portraitImages[id].src;
  card.alt=profiles[id].name+' fighter card';
 }
@@ -1076,17 +1099,10 @@ function boutProfile(p){
  if(mode==='track'&&p===players[1])return {...profiles[p.id],name:trackOpponent()[1],home:'Higgins Track Alumni · '+trackOpponent()[2],win:'Good bout, Jurema.',lose:'You took that one, Jurema.'};
  return profiles[p.id];
 }
-function showResults(){recordNamedBout();renderNamedRecords();scene='result';resultTime=300;show('result');let wi=matchWinner<0?0:matchWinner,li=1-wi,w=boutProfile(players[wi]),l=boutProfile(players[li]);$('#resulttitle').textContent=mode==='solo'&&wi===0&&arcadeIndex===arcadeOrder.length-1?'RODA CHAMPION':w.name.toUpperCase()+' WINS';$('#winnername').textContent=w.name;$('#winnerhome').textContent=w.home;$('#winnerquote').textContent='“'+w.win+'”';$('#losername').textContent=l.name;$('#loserhome').textContent=l.home;$('#loserquote').textContent='“'+l.lose+'”';showResultCard('winner',players[wi].id,players[wi].whiteUniform);showResultCard('loser',players[li].id,players[li].whiteUniform);
+function showResults(){recordNamedBout();renderNamedRecords();scene='result';resultTime=300;show('result');let wi=matchWinner<0?0:matchWinner,li=1-wi,w=boutProfile(players[wi]),l=boutProfile(players[li]);$('#resulttitle').textContent=mode==='solo'&&wi===0&&arcadeIndex===arcadeOrder.length-1?'RODA CHAMPION':w.name.toUpperCase()+' WINS';$('#winnername').textContent=w.name;$('#winnerhome').textContent=w.home;$('#winnerquote').textContent='“'+w.win+'”';$('#losername').textContent=l.name;$('#loserhome').textContent=l.home;$('#loserquote').textContent='“'+l.lose+'”';showResultCard('winner',players[wi]);showResultCard('loser',players[li]);
  if(mode==='solo'&&!campaignTwo&&chosen[1]===CELINA_ID){const mentorIndex=arcadeOrder.slice(0,arcadeIndex).filter(id=>id===CELINA_ID).length;const slot=wi===1?'winner':'loser';$('#'+slot+'quote').textContent='“'+celinaAdvice(mentorIndex,wi===0)+'”';const portrait=$('#'+slot+'portrait');portrait.src=CELINA_ASSET_ROOT+'wisdom-'+(1+mentorIndex%6)+'.webp';portrait.alt='Celina offers advice';resultTime=arcadeAutoplay?540:Infinity; if(!arcadeAutoplay)$('#resulttitle').textContent+=' · A TO CONTINUE';}
  if(mode!=='solo'||arcadeAutoplay)$('#roda-bout-record').textContent='';
  if(campaignTwo&&mode==='solo'&&cinzaRewards.justEarned)$('#roda-bout-record').textContent+=' · UNLOCKED: COMEDY CLUB + CAMPAIGN TWO LOCAL VERSUS';
- if(mode==='track'){
-  const slot=wi===1?'winner':'loser',card=$('#'+slot+'portrait');
-  const face=document.createElement('canvas');face.width=300;face.height=200;
-  face.className=card.className;face.dataset.trackFace=slot;face.setAttribute('role','img');
-  face.setAttribute('aria-label',trackOpponent()[1]);facePortrait(face,players[1].id);
-  card.style.display='none';card.after(face);
- }
  if(mode==='coxa')recordCoxaBout();
  $('#resume').classList.remove('hidden');$('#restart').textContent=mode==='coxa'?'RESTART COXA MODE':mode==='solo'?'RESTART ARCADE RUN':'RESTART MATCH';stopResultSound();resultSound=playSample(mode==='solo'&&wi===1?'defeat':'victory',.65);musicCommand('setVolume',[12]);if(localMusic)localMusic.volume=.15}
 function restartWatchArcade(){
