@@ -598,7 +598,8 @@ function inJump(p){return p.takeoff>0||p.y>0||p.vy!==0}
 function requestAttack(p,n,crouched=p.crouch){if(p.id===COXA_ID&&!coxaCanAttack(n,crouched))return;if(inJump(p)||p.rollTime>0||p.down>0||p.hp<=0)return;if(p.attack===null&&p.stun<=0&&p.takeoff<=0)beginAttack(p,n,crouched);else p.buffer={n,crouched:!!crouched,ttl:24}}
 function advanceAir(p,dt){if(p.y>0||p.vy){p.y+=p.vy*dt;p.vy-=(p.vy>0?.52:.76)*dt;if(p.y<=0){p.y=0;p.vy=0;p.landing=6;burst(p.x,590,'#d0b48155',5)}}}
 function updateRoll(p,input,dt){
- if(p.trackAthlete!==undefined||p.id===IDRIS_ID)return abimbola.roll(p,input,dt);
+ if(p.id===IDRIS_ID)return abimbola.roll(p,input,Math.min(p.rollTime||24,dt*.8));
+ if(p.trackAthlete!==undefined)return abimbola.roll(p,input,dt);
  if(p.id===CONSTANCA_ID){const flying=!!input?.x&&!input?.y&&p.attack===null&&p.stun<=0&&p.down<=0&&p.y===0;if(flying&&(!p.flew||tick-p.chirpAt>42)){tone(2300,.075,.022);tone(740,.055,.015,"triangle");p.chirpAt=tick;}p.flew=flying;return false;}
  if(p.id===3)return abimbola.roll(p,input,Math.min(p.rollTime||24,dt*1.25));
  if(isProtagonist(p.id)||p.id===ABIMBOLA_ID||p.id===CINZA_ID)return abimbola.roll(p,input,dt);
@@ -767,7 +768,7 @@ advanceAir(p,dt);p.x=clamp(p.x,100,1180);
 // Distance-driven phase; never translate a whole sprite with a resetting sawtooth.
 if(p.y===0&&p.attack===null&&!p.crouch){const travel=(p.x-stepStart)*p.dir;if(Math.abs(travel)>.03)p.ginga+=travel;}
 }
-function ai(p,opp,dt){if(mode==='training'){if(trainingDummy===1)return{x:-p.dir,y:0};if(trainingDummy===2)return{x:-p.dir,y:1};return{x:0,y:0}}p.aiWait-=dt;let dist=Math.abs(p.x-opp.x),normal=difficulty==='normal';let s={x:dist>155?p.dir*(normal?.85:.6):0,y:0};if(opp.attack!==null&&dist<250&&normal&&p.aiWait<20){s.x=-p.dir;s.y=moveFor(opp,opp.attack).level==='low'?1:0}if(p.aiWait<=0){p.aiWait=normal?24+Math.random()*26:55+Math.random()*65;if(dist<255&&Math.random()<(normal?.9:.65)){let n=p.id===IDRIS_ID?(p.meter>=50&&Math.random()<.15?7:Math.floor(Math.random()*6)):p.id===14?Math.floor(Math.random()*8):p.id===CELINA_ID?Math.floor(Math.random()*(p.meter>=50?8:6)):Math.floor(Math.random()*(p.id===7||p.meter>=50?6:4));requestAttack(p,n,(p.id===IDRIS_ID&&n!==7&&Math.random()<.35)||(p.id===CELINA_ID&&n<6&&Math.random()<.3)||(p.id===COXA_ID&&n===1&&Math.random()<.35))}else if(dist<160)s.x=-p.dir}return s}
+function ai(p,opp,dt){if(mode==='training'){if(trainingDummy===1)return{x:-p.dir,y:0};if(trainingDummy===2)return{x:-p.dir,y:1};return{x:0,y:0}}p.aiWait-=dt;let dist=Math.abs(p.x-opp.x),normal=difficulty==='normal';let s={x:dist>155?p.dir*(normal?.85:.6):0,y:0};if(p.id===IDRIS_ID&&dist<=195)s.x=0;if(opp.attack!==null&&dist<250&&normal&&p.aiWait<20){s.x=-p.dir;s.y=moveFor(opp,opp.attack).level==='low'?1:0}if(p.aiWait<=0){p.aiWait=normal?24+Math.random()*26:55+Math.random()*65;if(dist<255&&Math.random()<(normal?.9:.65)){let n=p.id===IDRIS_ID?(p.meter>=50&&Math.random()<.15?7:Math.floor(Math.random()*6)):p.id===14?Math.floor(Math.random()*8):p.id===CELINA_ID?Math.floor(Math.random()*(p.meter>=50?8:6)):Math.floor(Math.random()*(p.id===7||p.meter>=50?6:4));requestAttack(p,n,(p.id===IDRIS_ID&&n!==7&&Math.random()<.35)||(p.id===CELINA_ID&&n<6&&Math.random()<.3)||(p.id===COXA_ID&&n===1&&Math.random()<.35))}else if(dist<160)s.x=-p.dir}return s}
 // The prologue borrows the arena. The player's chosen campaign fighter and route stay intact.
 function startFearDuel(){
  startRound();
