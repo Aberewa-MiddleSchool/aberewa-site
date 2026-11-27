@@ -61,12 +61,13 @@ function stageLayout(){
     view:Math.floor(random()*4),rearFirst:random()>.5};
 }
 function travel(){return stage%2?1:-1}
-function start(){stageReais=0;moveClock=0;held.clear();layout=stageLayout();sequence=null;airTime=poseTime=0;midpoint=false;arrowTime=0;x=90;face=1;hp=100;energy=100;camera=0;enemies=[];fx=[];wave=0;gate=layout.first;length=1580+layout.span+((stage-1)%5)*140;
+function start(){stageReais=0;moveClock=0;held.clear();layout=stageLayout();sequence=null;airTime=poseTime=0;midpoint=false;arrowTime=0;x=90;face=1;hp=100;energy=100;camera=0;enemies=[];fx=[];wave=0;gate=layout.first;length=waveCount()*1150+layout.span+((stage-1)%5)*140;
 items=stage%5===1&&!save.moves.includes(Math.floor((stage-1)/5))?[{x:layout.emblem,id:Math.floor((stage-1)/5)}]:[];action='';timer=cool=inv=chainAge=0;chain='';lastHit=-10;kills=comboHits=0;play();say(title()+' · '+(travel()>0?'Go right →':'← Go left'))}
 let chainAge=0;
 function say(s){tip=s;tipTime=2.2}
-function spawn(){wave++;const count=2+(stage>10?1:0)+(wave===3&&stage>30?1:0);
-for(let i=0;i<count;i++){let boss=wave===3&&stage%5===0&&i===count-1,kind=(stage+wave+i+layout.enemy)%3;let life=boss?120+stage:24+kind*7+Math.floor(stage*.5);const side=(i%2===0?1:-1)*(layout.rearFirst?-1:1);const entry=Math.max(12,Math.min(length-12,x+side*(198+layout.space+i*31)));enemies.push({x:entry,hp:life,max:life,boss,kind,wind:0,beat:i+wave,move:kind,kickTime:0,rest:.4+i*.3,stun:0,dir:-side})}say(wave===3&&stage%5===0?"District boss · "+bossProfile()[0]:"Dealers closing in · both sides")}
+function waveCount(){return 8+Math.floor((stage-1)/10)}
+function spawn(){wave++;const count=2+(stage>10?1:0)+(wave===waveCount()&&stage>30?1:0);
+for(let i=0;i<count;i++){let boss=wave===waveCount()&&stage%5===0&&i===count-1,kind=(stage+wave+i+layout.enemy)%3;let life=boss?120+stage:24+kind*7+Math.floor(stage*.5);const side=(i%2===0?1:-1)*(layout.rearFirst?-1:1);const entry=Math.max(12,Math.min(length-12,x+side*(198+layout.space+i*31)));enemies.push({x:entry,hp:life,max:life,boss,kind,wind:0,beat:i+wave,move:kind,kickTime:0,rest:.4+i*.3,stun:0,dir:-side})}say(wave===waveCount()&&stage%5===0?"District boss · "+bossProfile()[0]:"Dealers closing in · both sides")}
 function burst(px,y,color,n){y+=ground(px)-373;for(let i=0;i<n;i++)fx.push({x:px,y,vx:Math.cos(i*2.4)*120,vy:-60+Math.sin(i*2.4)*90,t:.45,color})}
 const starters = {
   kick:  { name:'Chapa dupla', keys:'K', beats:['straight','rising'] },
@@ -114,7 +115,7 @@ function advanceAttack(dt){
     if(e.hp<=0){kills++;stageReais+=e.boss?250:25;}
   }
   enemies=enemies.filter(e=>e.hp>0);
-  if(hadEnemies&&!enemies.length&&wave<3)gate=wave===1?Math.round(length*layout.middle):length-layout.final;
+  if(hadEnemies&&!enemies.length&&wave<waveCount())gate=layout.first+wave*(length-layout.final-layout.first)/(waveCount()-1);
   if(last)sequence=null;else{sequence.index++;sequence.wait=.23}
 }
 function step(dt){clock+=dt;if(state!=='play')return;
@@ -123,7 +124,7 @@ arrowTime=Math.max(0,arrowTime-dt);let move=travel()*(Number(held.has('right'))-
 x=Math.max(25,Math.min(enemies.length?gate+40:length,x+dt*stride(x,move,held.has('sprint')?385:235)));
 if(!midpoint&&x>=length*.5){midpoint=true;arrowTime=3.2;midpointBeep()}
 for(const it of items)if(!it.got&&Math.abs(x-it.x)<37){it.got=true;save.moves.push(it.id);persist();say('Collected '+combinations[it.id].join(' · '));burst(x,330,gold,20)}
-if(!enemies.length&&wave<3&&x>=gate-180)spawn();
+if(!enemies.length&&wave<waveCount()&&x>=gate-180)spawn();
 for(const e of enemies){let dx=x-e.x;e.dir=Math.sign(dx)||1;e.stun-=dt;e.rest-=dt;e.kickTime=Math.max(0,e.kickTime-dt);if(e.stun>0)continue;
 if(e.wind>0){e.wind-=dt;if(e.wind<=0){sfx('swing');e.kickTime=.48;e.hitPending=true;e.rest=mode==='Easy'?1.3:.9}}
 else if(e.kickTime>0){
@@ -138,7 +139,7 @@ else if(Math.abs(dx)>50)e.x+=stride(e.x,e.dir,64+e.kind*11+stage*.4)*dt;
 else if(e.rest<=0){e.move=(e.move+1)%moveset.length;e.wind=e.move===1?.78:.56}}
 
 if(hp<=0){save.deaths=(Number(save.deaths)||0)+1;persist();vocalize(true);panel('lost','STAGE '+stage,'Regroup',playerName+' · '+mode+' · Deaths: '+save.deaths+'. Jump over low sweeps or move out of kick range.','Retry stage');return}
-if(x>=length-2&&wave===3&&!enemies.length){save.reais=(Number(save.reais)||0)+stageReais;stageReais=0;save.stage=Math.min(50,stage+1);save.done=stage===50;persist();panel(stage===50?'won':'clear','STAGE '+stage+' / 50',stage===50?'Network dismantled':'Street cleared',stage===50?'The last boss falls, and the drug network loses its hold on all ten districts. At sunrise, Guardiã Verde returns to her classroom.':(stage%5===0?bossProfile()[0]+' defeated. ':'')+kills+' dealers stopped · '+comboHits+' combinations landed. Next stop: '+districts[Math.floor(stage/5)]+'.',stage===50?'Title screen':'Next stage')}
+if(x>=length-2&&wave===waveCount()&&!enemies.length){save.reais=(Number(save.reais)||0)+stageReais;stageReais=0;save.stage=Math.min(50,stage+1);save.done=stage===50;persist();panel(stage===50?'won':'clear','STAGE '+stage+' / 50',stage===50?'Network dismantled':'Street cleared',stage===50?'The last boss falls, and the drug network loses its hold on all ten districts. At sunrise, Guardiã Verde returns to her classroom.':(stage%5===0?bossProfile()[0]+' defeated. ':'')+kills+' dealers stopped · '+comboHits+' combinations landed. Next stop: '+districts[Math.floor(stage/5)]+'.',stage===50?'Title screen':'Next stage')}
 camera=Math.max(0,Math.min(length-740,x-310));
 for(const p of fx){p.t-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=dt*260}fx=fx.filter(p=>p.t>0)}
 function rect(x,y,w,h,c){g.fillStyle=c;g.fillRect(x,y,w,h)}
@@ -170,7 +171,7 @@ function networkMark(sx,sy,c){
   poly('#252a36',sx+1,sy-6,sx-4,sy+2,sx,sy+1,sx-1,sy+6,sx+5,sy-2,sx+1,sy-1);
 }
 function streetStory(district){
-  const clear=wave===3&&enemies.length===0;
+  const clear=wave===waveCount()&&enemies.length===0;
   if(stage===1||stage===50){
     const world=stage===1?100:length-104,sx=world-camera,y=ground(world)-18;
     const lit=stage===1||clear;
@@ -210,7 +211,7 @@ function scene() {
   if (panorama.complete && panorama.naturalWidth) {
     const w = panorama.naturalWidth / 2, h = panorama.naturalHeight / 2;
     g.drawImage(panorama, (view % 2) * w, Math.floor(view / 2) * h, w, h,
-      -camera * .15, 0, 1240, 480);
+      -275 * camera / Math.max(1,length-740), 0, 1240, 480);
   }
   // Elevated traffic glides through the skyline behind the combat lane.
   for(let i=0;i<4;i++){
