@@ -349,7 +349,10 @@ $('#quit').textContent='RETURN TO MAIN MENU';$('#backmenu').textContent='RETURN 
 $$('[data-rounds]').forEach(b=>b.onclick=()=>setRounds(b.dataset.rounds));
 $$('[data-mode]').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));$$('[data-diff]').forEach(b=>b.onclick=()=>setDifficulty(b.dataset.diff));
 function show(id){if(id)rodaAnnouncer.stop();['title','menu','select','pause','setup','result','story','ending','score','coxa-complete','track-complete'].forEach(n=>$('#'+n)?.classList.toggle('hidden',n!==id))}
-function connected(){return [...(navigator.getGamepads?.()||[])].filter(p=>p&&p.connected)}
+function connected(){
+ try{return Array.from(navigator.getGamepads?.()||[]).filter(p=>p?.connected);}
+ catch{return [];}
+}
 function choose(){stopResultSound();if(!loaded){$('#padhelp').textContent='Loading fighter artwork…';return}if(mode==='track'){
  if(typeof trackArt==='undefined'||!trackArt.ready()){
   $('#padhelp').textContent=typeof trackArt==='undefined'||trackArt.failed()
@@ -536,17 +539,28 @@ cinzaRewards.restore();
 const arenaImages=['brazil-arenas.webp','brazil-arenas-2.webp','brazil-arenas-3.webp'].map(src=>{let i=new Image();i.src=src;return i});const musicianImage=new Image();musicianImage.src='roda-musicians.webp';const crowdImage=new Image();crowdImage.src='roda-crowd-v22.webp';
 
 let navAt=0;
+let missingPadTicks=0;
+const controllerGraceTicks=12;
 function pollPads(){
  lastPads=connected();
- if(scene==='setup'){calibratePads(lastPads);return [];}
  const versus=mode===cinzaRewards.versus;
- const states=versus?cinzaRewards.pads().map(p=>p?padState(p):null):lastPads.map(padState);
- if(versus&&['fight','result','story'].includes(scene)&&(!states[0]||!states[1])){togglePause('Reconnect both controllers, then press Start.');return states;}
- if(scene==='constanca-film'){if(states[0]?.edge[1])familyFilm.close();return states;}
- if(scene==='rivalryfilm'){if(states[0]?.edge[1])document.querySelector('.screen video[data-rivalry]')?.nextElementSibling?.click();return states;}
+ const pads=versus?cinzaRewards.pads(lastPads):lastPads;
  $('#connection').textContent=lastPads.length?`● ${lastPads.length} CONTROLLER${lastPads.length>1?'S':''} CONNECTED`:'● CONNECT A CONTROLLER';
  $('#status').textContent=arcadeAutoplay?'CPU CONTROL · NO CONTROLLER REQUIRED':lastPads.length?'CONTROLLER READY':'AWAITING CONTROLLER';
- if(!arcadeAutoplay&&!isMenuPrologue()&&['fight','result','story'].includes(scene)&&!lastPads.length){togglePause('Controller disconnected. Reconnect, then press Start.');return states;}
+ const needsController=!arcadeAutoplay&&!isMenuPrologue()&&['fight','result','story'].includes(scene);
+ const controllerMissing=versus?(!pads[0]||!pads[1]):!pads[0];
+ if(needsController&&controllerMissing){
+  // A short Gamepad API dropout should suspend the bout without opening the pause menu.
+  if(++missingPadTicks>=controllerGraceTicks){
+   togglePause(versus?'Reconnect both controllers, then press Start.':'Controller disconnected. Reconnect, then press Start.');
+  }
+  return null;
+ }
+ missingPadTicks=0;
+ if(scene==='setup'){calibratePads(lastPads);return [];}
+ const states=pads.map(p=>p?padState(p):null);
+ if(scene==='constanca-film'){if(states[0]?.edge[1])familyFilm.close();return states;}
+ if(scene==='rivalryfilm'){if(states[0]?.edge[1])document.querySelector('.screen video[data-rivalry]')?.nextElementSibling?.click();return states;}
  const s=versus&&scene==='select'?states[pickStage]:states[0]||(versus&&scene==='pause'?states[1]:null);if(!s)return states;
  if(scene==='menu'||scene==='pause'){
   if(s.edge[10])toggleGameMusic();
@@ -1038,7 +1052,28 @@ function drawAttack(p,t){
 
 function hud(){if(mode==='solo'||mode==='coxa'){text('SCORE '+arcadeScore.total.toLocaleString(),640,26,20,'#ffdb6e','center');if(scoreToast&&tick<scoreToast.until)text(scoreToast.text,640,174,20,'#ffdb6e','center');}players.forEach((p,i)=>{let x=i?770:65;let right=i===1;text(fightName(p).toUpperCase(),right?1215:65,46,30,'#fff0cc',right?'right':'left');text(mode===cinzaRewards.versus?'PLAYER '+(i+1):i===0?(arcadeAutoplay?'CPU · WATCH ARCADE':'YOU'):mode==='training'?'TRAINING DUMMY':`CPU · ${difficulty.toUpperCase()}`,right?1215:65,65,12,'#d3d6b5',right?'right':'left');rect(x,78,445,27,'#141f18');rect(x+3,81,439,21,'#6c392c');let w=439*p.hp/p.maxHp;rect(right?x+442-w:x+3,81,w,21,p.hp>30?'#e7c45d':'#e15d3b');for(let j=0;j<winsNeeded();j++){ctx.fillStyle=j<wins[i]?'#f6d76e':'#72715a';ctx.beginPath();ctx.arc(right?1204-j*21:76+j*21,121,5,0,7);ctx.fill()}if(p.id!==14&&p.id!==CINZA_ID&&p.id!==ABIMBOLA_ID&&!isProtagonist(p.id)){rect(x,601,445,12,'#15231c');rect(right?x+445-p.meter*4.45:x,601,p.meter*4.45,12,i?'#72bbc0':'#f1c457');text('AXÉ '+Math.floor(p.meter)+' / 100',right?1215:65,637,13,'#e5d8b0',right?'right':'left');}text(p.moveText,right?1215:65,581,16,'#fff1ca',right?'right':'left')});if(activeStage===idrisStage)rect(580,45,120,86,'#21172ce6');text(String(Math.ceil(timer)),640,100,70,'#fff0c7','center');text(mode==='coxa'?'STAGE '+coxaRun.stage+'/20 · ROUND '+round:mode==='track'?'ROUND '+round+' · BEST OF 7':roundLimit===1?formatLabel():`ROUND ${round} · BEST OF 5`,640,124,12,'#e4dcb5','center');text(stageNames[activeStage]+([idrisStage,homeStageFor(ABIMBOLA_ID),homeStageFor(CONSTANCA_ID)].includes(activeStage)?'':' · BRASIL'),640,650,13,'#fff5dd','center');if(mode==='training'){rect(28,156,260,217,'#15251ce8');text('MOVEMENT LAB',43,181,20,'#f3cf68');characterMoves[players[0].id].forEach((m,i)=>text(m.button+'  '+(m.signature||m.name),43,208+i*(players[0].id===14?20:25),15,'#efe9d1'));text(players[0].id===CONSTANCA_ID?'DOWN + B/X/Y: HIGH KICKS':players[0].id===CINZA_ID?'A / LB / RB: THREE CLEAN HITS RESTORE 4%':players[0].id===COXA_ID?'DOWN + B ONLY: TWO-LEG LOW KICK':'DOWN + A/B/X/Y: LOW KICKS',43,380,12,'#ffe08a');text('VIEW: DUMMY '+['STAND','GUARD','LOW GUARD'][trainingDummy],43,395,14,'#ffe08a');text(players[0].id===14?'HOLD VIEW + LT: RESET · RT: ARENA':'LT: RESET · RT: NEXT ARENA',43,415,14,'#ffe08a');text(fighterPlans[players[0].id].toUpperCase(),640,160,16,'#ffe08a','center');if(players[0].attack!==null)text(moveFor(players[0],players[0].attack).name,640,188,17,'#fff1cc','center');inputs.forEach((h,i)=>text(h.text,1240,180+i*25,15,i===0?'#ffdc76':'#f1ead3','right'))}}
 function render(dt){if(scene==='foundation'){drawFoundation();return;}watchExit.hidden=!['fight','pause','result','story'].includes(scene)||!arcadeAutoplay;ctx.save();if(shake>0&&scene==='fight'){ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);shake=Math.max(0,shake-dt)}drawArena();drawRoda();if(players.length&&['fight','pause'].includes(scene)){players.forEach(drawCombatant);particles=particles.filter(p=>p.life>0);for(let p of particles){if(scene==='fight'){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}ctx.globalAlpha=clamp(p.life/25,0,1);rect(p.x,p.y,5,5,p.color);ctx.globalAlpha=1}hud();if(announceTime>0){drawAnnouncement()}}ctx.restore()}
-let uiTick=0;let accumulator=0;function frame(now){if(typeof animationReview==='function'){animationReview(now);requestAnimationFrame(frame);return}let elapsed=Math.min(100,Math.max(0,now-last||16.6667));last=now;accumulator+=elapsed;while(accumulator>=16.6667){uiTick++;let states=pollPads();if(scene!=='pause'&&freeze<=0)tick++;update(1,states);accumulator-=16.6667}render(1);requestAnimationFrame(frame)}
+let uiTick=0, accumulator=0;
+function frame(now){
+ if(typeof animationReview==='function'){
+  animationReview(now);
+  requestAnimationFrame(frame);
+  return;
+ }
+ const elapsed=Math.min(100,Math.max(0,now-last||16.6667));
+ last=now;
+ accumulator+=elapsed;
+ while(accumulator>=16.6667){
+  uiTick++;
+  const states=pollPads();
+  if(states!==null){
+   if(scene!=='pause'&&freeze<=0)tick++;
+   update(1,states);
+  }
+  accumulator-=16.6667;
+ }
+ render(1);
+ requestAnimationFrame(frame);
+}
 window.addEventListener('blur',()=>{if((scene==='fight'||scene==='result'||scene==='story'))togglePause('Game paused while the window is inactive.')});document.addEventListener('visibilitychange',()=>{if(document.hidden&&(scene==='fight'||scene==='result'||scene==='story'))togglePause('Game paused while the page is hidden.')});
 const motionImages=[1,2,3].map(n=>{let im=new Image();im.src='motion-'+n+'.webp'+(n===3?'?v=3.4.2':'');return im});
 const gingaImages=[1,2,3,4].map(n=>{let im=new Image();im.src='ginga-'+n+'.webp';return im});

@@ -45,8 +45,7 @@ const cinzaRewards = (() => {
     seats.length=0;
     choose();
   }
-  function pads(){
-    const pads=connected();
+  function pads(pads=connected()){
     if(!seats.length)return pads;
     const active=pads.slice();
     return seats.map(index=>{

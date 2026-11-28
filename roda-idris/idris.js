@@ -18,6 +18,9 @@ const idris = (() => {
     'chapa-de-frente', 'meia-lua-baixa', 'martelo-de-solo', 'armada', 'chibata', 'knockdown',
     'esquiva', 'chapa-de-costas-baixa', 'rasteira-baixa'
   ];
+  // These authored poses share a wide stance and the same ground line.
+  const idleFrames = [0, 2, 5, 2];
+  const idleOffsets = { 0: 0, 2: -5, 5: -3 };
   const costumes = ['', '-alternate'].map(suffix =>
     Object.fromEntries(clips.map(clip => [clip, art(clip + suffix + '.webp')]))
   );
@@ -129,10 +132,16 @@ const idris = (() => {
       clip = p.block ? 'negativa' : 'esquiva';
       if (p.idrisGuardPose !== clip) p.idrisGuardStarted = tick;
       frame = Math.min(3, Math.floor((tick - p.idrisGuardStarted) / 4));
-    } else if (p.block) {
-      frame = 0;
     }
     p.idrisGuardPose = clip;
+    let offset = 0;
+    if (clip === 'ginga' && !p.block && p.attack === null) {
+      p.idrisIdleStarted ??= tick;
+      frame = idleFrames[Math.floor((tick - p.idrisIdleStarted) / 14) % idleFrames.length];
+      offset = idleOffsets[frame];
+    } else {
+      p.idrisIdleStarted = null;
+    }
     const image = costumes[p.idrisAlternate ? 1 : 0][clip];
     frame = clamp(frame, 0, 5);
     ctx.save();
@@ -142,26 +151,8 @@ const idris = (() => {
     ctx.fill();
     ctx.translate(p.x, 590 - p.y);
     ctx.scale(face, 1);
-    if (clip === 'ginga' && !p.block) {
-      // Keep both feet fixed in the planted first pose; deform only above the ankles.
-      const phase = tick * Math.PI / 66;
-      const sway = Math.sin(phase);
-      const breath = (1 - Math.cos(phase * 2)) * .5;
-      const weight = y => {
-        const t = Math.max(0, Math.min(1, (420 - y) / 250));
-        return t * t * (3 - 2 * t);
-      };
-      const dy = y => y + weight(y) * (3.5 * breath + 2 * sway);
-      for (let y = 0; y < 420; y += 4) {
-        const h = Math.min(4, 420 - y);
-        const top = dy(y), bottom = dy(y + h);
-        ctx.drawImage(image, 0, y, 512, h,
-          -256 + 6 * sway * weight(y + h / 2), -476 + top, 512, bottom - top);
-      }
-      ctx.drawImage(image, 0, 420, 512, 92, -256, -56, 512, 92);
-    } else {
-      ctx.drawImage(image, frame % 3 * 512, Math.floor(frame / 3) * 512, 512, 512, -256, -476, 512, 512);
-    }
+    ctx.drawImage(image, frame % 3 * 512, Math.floor(frame / 3) * 512,
+      512, 512, -256 + offset, -476, 512, 512);
     ctx.restore();
   }
   function face(canvas) {
