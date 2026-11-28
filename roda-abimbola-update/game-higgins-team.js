@@ -385,11 +385,15 @@ function choose(){stopResultSound();if(!loaded){$('#padhelp').textContent='Loadi
  }
  trackIndex=0;trackWins=0;startTrackBout();return}if(mode==='coxa'){beginCoxaRun();return}if(mode==='watcharcade'){mode='solo';arcadeAutoplay=true;}scene='select';pickStage=0;pick=mode==='training'?CONSTANCA_ID:selectionRoster().includes(chosen[0])?chosen[0]:selectionRoster()[0];show('select');updatePick()}
 $('#choose').onclick=choose;$('#backmenu').onclick=()=>{if(cancelPauseSelection())return;if(mode===cinzaRewards.versus)setMode('cinza');scene='menu';show('menu')};$('#confirm').onclick=confirmPick;
-let heatherWhiteSelected=false;
+let heatherWhiteSelected=false, luaPinkSelected=false;
 const outfitButton=document.createElement('button');
 outfitButton.id='heather-outfit';outfitButton.type='button';outfitButton.hidden=true;
 $('#confirm').parentElement?.insertBefore(outfitButton,$('#confirm'));
 function toggleFighterOutfit(){
+ if(pick===LUA_ID&&luaIaraArt.canSelectPink()){
+  luaPinkSelected=!luaPinkSelected;
+  updatePick();return;
+ }
  if(pick===CINZA_ID){cinzaArt.cycleCostume();updatePick();return;}
  if(pick===COXA_ID){coxaCycleOutfit();updatePick();return;}
  if(pick!==HEATHER_ID)return;
@@ -398,11 +402,12 @@ function toggleFighterOutfit(){
 }
 outfitButton.onclick=toggleFighterOutfit;
 function updatePick(){
- outfitButton.hidden=pick!==HEATHER_ID&&pick!==COXA_ID&&pick!==CINZA_ID;
- outfitButton.textContent=pick===CINZA_ID?'Y · OUTFIT: '+cinzaArt.outfitName.toUpperCase():pick===COXA_ID?'Y · OUTFIT: '+coxaOutfitName().toUpperCase()+' ('+(coxaUnlocked+1)+'/'+(COXA_COLORS.length+1)+' AVAILABLE)'+(coxaUnlocked<COXA_COLORS.length?' · ONE COLOR PER 20–0 RUN':''):'Y · OUTFIT: '+(heatherWhiteSelected?'ALL WHITE':'OAKLAND');
+ const canSelectLuaOutfit=pick===LUA_ID&&luaIaraArt.canSelectPink();
+ outfitButton.hidden=!canSelectLuaOutfit&&pick!==HEATHER_ID&&pick!==COXA_ID&&pick!==CINZA_ID;
+ outfitButton.textContent=canSelectLuaOutfit?'Y · OUTFIT: '+(luaPinkSelected?'PINK RANGER':'BELÉM'):pick===CINZA_ID?'Y · OUTFIT: '+cinzaArt.outfitName.toUpperCase():pick===COXA_ID?'Y · OUTFIT: '+coxaOutfitName().toUpperCase()+' ('+(coxaUnlocked+1)+'/'+(COXA_COLORS.length+1)+' AVAILABLE)'+(coxaUnlocked<COXA_COLORS.length?' · ONE COLOR PER 20–0 RUN':''):'Y · OUTFIT: '+(heatherWhiteSelected?'ALL WHITE':'OAKLAND');
  if(pick===CINZA_ID)outfitButton.removeAttribute('aria-pressed');
- else outfitButton.setAttribute('aria-pressed',String(pick===COXA_ID?coxaSelected!==0:heatherWhiteSelected));
- if(pick===HEATHER_ID||pick===CINZA_ID||pick===COXA_ID){
+ else outfitButton.setAttribute('aria-pressed',String(canSelectLuaOutfit?luaPinkSelected:pick===COXA_ID?coxaSelected!==0:heatherWhiteSelected));
+ if(canSelectLuaOutfit||pick===HEATHER_ID||pick===CINZA_ID||pick===COXA_ID){
   const preview=$$('.fightercard')[playableIds.indexOf(pick)]?.querySelector('canvas');
   if(preview)facePortrait(preview,pick);
  }
@@ -423,12 +428,14 @@ function updatePick(){
 }
 function confirmPick(){
  if(!['solo','training',cinzaRewards.versus].includes(mode)||!Number.isInteger(pick)||!selectionRoster().includes(pick))return;
- if(mode===cinzaRewards.versus){cinzaRewards.pickFighter();if(scene==='fight'||(scene==='story'&&storyReturn==='idris-fight')){pauseSelection=null;suddenDeath=false;}return;}
+ if(mode===cinzaRewards.versus){cinzaRewards.pickFighter();if(scene==='fight'||(scene==='story'&&['idris-fight','lua-iara-fight'].includes(storyReturn))){pauseSelection=null;suddenDeath=false;}return;}
  if(!connected().length&&!arcadeAutoplay){$('#picklabel').textContent='CONNECT A CONTROLLER · PRESS A BUTTON TO ACTIVATE';return;}
  if(pauseSelection&&mode==='solo'){
   chosen[0]=pick;pauseSelection=null;wins=[0,0];round=1;suddenDeath=false;
   if(namedArcadeRun){namedArcadeRun.route[arcadeIndex].fighter=profiles[pick].name;persistArcadeRun();}
-  startRound();return;
+  startRound();
+  if(luaIaraStory.isMatch())luaIaraStory.open(false);
+  return;
  }
  if(mode==='solo'&&!arcadeAutoplay&&!arcadeNameInput().value.trim()){$('#picklabel').textContent='ENTER YOUR NAME TO START ARCADE';arcadeNameInput().focus();return;}
  if(mode==='training')trainingBout=0;
@@ -456,6 +463,7 @@ function startRound(newBout=round===1){
  if(mode==='track')players[1].trackAthlete=trackIndex;
  if(chosen[0]===CINZA_ID)players[0].cinzaCostume=cinzaArt.selected;
  players.forEach(p=>{if(p.id===COXA_ID)p.coxaColor=coxaSelected;});
+ players[0].luaPink=chosen[0]===LUA_ID&&luaPinkSelected;
  players[0].whiteUniform=chosen[0]===HEATHER_ID&&heatherWhiteSelected;
  players[1].whiteUniform=chosen[0]===HEATHER_ID&&chosen[1]===HEATHER_ID&&!heatherWhiteSelected;
  if(mode===cinzaRewards.versus)players.forEach((p,side)=>Object.assign(p,cinzaRewards.kit[side]));
@@ -464,7 +472,10 @@ function startRound(newBout=round===1){
  if(newBout&&mode!=='training')rodaAnnouncer.mark(fightName(players[0]),fightName(players[1]));
  introDuration=mode==='training'?60:round===1?270:120;announceTime=introDuration;
  $('#sessionlabel').textContent=(mode==='track'?trackLabel()+' · '+trackOpponent()[2]:mode===cinzaRewards.versus?'CAMPAIGN TWO · LOCAL VERSUS · BOUT '+(cinzaRewards.bout+1):mode==='coxa'?'COXA MODE · STAGE '+coxaRun.stage+'/20 · '+difficulty.toUpperCase():mode==='training'?'TRAINING':(arcadeAutoplay?'WATCH ARCADE ':'ARCADE ')+(arcadeIndex+1)+'/'+arcadeOrder.length+' · '+difficulty.toUpperCase())+' · '+stageNames[activeStage];
- if(newBout&&mode===cinzaRewards.versus&&chosen.includes(IDRIS_ID))idris.comic(false);
+ if(newBout&&mode===cinzaRewards.versus){
+  if(luaIaraStory.isMatch())luaIaraStory.open(false);
+  else if(chosen.includes(IDRIS_ID))idris.comic(false);
+ }
 }
 function isMenuPrologue(targetScene=scene){return targetScene==='story'&&typeof storyPrologue!=='undefined'&&storyPrologue&&storyReturn==='menu';}
 function togglePause(reason){
@@ -622,6 +633,7 @@ function pollPads(){
   if(s.edge[9]){returnToMenu();return states}if(s.edge[0])saveArcadeName();if(s.edge[1])openComicEnding();
  }else if(scene==='story'){
   if(s.edge[9])togglePause();else if(s.edge[0])advanceStory();
+  else if(['lua-iara-fight','lua-iara-result'].includes(storyReturn)&&Math.abs(s.y)>.5)$('#story').scrollTop+=Math.sign(s.y)*7;
  }else if(scene==='pause'){
   if(s.edge[9])togglePause();
   else{const actions=pauseActions();if(Math.abs(s.y)>.5){pauseFocus=(pauseFocus+(s.y>0?1:actions.length-1))%actions.length;paintPause();navAt=uiTick+15;}if(s.edge[0])actions[pauseFocus].click();}
@@ -965,7 +977,7 @@ function drawCombatant(p){
   trackArt.draw(p);
   return;
  }
- drawFighter(p);
+ luaIaraArt.draw(p,drawFighter);
 }
 function drawFighter(p){
  if(p.id===CONSTANCA_ID){constanca.draw(p);return;}
@@ -1145,7 +1157,7 @@ const abimbolaArtworkReady=abimbola.load().then(()=>true).catch(error=>{
  console.error('Abimbola artwork unavailable:',error);
  return false;
 });
-Promise.all([...mareAtlasImages,celinaImage,celinaMovement,celinaCard,heatherArt,heatherWhiteArt,groundRollArt,meilinRetreatArt,retreatArt,...Object.values(gingaImagesV26),...Object.values(defeatImages),...Object.values(redesignImages),...privateArenaImages,...normalSequenceImages,...specialImages,...Object.values(leanMestreImages),...bencaoImages,...turnImages,highHitImage,...motionImages,...atlases,bossImage,...reactionImages,...transitionImages,bossExtra,...arenaImages,musicianImage].map(loadFighterImage)).then(async()=>{if(!(await coxaArtworkReady)){delete roster[COXA_ID];const i=playableIds.indexOf(COXA_ID);if(i>=0)playableIds.splice(i,1);const m=playModes.indexOf('coxa');if(m>=0)playModes.splice(m,1);document.querySelector('[data-mode="coxa"]')?.remove();if(mode==='coxa')setMode('solo');}if(!(await abimbolaArtworkReady)){delete roster[ABIMBOLA_ID];playableIds.splice(playableIds.indexOf(ABIMBOLA_ID),1);}if(!(await cinzaArt.ready)){delete roster[CINZA_ID];playableIds.splice(playableIds.indexOf(CINZA_ID),1);playModes.splice(playModes.indexOf("cinza"),1);document.querySelector('[data-mode="cinza"]')?.remove();if(campaignTwo)setMode("solo");}if(await idris.ready)idris.install();Object.freeze(playableIds);loaded=true;roster.forEach((f,i)=>{let b=document.createElement('button');b.className='fightercard';b.setAttribute('aria-label',f[0]);let c=document.createElement('canvas');c.width=300;c.height=200;b.append(c);facePortrait(c,i);let span=document.createElement('span');span.textContent=f[0].toUpperCase();b.append(span);b.onclick=()=>{pick=i;updatePick()};$('#roster').append(b)});rosterBuilt=true;updatePick()}).catch(error=>{console.error('RODA artwork or selection:',error);$('#padhelp').textContent='Could not prepare the roster: '+error.message;});
+Promise.all([...mareAtlasImages,celinaImage,celinaMovement,celinaCard,heatherArt,heatherWhiteArt,groundRollArt,meilinRetreatArt,retreatArt,...Object.values(gingaImagesV26),...Object.values(defeatImages),...Object.values(redesignImages),...privateArenaImages,...normalSequenceImages,...specialImages,...Object.values(leanMestreImages),...bencaoImages,...turnImages,highHitImage,...motionImages,...atlases,bossImage,...reactionImages,...transitionImages,bossExtra,...arenaImages,musicianImage].map(loadFighterImage)).then(async()=>{if(!(await coxaArtworkReady)){delete roster[COXA_ID];const i=playableIds.indexOf(COXA_ID);if(i>=0)playableIds.splice(i,1);const m=playModes.indexOf('coxa');if(m>=0)playModes.splice(m,1);document.querySelector('[data-mode="coxa"]')?.remove();if(mode==='coxa')setMode('solo');}if(!(await abimbolaArtworkReady)){delete roster[ABIMBOLA_ID];playableIds.splice(playableIds.indexOf(ABIMBOLA_ID),1);}if(!(await cinzaArt.ready)){delete roster[CINZA_ID];playableIds.splice(playableIds.indexOf(CINZA_ID),1);playModes.splice(playModes.indexOf("cinza"),1);document.querySelector('[data-mode="cinza"]')?.remove();if(campaignTwo)setMode("solo");}if(await idris.ready)idris.install();await luaIaraArt.ready;for(const id of [LUA_ID,5])portraitImages[id]=luaIaraArt.portrait(id)||portraitImages[id];Object.freeze(playableIds);loaded=true;roster.forEach((f,i)=>{let b=document.createElement('button');b.className='fightercard';b.setAttribute('aria-label',f[0]);let c=document.createElement('canvas');c.width=300;c.height=200;b.append(c);facePortrait(c,i);let span=document.createElement('span');span.textContent=f[0].toUpperCase();b.append(span);b.onclick=()=>{pick=i;updatePick()};$('#roster').append(b)});rosterBuilt=true;updatePick()}).catch(error=>{console.error('RODA artwork or selection:',error);$('#padhelp').textContent='Could not prepare the roster: '+error.message;});
 buildStage();requestAnimationFrame(frame);
 
 function drawArena(){
@@ -1229,7 +1241,7 @@ function showResultCard(slot,player){
   face.setAttribute('aria-label',trackTeam[trackAthlete][1]);
   card.style.display='none';card.after(face);return;
  }
- card.src=whiteUniform?heatherWhiteCard.src:portraitImages[id].src;
+ card.src=whiteUniform?heatherWhiteCard.src:(luaIaraArt.portrait(id,player.luaPink)||portraitImages[id]).src;
  card.alt=profiles[id].name+' fighter card';
 }
 function boutProfile(p){
@@ -1280,6 +1292,7 @@ heatherWhiteCard.src='portraits/heather-white.webp';
 // Each source card has different framing. Coordinates refer to a 152 × 208 thumbnail.
 const selectFaceBounds={"2":[76,37,39],"0": [75, 40, 41], "1": [76, 38, 41], "3": [76, 35, 44], "4": [76, 40, 40], "5": [76, 38, 42], "6": [73, 39, 40], "7": [81, 73, 46], "8": [73, 36, 42], "9": [83, 49, 43], "10": [76, 32, 41], "11": [76, 31, 41], "13": [73, 32, 42], "14": [75, 32, 42], "15": [75, 68, 128], "16": [79, 50, 45]};
 function facePortrait(c,id){
+ if(luaIaraArt.face(c,id,id===LUA_ID&&luaPinkSelected))return;
  if(id===IDRIS_ID){idris.face(c);return;}
  if(id===CONSTANCA_ID){constanca.face(c);return;}
  if(id===CINZA_ID){cinzaArt.face(c);return;}
@@ -1398,6 +1411,8 @@ const mestreNote=document.querySelector('.under p.small');if(mestreNote)mestreNo
 
 const advanceRegularArcadeStory=advanceStory;
 advanceStory=function(){
+ if(storyReturn==='lua-iara-fight'){storyReturn='fight';scene='fight';show(null);setStageMusic(activeStage);return;}
+ if(storyReturn==='lua-iara-result'){storyReturn='fight';showResults();return;}
  if(storyReturn==='idris-fight'){storyReturn='fight';scene='fight';show(null);setStageMusic(activeStage);return;}
  if(storyReturn==='idris-result'){storyReturn='fight';showResults();return;}
  if(storyReturn==='cinza-score'&&!storyEnding){storyReturn='fight';openArcadeScore();return;}
@@ -1413,10 +1428,12 @@ document.querySelector('#storyadvance').onclick=advanceStory;
 
 const openExistingRodaStory = openStory;
 openStory = function(ending=false) {
+ if(!ending&&luaIaraStory.isMatch()){luaIaraStory.open(false);return;}
  if(!ending&&campaignTwo&&mode==='solo'&&chosen[1]===IDRIS_ID){idris.comic(false);return;}
  return openExistingRodaStory(ending);
 };
 function finishBoutPresentation(){
+ if(luaIaraStory.isMatch()){luaIaraStory.open(true);return;}
  if(campaignTwo&&(chosen[1]===IDRIS_ID||(mode===cinzaRewards.versus&&chosen[0]===IDRIS_ID))){idris.comic(true);return;}
  if(mode==="solo"&&arcadeIndex===0&&arcadeOrder[0]===CONSTANCA_ID){showResults();return;}
  if(campaignTwo){cinzaComics.open();return;}
