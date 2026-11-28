@@ -324,6 +324,13 @@ function buildCelinaArcadeOrder(player,rotate=true){
  const route=[];regular.forEach((id,i)=>{route.push(id);if(player!==CELINA_ID&&(i+1)%2===0)route.push(CELINA_ID);});
  route.push(final);return [CONSTANCA_ID,...route];
 }
+function arcadeStageFor(player, opponent, index){
+ if(index===0)return homeStageFor(CONSTANCA_ID);
+ if(luaIaraStory.isPair(player,opponent))return rangerRoomStage;
+ if(abimbola.isRivalry(player,opponent))return homeStageFor(ABIMBOLA_ID);
+ if(opponent!==CINZA_ID&&index===arcadeOrder.length-1)return DEFAULT_STAGE;
+ return homeStageFor(opponent);
+}
 function makeArcade(){
  arcadeStartsRight=chosen[0]===CONSTANCA_ID;
  resetArcadeScore();
@@ -331,8 +338,7 @@ function makeArcade(){
  beginNamedArcade();
  if(chosen[0]===COXA_ID&&namedArcadeRun){namedArcadeRun.currency='EUR';persistArcadeRun();}
  arcadeIndex=0;chosen[1]=arcadeOrder[0];
- arcadeStages.splice(0,arcadeStages.length,...arcadeOrder.map((id,index)=>abimbola.isRivalry(chosen[0],id)?homeStageFor(ABIMBOLA_ID):id!==CINZA_ID&&index===arcadeOrder.length-1?DEFAULT_STAGE:homeStageFor(id)));
- arcadeStages[0]=homeStageFor(CONSTANCA_ID);
+ arcadeStages.splice(0,arcadeStages.length,...arcadeOrder.map((id,index)=>arcadeStageFor(chosen[0],id,index)));
 }
 
 const redesignImages=Object.fromEntries(Object.entries(redesignData).map(([id,d])=>{
@@ -462,6 +468,7 @@ function confirmPick(){
  if(!connected().length&&!arcadeAutoplay){$('#picklabel').textContent='CONNECT A CONTROLLER · PRESS A BUTTON TO ACTIVATE';return;}
  if(pauseSelection&&mode==='solo'){
   chosen[0]=pick;pauseSelection=null;wins=[0,0];round=1;suddenDeath=false;
+  arcadeStages[arcadeIndex]=arcadeStageFor(chosen[0],chosen[1],arcadeIndex);
   if(namedArcadeRun){namedArcadeRun.route[arcadeIndex].fighter=profiles[pick].name;persistArcadeRun();}
   startRound();
   if(luaIaraStory.isMatch())luaIaraStory.open(false);
@@ -585,6 +592,8 @@ const arenas = [
 ];
 const idrisStage = arenas.length;
 arenas.push({name:idris.title.toUpperCase(), file:idris.stage.src, owner:IDRIS_ID});
+const rangerRoomStage=arenas.length;
+arenas.push(rangerRoom.arena);
 function arenaAvailable(index) { return index !== idrisStage || (campaignTwo && playableIds.includes(IDRIS_ID)); }
 function stepArena(start, direction) {
  let index = start;
@@ -1223,6 +1232,10 @@ for(let side=0;side<2;side++){
 if([4,6,8,12,13,14].includes(activeStage)){for(let i=0;i<12;i++){let x=60+i*107+Math.sin(tick*.012+i)*18,y=230+(i*47%200)+Math.sin(tick*.019+i)*12;ctx.fillStyle=`rgba(255,219,110,${.15+.3*(Math.sin(tick*.025+i)+1)/2})`;ctx.beginPath();ctx.arc(x,y,2,0,7);ctx.fill()}}
 let shade=ctx.createLinearGradient(0,0,0,H);shade.addColorStop(0,'#071611b0');shade.addColorStop(.28,'#07161100');shade.addColorStop(.8,'#07161100');shade.addColorStop(1,'#071611ba');ctx.fillStyle=shade;ctx.fillRect(0,0,W,H)}
 function drawRoda(){
+ if(activeStage===rangerRoomStage){
+  if(typeof arenaArt==='function'&&arenaArt(rangerRoom.arena.file).naturalWidth)rangerRoom.drawPortraits(ctx);
+  return;
+ }
  if(activeStage===idrisStage)return;
  if(activeStage===homeStageFor(ABIMBOLA_ID)&&abimbola.arena.naturalWidth)return;
  ctx.save();ctx.strokeStyle='#f6e7b666';ctx.lineWidth=2;

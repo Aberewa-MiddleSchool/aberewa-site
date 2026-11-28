@@ -23,9 +23,12 @@ const luaIaraStory = (() => {
     }
   };
 
+  function isPair(first, second) {
+    return (first === 4 && second === 5) || (first === 5 && second === 4);
+  }
+
   function isMatch() {
-    return (mode === 'solo' || mode === cinzaRewards.versus) &&
-      ((chosen[0] === 4 && chosen[1] === 5) || (chosen[0] === 5 && chosen[1] === 4));
+    return (mode === 'solo' || mode === cinzaRewards.versus) && isPair(...chosen);
   }
 
   function open(after) {
@@ -47,7 +50,7 @@ const luaIaraStory = (() => {
     }
   }
 
-  return { isMatch, open };
+  return { isPair, isMatch, open };
 })();
 
 profiles[4].age = 23;
