@@ -82,6 +82,23 @@ const bossMoves=moves.map((m,i)=>({...m,name:['Bênção forte','Chapa baixa','M
 buildFighterMoves(moves,bossMoves);
 connectExclusiveSpecials();
 connectEightFighters();
+
+const LUA_ID=4;
+const luaFrontKick=characterMoves[LUA_ID][0];
+const luaCrescentKick=characterMoves[LUA_ID][2];
+const luaHopKickPhases=[
+ {...luaFrontKick.phases[0],frames:10,damage:Math.ceil(luaFrontKick.phases[0].damage/2),push:0,knockdown:false},
+ {...luaCrescentKick.phases[0],frames:10,range:luaFrontKick.range,damage:Math.floor(luaFrontKick.phases[0].damage/2),knockdown:false}
+];
+const luaHopKick={
+ ...luaFrontKick,
+ name:'Bênção · Hop Kick → Meia-lua de Frente',
+ start:10,
+ active:luaHopKickPhases.reduce((duration,phase)=>duration+phase.frames,0),
+ phases:luaHopKickPhases,
+ hopDistance:16
+};
+characterMoves[LUA_ID][0]=luaHopKick;
 const juremaKit={
  "techniques": {
   "push": {
@@ -238,7 +255,13 @@ cinza.install();
 constanca.install();
 roster[CONSTANCA_ID]=[profiles[CONSTANCA_ID].name,"The daywalking bride"];
 playableIds.push(CONSTANCA_ID);
-const moveFor=(p,n)=>p.id===IDRIS_ID?idris.move(n,p.attackCrouched):p.id===CONSTANCA_ID?constanca.move(n,p.attackCrouched):p.id===3&&p.attackCrouched?zingaKit.low[n]:isProtagonist(p.id)&&p.attackCrouched&&duoKit.lows[p.id][n]?duoKit.lows[p.id][n]:p.id===1?characterMoves[1][n]:p.id===CINZA_ID?characterMoves[CINZA_ID][n]:p.id===ABIMBOLA_ID&&p.attackCrouched?abimbola.lowMove(n):p.id===COXA_ID?(p.attackCrouched&&n===1?coxaLowMove:characterMoves[COXA_ID][n]):p.id===CELINA_ID?(p.attackCrouched&&n<6?celinaLowMoves[n]:characterMoves[p.id][n]):p.attackCrouched&&p.id!==HEATHER_ID&&p.id!==7&&p.id!==14&&!isProtagonist(p.id)?crouchingMove(characterMoves[p.id][n],n):characterMoves[p.id][n];
+function moveFor(p,n){
+ if(p.id===LUA_ID&&n===0){
+  if(p.attackCrouched)return crouchingMove(luaFrontKick,n);
+  if(p.trackAthlete!==undefined)return luaFrontKick;
+ }
+ return p.id===IDRIS_ID?idris.move(n,p.attackCrouched):p.id===CONSTANCA_ID?constanca.move(n,p.attackCrouched):p.id===3&&p.attackCrouched?zingaKit.low[n]:isProtagonist(p.id)&&p.attackCrouched&&duoKit.lows[p.id][n]?duoKit.lows[p.id][n]:p.id===1?characterMoves[1][n]:p.id===CINZA_ID?characterMoves[CINZA_ID][n]:p.id===ABIMBOLA_ID&&p.attackCrouched?abimbola.lowMove(n):p.id===COXA_ID?(p.attackCrouched&&n===1?coxaLowMove:characterMoves[COXA_ID][n]):p.id===CELINA_ID?(p.attackCrouched&&n<6?celinaLowMoves[n]:characterMoves[p.id][n]):p.attackCrouched&&p.id!==HEATHER_ID&&p.id!==7&&p.id!==14&&!isProtagonist(p.id)?crouchingMove(characterMoves[p.id][n],n):characterMoves[p.id][n];
+}
 function crouchingMove(base,n){const key=n===1||n===4?'rasteira':n===3||n===5?'costas':'chapa';const tech=techniqueBook[key];const phases=[{...base.phases[0],...tech,visual:n===3||n===5?'lowback':'lowpush',level:'low',travel:0,frames:base.active,range:base.range*.9,damage:base.damage,knockdown:n>=2,push:3}];return {...base,...phases[0],phases,name:['Chapa baixa','Rasteira curta','Chapa baixa forte','Meia-lua baixa','Varredura','Contra-ataque baixo'][n],signature:n>=4?'BAIXA · '+base.signature:null,active:phases[0].frames,start:Math.max(4,base.start-1),crouching:true};}
 const ROUND_SECONDS=99;
 let campaignTwo=false;
@@ -766,7 +789,11 @@ function blocksKick(defender,move){
 
 function updateFighter(p,opp,s,dt){if(updateRoll(p,s,dt))return;if(p.fallSoundAt&&tick>=p.fallSoundAt){playSample('fall',.8);p.fallSoundAt=0}p.flash=Math.max(0,p.flash-dt);p.invuln=Math.max(0,p.invuln-dt);p.x=clamp(p.x+p.pushV*dt,100,1180);p.pushV*=Math.pow(.84,dt);if(p.down>0){p.down=Math.max(0,p.down-dt);p.attack=null;p.stun=0;p.block=false;advanceAir(p,dt);p.moveText=p.down<14?'RECOVERY':'KNOCKDOWN';if(p.down===0)p.invuln=12;return}p.comboTimer-=dt;if(p.comboTimer<=0)p.combo=0;p.meter=Math.min(100,p.meter+.045*dt);if(p.buffer){p.buffer.ttl-=dt;if(p.buffer.ttl<=0)p.buffer=null}if(p.stun>0){p.stun-=dt;p.block=p.guardStun===true;p.attack=null;p.moveText=p.guardStun?'BLOCK':'HIT';advanceAir(p,dt);return}p.guardStun=false;p.dir=opp.x>=p.x?1:-1;let up=!!s&&s.y<-.6;if(up&&!p.jumpHeld)p.jumpBuffer=9;p.jumpHeld=up;if(p.jumpBuffer>0)p.jumpBuffer-=dt;p.walk=s?.x||0;let stepStart=p.x;p.stepOffset=0;p.landing=Math.max(0,p.landing-dt);if(p.takeoff>0){p.takeoff-=dt;if(p.takeoff<=0){p.vy=14.8;p.y=1;p.crouch=false;p.block=false}}
 if(p.attack!==null){let base=moveFor(p,p.attack);p.at+=dt;let m=attackPhase(base,p.at);if(p.phase!==m.phase){p.phase=m.phase;p.hit=false;p.swingPlayed=false}let active=p.at>=m.start&&p.at<m.start+m.active;if(active&&!p.swingPlayed){p.swingPlayed=true;sfx('swing',m.rank)}
-if(p.y>0&&s){p.vx+=(s.x*fighterTraits[p.id].speed-p.vx)*.16;p.x+=p.vx*dt};if(p.y===0&&p.trackAthlete===undefined){if(p.at<m.start)p.x+=p.dir*(base.retreat||0)*dt;else if(active)p.x+=p.dir*m.travel*dt;}
+if(p.y>0&&s){p.vx+=(s.x*fighterTraits[p.id].speed-p.vx)*.16;p.x+=p.vx*dt};if(p.y===0&&p.trackAthlete===undefined){if(base.hopDistance&&p.at-dt<base.start){
+ const travelTime=Math.min(dt,base.start-(p.at-dt));
+ p.x+=p.dir*base.hopDistance*travelTime/base.start;
+}else if(p.at<m.start)p.x+=p.dir*(base.retreat||0)*dt;
+else if(active)p.x+=p.dir*m.travel*dt;}
 if(active&&!p.hit&&strikeInReach(p,opp,m)&&Math.abs(opp.y-p.y)<110&&opp.down<=0&&opp.invuln<=0){p.hit=true;let avoids=opp.crouch&&m.level==='high';if(avoids){tone(220,.06,.03)}else{p.confirmed=true;let blocked=p.id===IDRIS_ID?opp.block&&(m.level!=='low'||opp.crouch):blocksKick(opp,m);if(blocked){opp.stun=7;opp.guardStun=true;opp.meter=Math.min(100,opp.meter+5);p.meter=Math.min(100,p.meter+3);opp.moveText='BLOCK';burst((p.x+opp.x)/2,opp.crouch?505:405,'#c9f9ff',9);sfx('block',m.rank);rumble(players.indexOf(opp),.14,60)}else{let dmg=p.id===IDRIS_ID?opp.maxHp*m.fraction:p.id===CINZA_ID?opp.maxHp*m.damage/100:p.id===14?opp.maxHp*.075:p.id===COXA_ID?coxaDamagePercent(opp.maxHp,m):p.id===CELINA_ID&&m.powerKick?opp.maxHp*.25:m.damage*Math.max(.55,1-p.combo*.1);if(p.fearMultiplier)dmg*=p.fearMultiplier;let actualDamage=Math.min(opp.hp,dmg);opp.hp=Math.max(0,opp.hp-dmg);if(p.id===CINZA_ID)cinza.onCleanHit(p,m);scoreContact(p,opp,actualDamage);opp.stun=m.rank===3?33:24;opp.guardStun=false;opp.flash=8;opp.attack=null;opp.buffer=null;p.combo++;p.comboTimer=80;p.meter=Math.min(100,p.meter+8);opp.meter=p.id===CONSTANCA_ID&&base.power?Math.max(0,opp.meter-8):Math.min(100,opp.meter+6);opp.pushV=p.dir*m.push;opp.hitAt=tick;opp.reaction=m.level==='high'?4:1;opp.impactKind=m.level;if(m.knockdown||opp.hp<=0){opp.down=opp.hp<=0?999: m.rank===3?52:40;opp.comboTimer=0;opp.fallSoundAt=tick+8}rumble(players.indexOf(opp),m.rank===3?.55:.3,90);shake=m.rank===3?10:5;freeze=m.rank===3?4:2;burst((p.x+opp.x)/2,m.level==='low'?530:m.level==='high'?590-270*fighterTraits[opp.id].height/174:410,m.rank===3?fighterTraits[p.id].accent:'#ffe999',m.rank===3?36:18);sfx('hit',m.rank);vocal(opp.id,opp.hp<=0?'defeat':'hit')}}}
 let cancel=p.id!==IDRIS_ID&&p.id!==CONSTANCA_ID&&p.id!==3&&!isProtagonist(p.id)&&p.id!==CINZA_ID&&p.id!==14&&p.id!==COXA_ID&&p.id!==CELINA_ID&&p.id!==HEATHER_ID&&(p.confirmed||p.at>=m.start+m.active+2)&&p.at>=m.start+Math.max(2,m.active*.3)&&p.buffer&&(moveFor(p,p.buffer.n).rank>m.rank||(p.combo<3&&p.buffer.n!==p.attack&&moveFor(p,p.buffer.n).rank===m.rank));
 if(cancel||p.at>=m.start+m.active+m.end){p.attack=null;if(p.buffer){let queued=p.buffer;p.buffer=null;beginAttack(p,queued.n,queued.crouched)}}
@@ -965,7 +992,28 @@ function drawFighter(p){
  ctx.restore();
  if(p.combo>=2&&p.comboTimer>0){text(p.combo+' HIT',p.x,205,34,'#ffdb6e','center');text('COMBINATION',p.x,225,12,'#eee6c8','center')}
 }
+function drawLuaHopKick(p){
+ const move=luaHopKick;
+ if(p.at<move.start){
+  const progress=p.at/move.start;
+  const jumpFrame=12+Math.min(3,Math.floor(progress*4));
+  const airborne=clamp((progress-.2)/.6,0,1);
+  const lift=22*Math.sin(Math.PI*airborne);
+  ctx.save();
+  ctx.translate(0,-lift);
+  drawRedesignFrame(p,jumpFrame);
+  ctx.restore();
+  return;
+ }
+ const phase=attackPhase(move,p.at);
+ const row=phase.phase===0?move.authoredRow:luaCrescentKick.authoredRow;
+ const recovery=p.at-move.start-move.active;
+ const frame=recovery>=0?6+Math.min(1,Math.floor(recovery/move.end*2))
+  :phase.phaseFrame<phase.frames*.65?4:5;
+ drawRedesignFrame(p,row*8+frame);
+}
 function drawFighterBody(p,t){if(p.id===14){drawMare(p);return;}let ground=590-p.y;if(combatData[p.id]){drawCompleteFighter(p);return;}
+ if(p.id===LUA_ID&&p.attack===0&&moveFor(p,0)===luaHopKick){drawLuaHopKick(p);return;}
  if(identityRowScale[p.id]){drawRedesignedFighter(p);return}
  if(p.hp<=0){drawDefeat(p);return}
  if(p.down<=0&&p.stun<=0&&p.attack===null&&p.y===0&&!p.crouch&&p.takeoff<=0&&p.landing<=0){drawGinga(p);return}
