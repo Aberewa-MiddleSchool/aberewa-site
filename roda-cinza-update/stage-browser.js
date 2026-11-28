@@ -17,7 +17,8 @@
   const selected = id => Number.isFinite(Number(id))
     ? ((Math.trunc(Number(id)) % count()) + count()) % count() : defaultStage;
   const story = () => mode === 'solo' || mode === 'watcharcade' || !!arcadeAutoplay;
-  const current = () => story()
+  const survival = () => mode === rangerSurvival.mode;
+  const current = () => survival() ? rangerRoomStage : story()
     ? (['menu','select'].includes(scene) ? defaultStage : (arcadeStages[Number(arcadeIndex) || 0] ?? defaultStage))
     : stageChoice;
   const gameCanvas = q('#game');
@@ -85,13 +86,13 @@
     addStages();
     const candidate = selected(current());
     const id = arenaAvailable(candidate) ? candidate : defaultStage;
-    const locked = story();
+    const locked = story() || survival();
     stages.hidden=locked;
     if(locked)stages.open=false;
     const label = (id + 1) + ' / ' + count() + ' — ' + stageList[id];
     for (const view of views) {
       const text = view.querySelector('.roda-stage-label');
-      text.textContent = label + (locked ? ' · ARCADE STORY STAGE (AUTOMATIC)' : ' · SELECTABLE');
+      text.textContent = label + (survival() ? ' · RANGER SURVIVAL' : locked ? ' · ARCADE STORY STAGE (AUTOMATIC)' : ' · SELECTABLE');
       for (const button of view.querySelectorAll('[data-prev],[data-next]')) {
         button.hidden = locked;
         button.disabled = locked;
@@ -107,7 +108,7 @@
     preview();
   }
   function chooseStage(i) {
-    if (story()) {sync();return;}
+    if (story() || survival()) {sync();return;}
     const target = selected(i);
     if (!arenaAvailable(target) && i >= 0 && i < count() && Math.abs(i-stageChoice)>1) return;
     stageChoice = arenaAvailable(target) ? target : stepArena(stageChoice, i < stageChoice ? -1 : 1);

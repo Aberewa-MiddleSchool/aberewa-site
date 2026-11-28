@@ -3,7 +3,8 @@ const rangerRoom = (() => {
   const arena = {
     name: 'RANGER FAN ROOM · SALVADOR',
     owners: [4, 5],
-    file: new URL('stage.webp', root).href
+    file: new URL('stage.webp', root).href,
+    theme: { title: 'Triumph in the Beat', src: new URL('triumph-in-the-beat.mp3', root).href }
   };
   const frames = [
     { file: 'amy-jo-johnson.webp', name: 'AMY JO JOHNSON', x: 486, y: 131, width: 135, height: 175 },
