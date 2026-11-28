@@ -1,25 +1,27 @@
-const luaIaraArt = (() => {
+const rodaFighterArt = (() => {
   const root = new URL('.', document.currentScript.src);
-  const asset = file => {
+  const asset = (name, file) => {
     const image = new Image();
-    image.src = new URL(file, root);
+    image.src = new URL(name === 'nala' ? '../roda-nala/' + file : file, root);
     return image;
   };
-  const skins = Object.fromEntries(Object.entries(luaIaraFrames).map(([name, frames]) => [
+  const skins = Object.fromEntries(Object.entries(rodaFighterFrames).map(([name, frames]) => [
     name,
     {
       frames,
-      atlas: asset(name + '-combat.webp'),
-      portrait: asset(name + '-portrait.webp')
+      atlas: asset(name, name + '-combat.webp'),
+      portrait: asset(name, name + '-portrait.webp')
     }
   ]));
+  const sweepAtlas = asset('nala', 'nala-sweeps.webp');
   const filename = new WeakMap();
   const loaded = image => image?.complete && image.naturalWidth > 0;
   const active = skin => loaded(skin?.atlas) && loaded(skin?.portrait);
-  const ready = Promise.allSettled(Object.values(skins).flatMap(skin => [
-    skin.atlas.decode(), skin.portrait.decode()
-  ]));
-  const standard = id => id === 4 ? skins.lua : id === 5 ? skins.iara : null;
+  const ready = Promise.allSettled([
+    sweepAtlas.decode(),
+    ...Object.values(skins).flatMap(skin => [skin.atlas.decode(), skin.portrait.decode()])
+  ]);
+  const standard = id => id === 4 ? skins.lua : id === 5 ? skins.iara : id === 6 ? skins.nala : null;
   const alternate = id => id === 4 ? skins['lua-pink'] : id === 5 ? skins['iara-slayer'] : null;
   const canSelectAlternate = id => active(alternate(id));
   function getSkin(id, useAlternate) {
@@ -68,5 +70,15 @@ const luaIaraArt = (() => {
       ctx.drawImage = nativeDraw;
     }
   }
-  return { ready, canSelectAlternate, face, portrait, draw };
+  function drawNalaSweep(p, row, frame) {
+    if (!loaded(sweepAtlas)) return false;
+    const tile = 256;
+    ctx.save();
+    ctx.translate(p.x, 590 - p.y);
+    ctx.scale(p.dir, 1);
+    ctx.drawImage(sweepAtlas, frame * tile, row * tile, tile, tile, -128, -238, tile, tile);
+    ctx.restore();
+    return true;
+  }
+  return { ready, canSelectAlternate, face, portrait, draw, drawNalaSweep };
 })();
