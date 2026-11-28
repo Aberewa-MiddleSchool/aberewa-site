@@ -49,6 +49,7 @@ const idris = (() => {
     ['marteloSolo','arraia','rasteiraBaixa'], ['costasBaixa','luaBaixa','marteloSolo'],
     ['rasteiraBaixa','costasBaixa','arraia'], ['luaBaixa','arraia','marteloSolo']
   ];
+  const cpuReach = Math.max(...standing.map(([opening]) => techniques[opening].range));
   let lowMoves;
   function build(keys, slot, crouching) {
     const power = slot === 7;
@@ -84,6 +85,17 @@ const idris = (() => {
   }
   function move(slot, crouched) {
     return (crouched && lowMoves[slot]) || characterMoves[IDRIS_ID][slot];
+  }
+  function cpuMove(distance, meter) {
+    const regular = characterMoves[IDRIS_ID];
+    if (meter >= regular[7].cost && distance <= regular[7].range && Math.random() < .15) {
+      return { slot: 7, crouched: false };
+    }
+    const crouched = Math.random() < .35;
+    const inRange = moves => moves.slice(0, 6).flatMap((move, slot) => distance <= move.range ? [slot] : []);
+    const lowSlots = crouched ? inRange(lowMoves) : [];
+    const slots = lowSlots.length ? lowSlots : inRange(regular);
+    return { slot: slots[Math.floor(Math.random() * slots.length)], crouched: lowSlots.length > 0 };
   }
   function strike(p, opponent, phase) {
     const frame = Math.floor(6 * phase.phaseFrame / phase.frames);
@@ -169,5 +181,5 @@ const idris = (() => {
     $('#storyplace').textContent = title;
     $('#storyadvance').textContent = after ? 'A · MATCH RESULTS' : 'A · ENTER THE RODA';
   }
-  return { name, title, stage, portrait, ready, install, move, strike, draw, face, comic };
+  return { name, title, stage, portrait, ready, install, move, cpuReach, cpuMove, strike, draw, face, comic };
 })();
