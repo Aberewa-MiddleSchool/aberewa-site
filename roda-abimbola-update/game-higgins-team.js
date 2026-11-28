@@ -326,10 +326,11 @@ function buildCelinaArcadeOrder(player,rotate=true){
 }
 function arcadeStageFor(player, opponent, index){
  if(index===0)return homeStageFor(CONSTANCA_ID);
- if(luaIaraStory.isPair(player,opponent))return rangerRoomStage;
+ const homeStage=homeStageFor(opponent);
+ if(homeStage===rangerRoomStage)return homeStage;
  if(abimbola.isRivalry(player,opponent))return homeStageFor(ABIMBOLA_ID);
  if(opponent!==CINZA_ID&&index===arcadeOrder.length-1)return DEFAULT_STAGE;
- return homeStageFor(opponent);
+ return homeStage;
 }
 function makeArcade(){
  arcadeStartsRight=chosen[0]===CONSTANCA_ID;
@@ -565,7 +566,7 @@ $('#padsetup').onclick=openSetup;$('#setupcancel').onclick=()=>{scene='menu';sho
 function calibratePads(pads){if(setupPad===null){let p=pads.find(p=>p.buttons.some(b=>b.pressed));if(!p)return;setupPad=p.index;setupStep=0;setupBindings={};setupNeutral=p.axes.slice();setupWait=true;$('#setupdevice').textContent=p.id;$('#setupstep').textContent='Release all controls…';return}let p=pads.find(p=>p.index===setupPad);if(!p){$('#setupstep').textContent='Reconnect the controller to continue.';return}let neutral=!p.buttons.some(b=>b.pressed)&&p.axes.every((v,i)=>Math.abs(v-(setupNeutral[i]||0))<.2);if(setupWait){if(neutral){setupWait=false;$('#setupstep').textContent='Press '+setupSteps[setupStep][1]}return}let bi=p.buttons.findIndex(b=>b.pressed),a=null;if(bi>=0)a={type:'button',index:bi};else{let ai=p.axes.findIndex((v,i)=>Math.abs(v-(setupNeutral[i]||0))>.45);if(ai>=0)a={type:'axis',index:ai,value:p.axes[ai],neutral:setupNeutral[ai]||0,hat:ai>3||Math.abs(setupNeutral[ai]||0)>1}}if(!a)return;setupBindings[setupSteps[setupStep][0]]=a;setupStep++;if(setupStep>=setupSteps.length){customPads[p.id]=setupBindings;try{localStorage.setItem('roda-controller-map',JSON.stringify(customPads))}catch(e){}scene='menu';show('menu');$('#padhelp').textContent='Controller mapping saved. Ready to play.';prevPads={};return}setupWait=true;$('#setupstep').textContent='Registered. Release all controls…'}
 // Preserve the original six stage indices for existing music and stage selections.
 const arenas = [
- {name:'AMAZONIAN RESEARCH STATION INTERIOR',file:'research-station.png',owner:5},
+ {name:'AMAZONIAN RESEARCH STATION INTERIOR',file:'research-station.png'},
  {name:'PELOURINHO ART STUDIO',file:'pelourinho-art-studio.png',owner:0},
  {name:'PAULISTA AVENUE APARTMENT',file:'paulista-apartment.png',owner:6},
  {name:'MEILIN’S ALTAR',file:'meilin-altar.png'},
@@ -574,7 +575,7 @@ const arenas = [
  {name:'WEATHERED CAPOEIRA STUDIO',file:'arenas/weathered-studio.webp'},
  {name:'CACHOEIRA HERITAGE SQUARE',file:'brazil-arenas-2.webp',tile:2},
  {name:'SOLAR STUDIO',file:'arenas/solar-studio.webp',owner:3},
- {name:'BELÉM WATERFRONT',file:'brazil-arenas.webp',tile:3,owner:4},
+ {name:'BELÉM WATERFRONT',file:'brazil-arenas.webp',tile:3},
  {name:'FORTALEZA BEACHFRONT',file:'brazil-arenas-2.webp',tile:1,owner:8},
  {name:'MOSAIC STUDIO',file:'arenas/mosaic-studio.webp',owner:9},
  {name:'WINGED SUN DOJO',file:'arenas/winged-sun-dojo.webp',owner:10},
@@ -603,7 +604,8 @@ function stepArena(start, direction) {
 }
 const stageNames=arenas.map(arena=>arena.name);
 const DEFAULT_STAGE=4;
-const homeStages=new Map(arenas.flatMap((arena,index)=>arena.owner===undefined?[]:[[arena.owner,index]]));
+function arenaOwners(arena){return arena.owners??(arena.owner===undefined?[]:[arena.owner]);}
+const homeStages=new Map(arenas.flatMap((arena,index)=>arenaOwners(arena).map(owner=>[owner,index])));
 function homeStageFor(id){return homeStages.get(id)??DEFAULT_STAGE;}
 let activeStage=DEFAULT_STAGE,stageChoice=DEFAULT_STAGE;
 const arcadeStages=[];

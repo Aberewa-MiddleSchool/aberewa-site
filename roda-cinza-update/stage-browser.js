@@ -127,10 +127,10 @@
     b.type='button';b.dataset.stage=String(id);
     const shortName=stageList[id].split(' · ')[0];
     b.textContent=shortName;
-    const owner=arenas[id].owner;
-    if (owner!==undefined && roster[owner]) {
+    const owners=arenaOwners(arenas[id]).map(owner=>roster[owner]?.[0]).filter(Boolean);
+    if (owners.length) {
       const detail=document.createElement('small');
-      detail.textContent=roster[owner][0]+' · Home arena';
+      detail.textContent=owners.join(' & ')+' · Home arena';
       b.append(detail);
     }
     b.addEventListener('click',()=>chooseStage(id));

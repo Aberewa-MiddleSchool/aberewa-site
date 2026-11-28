@@ -2,6 +2,7 @@ const rangerRoom = (() => {
   const root = new URL('.', document.currentScript.src);
   const arena = {
     name: 'RANGER FAN ROOM · SALVADOR',
+    owners: [4, 5],
     file: new URL('stage.webp', root).href
   };
   const frames = [
