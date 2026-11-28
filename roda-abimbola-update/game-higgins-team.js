@@ -371,7 +371,7 @@ function setDifficulty(d){difficulty=d;$$('[data-diff]').forEach(b=>b.classList.
 $('#quit').textContent='RETURN TO MAIN MENU';$('#backmenu').textContent='RETURN TO MAIN MENU';
 $$('[data-rounds]').forEach(b=>b.onclick=()=>setRounds(b.dataset.rounds));
 $$('[data-mode]').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));$$('[data-diff]').forEach(b=>b.onclick=()=>setDifficulty(b.dataset.diff));
-function show(id){if(id)rodaAnnouncer.stop();['title','menu','select','pause','setup','result','story','ending','score','coxa-complete','track-complete'].forEach(n=>$('#'+n)?.classList.toggle('hidden',n!==id))}
+function show(id){if(id)rodaAnnouncer.stop();['title','menu','select','pause','setup','result','story','ending','score','coxa-complete','track-complete','roda-house'].forEach(n=>$('#'+n)?.classList.toggle('hidden',n!==id))}
 function connected(){
  try{return Array.from(navigator.getGamepads?.()||[]).filter(p=>p?.connected);}
  catch{return [];}
@@ -385,13 +385,15 @@ function choose(){stopResultSound();if(!loaded){$('#padhelp').textContent='Loadi
  }
  trackIndex=0;trackWins=0;startTrackBout();return}if(mode==='coxa'){beginCoxaRun();return}if(mode==='watcharcade'){mode='solo';arcadeAutoplay=true;}scene='select';pickStage=0;pick=mode==='training'?CONSTANCA_ID:selectionRoster().includes(chosen[0])?chosen[0]:selectionRoster()[0];show('select');updatePick()}
 $('#choose').onclick=choose;$('#backmenu').onclick=()=>{if(cancelPauseSelection())return;if(mode===cinzaRewards.versus)setMode('cinza');scene='menu';show('menu')};$('#confirm').onclick=confirmPick;
-let heatherWhiteSelected=false, luaPinkSelected=false;
+let heatherWhiteSelected=false;
+const luaIaraAltSelected=new Set();
 const outfitButton=document.createElement('button');
 outfitButton.id='heather-outfit';outfitButton.type='button';outfitButton.hidden=true;
 $('#confirm').parentElement?.insertBefore(outfitButton,$('#confirm'));
 function toggleFighterOutfit(){
- if(pick===LUA_ID&&luaIaraArt.canSelectPink()){
-  luaPinkSelected=!luaPinkSelected;
+ if(luaIaraArt.canSelectAlternate(pick)){
+  if(luaIaraAltSelected.has(pick))luaIaraAltSelected.delete(pick);
+  else luaIaraAltSelected.add(pick);
   updatePick();return;
  }
  if(pick===CINZA_ID){cinzaArt.cycleCostume();updatePick();return;}
@@ -402,12 +404,13 @@ function toggleFighterOutfit(){
 }
 outfitButton.onclick=toggleFighterOutfit;
 function updatePick(){
- const canSelectLuaOutfit=pick===LUA_ID&&luaIaraArt.canSelectPink();
- outfitButton.hidden=!canSelectLuaOutfit&&pick!==HEATHER_ID&&pick!==COXA_ID&&pick!==CINZA_ID;
- outfitButton.textContent=canSelectLuaOutfit?'Y · OUTFIT: '+(luaPinkSelected?'PINK RANGER':'BELÉM'):pick===CINZA_ID?'Y · OUTFIT: '+cinzaArt.outfitName.toUpperCase():pick===COXA_ID?'Y · OUTFIT: '+coxaOutfitName().toUpperCase()+' ('+(coxaUnlocked+1)+'/'+(COXA_COLORS.length+1)+' AVAILABLE)'+(coxaUnlocked<COXA_COLORS.length?' · ONE COLOR PER 20–0 RUN':''):'Y · OUTFIT: '+(heatherWhiteSelected?'ALL WHITE':'OAKLAND');
+ const canSelectLuaIaraOutfit=luaIaraArt.canSelectAlternate(pick);
+ const luaIaraAlt=luaIaraAltSelected.has(pick);
+ outfitButton.hidden=!canSelectLuaIaraOutfit&&pick!==HEATHER_ID&&pick!==COXA_ID&&pick!==CINZA_ID;
+ outfitButton.textContent=canSelectLuaIaraOutfit?'Y · OUTFIT: '+(pick===LUA_ID?(luaIaraAlt?'PINK RANGER':'BELÉM'):(luaIaraAlt?'RANGER SLAYER':'MANAUS')):pick===CINZA_ID?'Y · OUTFIT: '+cinzaArt.outfitName.toUpperCase():pick===COXA_ID?'Y · OUTFIT: '+coxaOutfitName().toUpperCase()+' ('+(coxaUnlocked+1)+'/'+(COXA_COLORS.length+1)+' AVAILABLE)'+(coxaUnlocked<COXA_COLORS.length?' · ONE COLOR PER 20–0 RUN':''):'Y · OUTFIT: '+(heatherWhiteSelected?'ALL WHITE':'OAKLAND');
  if(pick===CINZA_ID)outfitButton.removeAttribute('aria-pressed');
- else outfitButton.setAttribute('aria-pressed',String(canSelectLuaOutfit?luaPinkSelected:pick===COXA_ID?coxaSelected!==0:heatherWhiteSelected));
- if(canSelectLuaOutfit||pick===HEATHER_ID||pick===CINZA_ID||pick===COXA_ID){
+ else outfitButton.setAttribute('aria-pressed',String(canSelectLuaIaraOutfit?luaIaraAlt:pick===COXA_ID?coxaSelected!==0:heatherWhiteSelected));
+ if(canSelectLuaIaraOutfit||pick===HEATHER_ID||pick===CINZA_ID||pick===COXA_ID){
   const preview=$$('.fightercard')[playableIds.indexOf(pick)]?.querySelector('canvas');
   if(preview)facePortrait(preview,pick);
  }
@@ -463,7 +466,7 @@ function startRound(newBout=round===1){
  if(mode==='track')players[1].trackAthlete=trackIndex;
  if(chosen[0]===CINZA_ID)players[0].cinzaCostume=cinzaArt.selected;
  players.forEach(p=>{if(p.id===COXA_ID)p.coxaColor=coxaSelected;});
- players[0].luaPink=chosen[0]===LUA_ID&&luaPinkSelected;
+ players[0].luaIaraAlternate=luaIaraAltSelected.has(chosen[0]);
  players[0].whiteUniform=chosen[0]===HEATHER_ID&&heatherWhiteSelected;
  players[1].whiteUniform=chosen[0]===HEATHER_ID&&chosen[1]===HEATHER_ID&&!heatherWhiteSelected;
  if(mode===cinzaRewards.versus)players.forEach((p,side)=>Object.assign(p,cinzaRewards.kit[side]));
@@ -612,7 +615,12 @@ function pollPads(){
  }else if(scene==='openingfilm'){
   if(s.edge[9]||s.edge[1])finishOpeningFilm();
   else if(s.edge[0])playOpeningFilm();
+ }else if(scene==='house-comic'){
+  if(s.edge[0])houseComic.advance();
+  else if(s.edge[1])houseComic.back();
+  else if(Math.abs(s.y)>.5)$('#roda-house').scrollTop+=Math.sign(s.y)*7;
  }else if(scene==='menu'){
+  if(s.edge[7]){houseComic.open();return states;}
   if(s.edge[11])familyFilm.play('menu');
   // The controller guard delivers one direction per press, including analog deflections.
   if(s.x<-.5)setRounds(1);
@@ -1241,7 +1249,7 @@ function showResultCard(slot,player){
   face.setAttribute('aria-label',trackTeam[trackAthlete][1]);
   card.style.display='none';card.after(face);return;
  }
- card.src=whiteUniform?heatherWhiteCard.src:(luaIaraArt.portrait(id,player.luaPink)||portraitImages[id]).src;
+ card.src=whiteUniform?heatherWhiteCard.src:(luaIaraArt.portrait(id,player.luaIaraAlternate)||portraitImages[id]).src;
  card.alt=profiles[id].name+' fighter card';
 }
 function boutProfile(p){
@@ -1292,7 +1300,7 @@ heatherWhiteCard.src='portraits/heather-white.webp';
 // Each source card has different framing. Coordinates refer to a 152 × 208 thumbnail.
 const selectFaceBounds={"2":[76,37,39],"0": [75, 40, 41], "1": [76, 38, 41], "3": [76, 35, 44], "4": [76, 40, 40], "5": [76, 38, 42], "6": [73, 39, 40], "7": [81, 73, 46], "8": [73, 36, 42], "9": [83, 49, 43], "10": [76, 32, 41], "11": [76, 31, 41], "13": [73, 32, 42], "14": [75, 32, 42], "15": [75, 68, 128], "16": [79, 50, 45]};
 function facePortrait(c,id){
- if(luaIaraArt.face(c,id,id===LUA_ID&&luaPinkSelected))return;
+ if(luaIaraArt.face(c,id,luaIaraAltSelected.has(id)))return;
  if(id===IDRIS_ID){idris.face(c);return;}
  if(id===CONSTANCA_ID){constanca.face(c);return;}
  if(id===CINZA_ID){cinzaArt.face(c);return;}

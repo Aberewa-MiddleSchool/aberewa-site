@@ -20,16 +20,18 @@ const luaIaraArt = (() => {
     skin.atlas.decode(), skin.portrait.decode()
   ]));
   const standard = id => id === 4 ? skins.lua : id === 5 ? skins.iara : null;
-  function getSkin(id, pink) {
-    if (id === 4 && pink && active(skins['lua-pink'])) return skins['lua-pink'];
+  const alternate = id => id === 4 ? skins['lua-pink'] : id === 5 ? skins['iara-slayer'] : null;
+  const canSelectAlternate = id => active(alternate(id));
+  function getSkin(id, useAlternate) {
+    if (useAlternate && canSelectAlternate(id)) return alternate(id);
     const skin = standard(id);
     return active(skin) ? skin : null;
   }
-  function portrait(id, pink = false) {
-    return getSkin(id, pink)?.portrait;
+  function portrait(id, useAlternate = false) {
+    return getSkin(id, useAlternate)?.portrait;
   }
-  function face(canvas, id, pink) {
-    const image = portrait(id, pink);
+  function face(canvas, id, useAlternate) {
+    const image = portrait(id, useAlternate);
     if (!image) return false;
     const g = canvas.getContext('2d');
     const width = image.naturalWidth;
@@ -40,7 +42,7 @@ const luaIaraArt = (() => {
     return true;
   }
   function draw(p, render) {
-    const skin = getSkin(p.id, p.luaPink);
+    const skin = getSkin(p.id, p.luaIaraAlternate);
     if (!skin) {
       render(p);
       return;
@@ -66,5 +68,5 @@ const luaIaraArt = (() => {
       ctx.drawImage = nativeDraw;
     }
   }
-  return { ready, canSelectPink: () => active(skins['lua-pink']), face, portrait, draw };
+  return { ready, canSelectAlternate, face, portrait, draw };
 })();

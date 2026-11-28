@@ -66,7 +66,7 @@ const cinzaRewards = (() => {
     if(!pickStage){seats.splice(0,seats.length,active[0].index,active[1].index);}
     const side=pickStage;
     chosen[side]=pick;
-    kit[side]={cinzaCostume:cinzaArt.selected,coxaColor:coxaSelected,whiteUniform:pick===HEATHER_ID&&heatherWhiteSelected,luaPink:pick===LUA_ID&&luaPinkSelected};
+    kit[side]={cinzaCostume:cinzaArt.selected,coxaColor:coxaSelected,whiteUniform:pick===HEATHER_ID&&heatherWhiteSelected,luaIaraAlternate:luaIaraAltSelected.has(pick)};
     if(!side){
       pickStage=1;
       pick=selectionRoster().includes(chosen[1])?chosen[1]:selectionRoster()[0];
